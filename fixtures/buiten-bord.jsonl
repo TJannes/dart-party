@@ -1,0 +1,2 @@
+{"t": 0.0, "bron": "state", "data": {"connected": true, "event": "takeoutFinished", "running": true, "status": "throw", "throws": []}}
+{"t": 1.0, "bron": "state", "data": {"connected": true, "event": "throwDetected", "running": true, "status": "throw", "throws": [{"bed": "Outside", "bouncer": true, "coordsX": 0.0, "coordsY": 0.0, "failed": true, "method": "Failed", "multiplier": 0, "segmentName": "Miss", "segmentNumber": 0}]}}

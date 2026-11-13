@@ -1,0 +1,3 @@
+{"t": 0.085, "bron": "state", "data": {"connected": true, "event": "takeoutStarted", "running": true, "status": "takeoutInProgress", "throws": []}}
+{"t": 95.203, "bron": "events", "data": {"type": "state", "data": {"connected": true, "event": "manualReset", "running": true, "status": "throw", "throws": []}}}
+{"t": 95.215, "bron": "state", "data": {"connected": true, "event": "manualReset", "running": true, "status": "throw", "throws": []}}

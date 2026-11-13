@@ -1,0 +1,10 @@
+{"t": 0.069, "bron": "state", "data": {"connected": true, "event": "manualReset", "running": true, "status": "throw", "throws": []}}
+{"t": 56.442, "bron": "events", "data": {"type": "state", "data": {"connected": true, "event": "manualReset", "running": true, "status": "throw", "throws": [{"bed": "Double", "bouncer": false, "coordsX": 0.952584916923876, "coordsY": -0.004736073676884001, "failed": false, "method": "UnanimousCam", "multiplier": 2, "segmentName": "D6", "segmentNumber": 6}]}}}
+{"t": 56.442, "bron": "events", "data": {"type": "state", "data": {"connected": true, "event": "throwDetected", "running": true, "status": "throw", "throws": [{"bed": "Double", "bouncer": false, "coordsX": 0.952584916923876, "coordsY": -0.004736073676884001, "failed": false, "method": "UnanimousCam", "multiplier": 2, "segmentName": "D6", "segmentNumber": 6}]}}}
+{"t": 56.614, "bron": "state", "data": {"connected": true, "event": "throwDetected", "running": true, "status": "throw", "throws": [{"bed": "Double", "bouncer": false, "coordsX": 0.952584916923876, "coordsY": -0.004736073676884001, "failed": false, "method": "UnanimousCam", "multiplier": 2, "segmentName": "D6", "segmentNumber": 6}]}}
+{"t": 77.073, "bron": "events", "data": {"type": "state", "data": {"connected": true, "event": "manualReset", "running": true, "status": "throw", "throws": []}}}
+{"t": 77.226, "bron": "state", "data": {"connected": true, "event": "manualReset", "running": true, "status": "throw", "throws": []}}
+{"t": 142.744, "bron": "events", "data": {"type": "state", "data": {"connected": true, "event": "takeoutStarted", "running": true, "status": "takeoutInProgress", "throws": []}}}
+{"t": 142.813, "bron": "state", "data": {"connected": true, "event": "takeoutStarted", "running": true, "status": "takeoutInProgress", "throws": []}}
+{"t": 188.824, "bron": "events", "data": {"type": "state", "data": {"connected": true, "event": "manualReset", "running": true, "status": "throw", "throws": []}}}
+{"t": 188.955, "bron": "state", "data": {"connected": true, "event": "manualReset", "running": true, "status": "throw", "throws": []}}

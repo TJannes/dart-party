@@ -1,0 +1,46 @@
+appId: io.github.tjannes.dartparty
+productName: Dart Party
+copyright: Copyright © 2026 Tom Jannes
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - out/**
+  - package.json
+
+
+win:
+  target:
+    - target: nsis
+      arch: x64
+
+nsis:
+  # A wizard rather than a one-click install.
+  oneClick: false
+  # Per user: no administrator rights needed, also not when updating.
+  perMachine: false
+  selectPerMachineByDefault: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  artifactName: Dart-Party-Setup-${version}.${ext}
+
+linux:
+  target:
+    - target: AppImage
+      arch: x64
+  category: Game
+  artifactName: Dart-Party-${version}-${arch}.${ext}
+
+# Where the app looks for newer versions. The release workflow uploads the
+# files itself; this block makes electron-builder write the update metadata.
+publish:
+  provider: github
+  owner: TJannes
+  repo: dart-party
+
+toolsets:
+  # The newer AppImage runtime is static: it starts without libfuse2, which
+  # Ubuntu 24.04 no longer installs by default.
+  appimage: 1.0.3
