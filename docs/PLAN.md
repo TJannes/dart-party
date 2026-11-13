@@ -1,9 +1,10 @@
 # Dart Party: plan and decisions
 
-Status: step 1 is built and release 0.1.0 is published, but the owner has not
-yet installed it on the Surface or updated it from inside the app (planned:
-publish 0.1.1 once 0.1.0 is installed). Step 2 is built. The next thing to
-build is step 3. See [Build steps](#build-steps).
+Status: step 1 is built and releases 0.1.0 and 0.1.1 are published. Updating
+from 0.1.0 to 0.1.1 inside the app works on Ubuntu; the owner still has to
+install on the Surface and do the same on Windows. Step 2 is built. Step 3 is
+in progress: its checklist under [Build steps](#build-steps) says what is
+done and what comes next.
 
 ## Goal
 
@@ -125,15 +126,25 @@ All of these were agreed with the owner. Do not reopen them unprompted.
 - Points by finishing place, for example 4-3-2-1 with four players.
 - Tied places share the higher points and the next player moves down:
   4-4-2-1. No tie-break inside a mini-game.
-- A tie in the final standings is settled by a short deciding round.
-- Throwing order: drawn for the first game; after that, whoever is last in the
-  standings starts.
+- A tie in the final standings is settled by a short deciding round, for
+  first place only: lower ties stay shared. Each tied player throws three
+  darts and the highest ordinary score wins. If that is level too, those
+  still level throw again.
+- Throwing order: drawn for the first game; after that the reverse of the
+  standings, so the last starts and the leader throws last. Players level on
+  points keep their order from the previous game.
+- If every enabled game has been played, games may repeat, but not the same
+  one twice in a row when there is a choice.
 - Ends with a podium.
 
 ### A turn
 
 - Three darts unless a game says otherwise.
-- The turn passes automatically when Autodarts reports the darts removed.
+- The turn passes automatically when Autodarts reports the darts removed,
+  also after fewer than three darts. A takeout with no dart thrown in the
+  turn does not pass it.
+- After the last dart of a game the result stays on screen until someone
+  continues, so the deciding dart can still be corrected.
 - The control panel always offers: correct a dart, add a miss, move on by hand,
   reset the board.
 - Every mini-game has a maximum number of rounds.
@@ -251,6 +262,19 @@ detection.
 - [ ] **3. First playable evening.** Players with avatars, starting an
   evening, the draw, Race, standings between games, the podium, saving and
   resuming, both screen layouts, the first theme pack with sound.
+  - [x] Rules core in `src/core/`: Race, the evening (draw, throwing order,
+    turns, corrections, points, standings), the deciding round. Tested.
+  - [x] The main process runs an evening: holds it, feeds it board events and
+    commands from the windows, saves it after every dart, resumes it, and
+    writes the result to the history. Tested without Electron
+    (`src/core/evening/session.ts`); no screen uses it yet.
+  - [ ] Player profiles and the avatar set.
+  - [ ] Screens: players and start, the draw, rules card, the Race scene,
+    standings, podium; the control panel (correct a dart, add a miss, next
+    player, reset, volume).
+  - [ ] Show and control windows, one or two displays, the switch button.
+  - [ ] Theme pack with CC0 sounds and music.
+  - [ ] Settings: Autodarts address, mini-games on or off.
 - [ ] **4. The other four specified games**, in this order: Robin Hood,
   Spotlight, Piggy Bank, Land Grab.
 - [ ] **5. The five later games**, in this order: Sniper, Minefield, Last One

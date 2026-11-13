@@ -21,6 +21,10 @@ const api: DartPartyApi = {
   onBoardSnapshot: (listener) => subscribe(ipc.boardSnapshot, listener),
   onBoardEvent: (listener) => subscribe(ipc.boardEvent, listener),
   resetBoard: () => ipcRenderer.send(ipc.resetBoard),
+
+  getEvening: () => ipcRenderer.invoke(ipc.getEvening),
+  onEvening: (listener) => subscribe(ipc.evening, listener),
+  eveningCommand: (command) => ipcRenderer.send(ipc.eveningCommand, command),
 }
 
 contextBridge.exposeInMainWorld('dartParty', api)
