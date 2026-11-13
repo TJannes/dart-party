@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { autoUpdater } from 'electron-updater'
-import { ipc, type UpdateAction, type UpdateStatus } from '../shared/update'
+import { ipc } from '../shared/api'
+import type { UpdateAction, UpdateStatus } from '../shared/update'
 
 // The app looks for a newer release at startup and shows a button. It never
 // downloads or installs by itself: an update must not interrupt an evening.

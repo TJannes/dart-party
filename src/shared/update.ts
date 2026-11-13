@@ -46,17 +46,3 @@ export function updateView(status: UpdateStatus): UpdateView {
       return { message: s.error, button: { label: s.retry, action: 'check' } }
   }
 }
-
-/** What the preload script exposes to the windows as `window.dartParty`. */
-export interface DartPartyApi {
-  appVersion: string
-  getUpdateStatus(): Promise<UpdateStatus>
-  onUpdateStatus(listener: (status: UpdateStatus) => void): () => void
-  updateAction(action: UpdateAction): void
-}
-
-export const ipc = {
-  getUpdateStatus: 'update:get-status',
-  updateStatus: 'update:status',
-  updateAction: 'update:action',
-} as const

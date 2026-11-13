@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { strings } from '../../shared/strings'
 import { updateView, type UpdateStatus } from '../../shared/update'
+import { BoardPanel } from './BoardPanel'
 
 function useUpdateStatus(): UpdateStatus {
   const [status, setStatus] = useState<UpdateStatus>({ kind: 'idle' })
@@ -20,7 +21,7 @@ function UpdateBar(): React.JSX.Element {
     <div className={highlight ? 'update update--highlight' : 'update'} role="status">
       <span>{view.message}</span>
       {view.button && (
-        <button type="button" onClick={() => window.dartParty.updateAction(view.button!.action)}>
+        <button type="button" className="button" onClick={() => window.dartParty.updateAction(view.button!.action)}>
           {view.button.label}
         </button>
       )}
@@ -36,6 +37,7 @@ export function App(): React.JSX.Element {
         <p className="tagline">{strings.tagline}</p>
         <p className="soon">{strings.comingSoon}</p>
       </section>
+      <BoardPanel />
       <footer>
         <UpdateBar />
         <p className="small">

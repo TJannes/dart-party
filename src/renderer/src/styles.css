@@ -38,7 +38,7 @@ body {
 
 h1 {
   margin: 0;
-  font-size: clamp(56px, 12vw, 160px);
+  font-size: clamp(48px, 9vw, 120px);
   line-height: 1;
   letter-spacing: -0.02em;
   color: #ffd23f;
@@ -84,7 +84,7 @@ footer {
 }
 
 /* Sized for a finger on the Surface. */
-.update button {
+.button {
   min-height: 48px;
   padding: 0 24px;
   border: 0;
@@ -96,7 +96,7 @@ footer {
   cursor: pointer;
 }
 
-.update button:active {
+.button:active {
   transform: scale(0.97);
 }
 
@@ -104,4 +104,75 @@ footer {
   margin: 0;
   font-size: 14px;
   opacity: 0.7;
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.board {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.board__status {
+  margin: 0;
+  max-width: 40em;
+  padding: 12px 24px;
+  border-radius: 16px;
+  font-size: clamp(18px, 2.2vw, 28px);
+  font-weight: 600;
+}
+
+.board__status--ok {
+  background: #3bceac;
+  color: #12332b;
+}
+
+.board__status--busy {
+  background: rgb(0 0 0 / 25%);
+}
+
+.board__status--problem {
+  background: #ee4266;
+}
+
+.board__darts {
+  display: flex;
+  gap: 16px;
+}
+
+.dart {
+  display: grid;
+  place-items: center;
+  width: 3.2em;
+  height: 2em;
+  border-radius: 16px;
+  background: #ffd23f;
+  color: #2b1055;
+  font-size: clamp(28px, 4vw, 56px);
+  font-weight: 800;
+}
+
+.dart--empty {
+  background: rgb(0 0 0 / 20%);
+  border: 3px dashed rgb(255 255 255 / 30%);
+}
+
+.board__log {
+  margin: 0;
+  padding: 0;
+  min-height: 9em;
+  list-style: none;
+  font-size: 16px;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+.board__log li:first-child {
+  font-weight: 700;
 }

@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu, shell } from 'electron'
 import { join } from 'node:path'
 import { strings } from '../shared/strings'
+import { initBoard } from './board'
 import { initUpdater } from './updater'
 
 let mainWindow: BrowserWindow | null = null
@@ -54,6 +55,7 @@ if (!app.requestSingleInstanceLock()) {
   void app.whenReady().then(() => {
     if (app.isPackaged) Menu.setApplicationMenu(null)
     initUpdater()
+    initBoard()
     createWindow()
   })
 

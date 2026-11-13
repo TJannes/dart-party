@@ -1,8 +1,9 @@
 # Dart Party: plan and decisions
 
-Status: step 1 is built but not yet proven. Still to do for step 1: push the
-code, publish release 0.1.0, have the owner install it on the Surface, publish
-0.1.1 and update to it from inside the app. See [Build steps](#build-steps).
+Status: step 1 is built and release 0.1.0 is published, but the owner has not
+yet installed it on the Surface or updated it from inside the app (planned:
+publish 0.1.1 once 0.1.0 is installed). Step 2 is built. The next thing to
+build is step 3. See [Build steps](#build-steps).
 
 ## Goal
 
@@ -91,6 +92,17 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   a clear message when Autodarts is not running or answers in an unexpected
   shape, and every dart can always be entered or corrected by hand.
 - The app only reports that Autodarts is not running. It does not start it.
+- The app listens on the WebSocket and also polls the state every 2 seconds,
+  so a missed message or a silently dead socket is caught. When Autodarts is
+  unreachable it retries every 2 seconds.
+- A stuck board is reset automatically after 2 seconds (the prototype's
+  value), and again every 2 seconds for as long as it stays stuck.
+- Darts that are already in the board when the app first connects are shown
+  but not reported as thrown.
+- The bull is assumed to be number 25 (multiplier 2 for the bull, 1 for the
+  outer bull), as in the prototype. Still to be confirmed on a real board.
+- The Autodarts address is fixed at `localhost:3180` for now. Making it a
+  setting comes with step 3, when settings are first saved.
 - "Unofficial, not affiliated with Autodarts" in the README and in the app.
   Their name and logo appear nowhere in the app name or icon.
 
@@ -227,10 +239,15 @@ detection.
   the Surface and updated it to a second release from inside the app.
   *Built and checked on Ubuntu 24.04 (AppImage starts, update check runs).
   Not yet released; the Windows installer and both update paths are untested.*
-- [ ] **2. Autodarts connection.** Read the local API, turn state snapshots
+- [x] **2. Autodarts connection.** Read the local API, turn state snapshots
   into events (dart thrown, darts removed, corrected, reset, stuck, detection
   stopped/started, connection lost/restored), recover a stuck board. Tested
   against every recording in `fixtures/`.
+  *The rules live in `src/core/board/`, the connection in
+  `src/main/autodarts/`. The window shows a plain status panel (board state,
+  the darts of the turn, a reset button, a short log) until the real show
+  replaces it. Checked live only against an Autodarts without cameras; not
+  yet with real darts, and not on Windows.*
 - [ ] **3. First playable evening.** Players with avatars, starting an
   evening, the draw, Race, standings between games, the podium, saving and
   resuming, both screen layouts, the first theme pack with sound.
