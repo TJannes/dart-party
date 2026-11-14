@@ -127,6 +127,12 @@ describe('finishing', () => {
     expect(play(...turns.slice(0, 29)).finished).toBe(false)
   })
 
+  it('ends on the last dart of the last turn, without waiting for the takeout', () => {
+    const turns = Array.from({ length: 29 }, () => turn())
+    expect(play(...turns, open(S(5), S(5))).finished).toBe(false)
+    expect(play(...turns, open(S(5), S(5), S(5))).finished).toBe(true)
+  })
+
   it('reopens the game when the winning dart is corrected away', () => {
     const state = play(...sprint, open(manualMiss(), manualMiss()))
     expect(state.finished).toBe(false)

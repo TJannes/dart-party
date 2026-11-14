@@ -1,49 +1,74 @@
 import { useEffect, useState } from 'react'
 import { strings } from '../../shared/strings'
-import { updateView, type UpdateStatus } from '../../shared/update'
-import { BoardPanel } from './BoardPanel'
+import { ROLE, useEvening, useScreens, useSettings } from './hooks'
+import { BoardCheck } from './screens/BoardCheck'
+import { Draw } from './screens/Draw'
+import { Home } from './screens/Home'
+import { Play } from './screens/Play'
+import { Podium } from './screens/Podium'
+import { Rules } from './screens/Rules'
+import { SettingsScreen } from './screens/SettingsScreen'
+import { Setup } from './screens/Setup'
+import { sound } from './sound'
+import { useSoundEvents } from './soundEvents'
 
-function useUpdateStatus(): UpdateStatus {
-  const [status, setStatus] = useState<UpdateStatus>({ kind: 'idle' })
-  useEffect(() => {
-    const unsubscribe = window.dartParty.onUpdateStatus(setStatus)
-    void window.dartParty.getUpdateStatus().then(setStatus)
-    return unsubscribe
-  }, [])
-  return status
-}
+export function App(): React.JSX.Element | null {
+  const evening = useEvening()
+  const [menu, setMenu] = useState<'home' | 'setup' | 'check' | 'settings'>('home')
+  const settings = useSettings()
+  const screens = useScreens()
 
-function UpdateBar(): React.JSX.Element {
-  const status = useUpdateStatus()
-  const view = updateView(status)
-  const highlight = status.kind === 'available' || status.kind === 'ready'
-  return (
-    <div className={highlight ? 'update update--highlight' : 'update'} role="status">
-      <span>{view.message}</span>
-      {view.button && (
-        <button type="button" className="button" onClick={() => window.dartParty.updateAction(view.button!.action)}>
-          {view.button.label}
-        </button>
-      )}
-    </div>
+  // Sound comes from the show window when there is one, else from this one.
+  useEffect(() => sound.setAudible(ROLE === 'show' || !screens.twoWindows), [screens.twoWindows])
+  useEffect(
+    () => sound.setVolumes(settings.effectsVolume, settings.musicVolume),
+    [settings.effectsVolume, settings.musicVolume],
   )
-}
+  useSoundEvents(evening)
 
-export function App(): React.JSX.Element {
-  return (
-    <main className="shell">
-      <section className="hero">
-        <h1>{strings.appName}</h1>
-        <p className="tagline">{strings.tagline}</p>
-        <p className="soon">{strings.comingSoon}</p>
-      </section>
-      <BoardPanel />
-      <footer>
-        <UpdateBar />
-        <p className="small">
-          {strings.version(window.dartParty.appVersion)} · {strings.disclaimer}
-        </p>
-      </footer>
-    </main>
-  )
+  if (evening === undefined) return null
+  if (evening === null) {
+    // The TV has no menus: it waits for the evening to start.
+    if (ROLE === 'show') {
+      return (
+        <main className="screen screen--home">
+          <section className="hero">
+            <h1>{strings.appName}</h1>
+            <p className="tagline">{strings.show.waiting}</p>
+          </section>
+        </main>
+      )
+    }
+    if (menu === 'settings') return <SettingsScreen onBack={() => setMenu('home')} />
+    if (menu === 'setup') return <Setup onBack={() => setMenu('home')} />
+    if (menu === 'check') {
+      return (
+        <main className="screen">
+          <BoardCheck onBack={() => setMenu('home')} />
+        </main>
+      )
+    }
+    return (
+      <Home
+        onNewEvening={() => setMenu('setup')}
+        onBoardCheck={() => setMenu('check')}
+        onSettings={() => setMenu('settings')}
+      />
+    )
+  }
+
+  // Back to the start once this evening is over or stopped.
+  if (menu !== 'home') setMenu('home')
+
+  switch (evening.stage) {
+    case 'draw':
+      return <Draw evening={evening} />
+    case 'rules':
+      return <Rules evening={evening} />
+    case 'playing':
+    case 'decider':
+      return <Play evening={evening} />
+    case 'podium':
+      return <Podium evening={evening} />
+  }
 }

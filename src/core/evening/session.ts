@@ -90,6 +90,8 @@ export class EveningSession {
     private readonly random: Random,
     private readonly onChange: (evening: Evening | null) => void = () => {},
     private readonly now: () => Date = () => new Date(),
+    /** The mini-games that may be drawn in an evening started now. */
+    private readonly games: () => string[] = () => drawableGames.map((game) => game.id),
   ) {
     this.evening = readSavedEvening(store.load(EVENING))
   }
@@ -112,8 +114,7 @@ export class EveningSession {
       // Players are fixed once an evening starts; abort it first.
       if (this.evening) return
       try {
-        const games = drawableGames.map((game) => game.id)
-        this.set(startEvening(command.players, command.games, games, this.random))
+        this.set(startEvening(command.players, command.games, this.games(), this.random))
       } catch {
         // Not a valid evening: nothing starts.
       }

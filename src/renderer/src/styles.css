@@ -1,7 +1,24 @@
+/* The look of the app. The custom properties at the top are the theme: a
+   theme pack swaps these (and later the sounds and backgrounds). */
+
 :root {
+  /* Defaults; the theme sets the real values when the app starts. */
+  --bg-centre: #7597de;
+  --bg-mid: #4a2a8a;
+  --bg-edge: #2b1055;
+  --ink: #2b1055;
+  --text: #ffffff;
+  --gold: #ffd23f;
+  --hot: #ee4266;
+  --mint: #3bceac;
+  --panel: rgb(0 0 0 / 28%);
+  --panel-strong: rgb(20 8 45 / 92%);
+
   color-scheme: dark;
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  color: #fff;
+  color: var(--text);
+  /* Everything scales with the window, for reading from the throwing line. */
+  font-size: clamp(14px, 1.9vh, 30px);
 }
 
 * {
@@ -13,57 +30,231 @@ body,
 #root {
   height: 100%;
   margin: 0;
+  overflow: hidden;
 }
 
 body {
-  background: radial-gradient(circle at 50% 30%, #7597de 0%, #4a2a8a 45%, #2b1055 100%);
+  background: radial-gradient(circle at 50% 30%, var(--bg-centre) 0%, var(--bg-mid) 45%, var(--bg-edge) 100%);
   user-select: none;
 }
 
-.shell {
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h2 {
+  font-size: 2rem;
+  color: var(--gold);
+}
+
+h3 {
+  font-size: 1.2rem;
+  margin-bottom: 0.5em;
+  opacity: 0.8;
+}
+
+/* ---------------------------------------------------------------- layout */
+
+.screen {
+  position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+  padding: 1.2rem 1.6rem;
+}
+
+.screen--home {
   align-items: center;
-  padding: 24px;
   text-align: center;
 }
 
-.hero {
-  flex: 1;
+.bar {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.bar--center {
   justify-content: center;
 }
 
-h1 {
-  margin: 0;
-  font-size: clamp(48px, 9vw, 120px);
-  line-height: 1;
-  letter-spacing: -0.02em;
-  color: #ffd23f;
-  text-shadow:
-    0 6px 0 #ee4266,
-    0 12px 0 rgb(0 0 0 / 25%);
-}
-
-.tagline {
-  margin: 24px 0 0;
-  font-size: clamp(20px, 3vw, 40px);
+.bar__detail {
+  flex: 1;
+  font-size: 1.3rem;
   font-weight: 600;
+  opacity: 0.85;
 }
 
-.soon {
-  margin: 12px 0 0;
-  font-size: clamp(16px, 2vw, 24px);
-  opacity: 0.8;
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+.hint {
+  font-size: 1.2rem;
+  opacity: 0.85;
+  text-align: center;
+}
+
+.small {
+  font-size: 0.8rem;
+  opacity: 0.7;
 }
 
 footer {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 0.6rem;
+}
+
+footer.bar {
+  flex-direction: row;
+}
+
+/* --------------------------------------------------------------- buttons */
+
+/* Sized for a finger on the Surface. */
+.button,
+.key,
+.chip {
+  min-height: 48px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.button {
+  padding: 0.5em 1.3em;
+  background: var(--gold);
+  color: var(--ink);
+}
+
+.button--big {
+  padding: 0.6em 1.8em;
+  font-size: 1.6rem;
+  box-shadow: 0 0.25em 0 rgb(0 0 0 / 30%);
+}
+
+.button--quiet {
+  background: var(--panel);
+  color: var(--text);
+}
+
+.button--miss {
+  background: var(--hot);
+  color: var(--text);
+}
+
+.button--next {
+  background: var(--mint);
+  color: #12332b;
+}
+
+.button:active,
+.key:active,
+.chip:active {
+  transform: scale(0.96);
+}
+
+.button:disabled,
+.key:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.key {
+  min-width: 48px;
+  padding: 0.3em 0.6em;
+  border-radius: 0.6em;
+  background: rgb(255 255 255 / 14%);
+  color: var(--text);
+  font-size: 1.3rem;
+}
+
+.key--wide {
+  flex: 1;
+  padding: 0.5em 1em;
+}
+
+.key--miss {
+  background: var(--hot);
+}
+
+.chip {
+  flex: 1;
+  padding: 0.4em 1em;
+  background: rgb(255 255 255 / 14%);
+  color: var(--text);
+  font-size: 1.2rem;
+}
+
+.chip--on {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+.input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.4em 0.8em;
+  border: 3px solid rgb(255 255 255 / 30%);
+  border-radius: 0.6em;
+  background: rgb(0 0 0 / 30%);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  user-select: text;
+}
+
+/* ------------------------------------------------------------------ home */
+
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.hero__cast {
+  display: flex;
+  gap: 2rem;
+}
+
+h1 {
+  font-size: clamp(48px, 16vh, 180px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--gold);
+  text-shadow:
+    0 0.05em 0 var(--hot),
+    0 0.1em 0 rgb(0 0 0 / 25%);
+}
+
+.tagline {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.hero__buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
 
 .update {
@@ -71,90 +262,68 @@ footer {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 12px 20px;
+  gap: 1rem;
+  padding: 0.5em 1.2em;
   border-radius: 999px;
-  background: rgb(0 0 0 / 25%);
-  font-size: 18px;
+  background: var(--panel);
 }
 
 .update--highlight {
-  background: #ee4266;
+  background: var(--hot);
   font-weight: 600;
 }
 
-/* Sized for a finger on the Surface. */
-.button {
-  min-height: 48px;
-  padding: 0 24px;
-  border: 0;
-  border-radius: 999px;
-  background: #ffd23f;
-  color: #2b1055;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.button:active {
-  transform: scale(0.97);
-}
-
-.small {
-  margin: 0;
-  font-size: 14px;
-  opacity: 0.7;
-}
-
-.button:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
+/* ----------------------------------------------------------- board check */
 
 .board {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .board__status {
-  margin: 0;
   max-width: 40em;
-  padding: 12px 24px;
-  border-radius: 16px;
-  font-size: clamp(18px, 2.2vw, 28px);
+  padding: 0.5em 1.2em;
+  border-radius: 0.8em;
+  font-size: 1.4rem;
   font-weight: 600;
+  text-align: center;
+}
+
+.board__status--bar {
+  align-self: center;
 }
 
 .board__status--ok {
-  background: #3bceac;
+  background: var(--mint);
   color: #12332b;
 }
 
 .board__status--busy {
-  background: rgb(0 0 0 / 25%);
+  background: var(--panel);
 }
 
 .board__status--problem {
-  background: #ee4266;
+  background: var(--hot);
 }
 
 .board__darts {
   display: flex;
-  gap: 16px;
+  gap: 1rem;
 }
 
 .dart {
-  display: grid;
+  display: inline-grid;
   place-items: center;
   width: 3.2em;
-  height: 2em;
-  border-radius: 16px;
-  background: #ffd23f;
-  color: #2b1055;
-  font-size: clamp(28px, 4vw, 56px);
+  height: 1.8em;
+  border-radius: 0.5em;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 2rem;
   font-weight: 800;
 }
 
@@ -168,11 +337,593 @@ footer {
   padding: 0;
   min-height: 9em;
   list-style: none;
-  font-size: 16px;
   line-height: 1.5;
+  text-align: center;
   opacity: 0.85;
 }
 
 .board__log li:first-child {
   font-weight: 700;
+}
+
+/* ----------------------------------------------------------------- setup */
+
+.profiles {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  grid-auto-rows: min-content;
+  gap: 1rem;
+  overflow-y: auto;
+  padding: 0.4rem;
+}
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.8rem;
+  border: 4px solid transparent;
+  border-radius: 1.2rem;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.profile svg {
+  width: 6rem;
+  height: 6rem;
+}
+
+.profile--on {
+  border-color: var(--gold);
+  background: rgb(255 210 63 / 22%);
+}
+
+.profile--new {
+  border: 4px dashed rgb(255 255 255 / 35%);
+  background: none;
+  justify-content: center;
+}
+
+.profile__plus {
+  font-size: 4rem;
+  line-height: 6rem;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.stepper strong {
+  min-width: 1.6em;
+  font-size: 2rem;
+  text-align: center;
+  color: var(--gold);
+}
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+
+.avatar-pick {
+  padding: 0.3rem;
+  border: 4px solid transparent;
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 8%);
+  cursor: pointer;
+}
+
+.avatar-pick svg {
+  width: 4.2rem;
+  height: 4.2rem;
+}
+
+.avatar-pick--on {
+  border-color: var(--gold);
+  background: rgb(255 210 63 / 22%);
+}
+
+/* ----------------------------------------------------------------- modal */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(10 4 25 / 70%);
+}
+
+.modal__card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: min(40rem, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  background: var(--panel-strong);
+  text-align: center;
+}
+
+.picker__rings {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.picker__numbers {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+
+.correct-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ------------------------------------------------------------------ draw */
+
+.draw {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+}
+
+.reel {
+  width: min(80%, 14em);
+  overflow: hidden;
+  border: 0.12em solid var(--gold);
+  border-radius: 0.4em;
+  background: var(--panel-strong);
+  font-size: 5rem;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 0 0 0.08em var(--hot);
+  -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+  mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+}
+
+.reel__row {
+  display: grid;
+  place-items: center;
+}
+
+.reel--stopped {
+  color: var(--gold);
+  animation: pop 0.5s ease-out;
+}
+
+@keyframes pop {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+/* ----------------------------------------------------------------- rules */
+
+.rules {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 2rem;
+  align-items: center;
+  min-height: 0;
+}
+
+.rules__list {
+  margin: 0;
+  padding: 1.5rem 1.5rem 1.5rem 3rem;
+  border-radius: 1.5rem;
+  background: var(--panel);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.order {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+}
+
+.order li,
+.scoreboard li {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.3rem 1rem;
+  border-left: 0.5rem solid;
+  border-radius: 0.8rem;
+  background: var(--panel);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.order li span {
+  flex: 1;
+}
+
+/* ------------------------------------------------------------------ play */
+
+.turn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 2.2em;
+  padding: 0.2em 0.8em;
+  border-left: 0.3em solid;
+  border-radius: 0.4em;
+  background: var(--panel);
+  font-size: 2.4rem;
+}
+
+.turn__name {
+  font-weight: 800;
+}
+
+.turn__what {
+  flex: 1;
+  font-size: 0.7em;
+  opacity: 0.85;
+}
+
+.turn__darts {
+  display: flex;
+  gap: 0.3em;
+}
+
+.turn .dart {
+  font-size: 0.8em;
+}
+
+.race {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 1.5rem;
+  min-height: 0;
+}
+
+.race__track {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 0;
+}
+
+.race__board {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+
+.dartboard {
+  width: 100%;
+  height: 100%;
+  max-height: 62vh;
+}
+
+.lane {
+  flex: 1;
+  max-height: 6.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 0.8rem;
+  border-left: 0.6rem solid;
+  border-radius: 0.8rem;
+  background: var(--panel);
+  font-size: 1.5rem;
+}
+
+.lane--active {
+  background: rgb(255 255 255 / 20%);
+  box-shadow: 0 0 0 3px var(--gold);
+}
+
+.lane__who {
+  width: 6.5em;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.lane__who span {
+  font-size: 1.15em;
+  font-weight: 800;
+}
+
+.lane__score {
+  margin-left: auto;
+  font-size: 2.2em;
+  color: var(--gold);
+}
+
+.lane__road {
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  display: flex;
+  margin-right: 2.2em;
+}
+
+/* The steps of the track. */
+.lane__road i {
+  flex: 1;
+  border-left: 2px dashed rgb(255 255 255 / 25%);
+}
+
+.lane__racer {
+  position: absolute;
+  top: 50%;
+  width: 2.6em;
+  height: 2.6em;
+  margin-top: -1.3em;
+  margin-left: -0.3em;
+}
+
+.lane__flag {
+  align-self: stretch;
+  width: 0.9em;
+  margin: 0.3em 0;
+  border-radius: 0.2em;
+  background: repeating-conic-gradient(#fff 0% 25%, #222 0% 50%) 0 0 / 0.9em 0.9em;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.result {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(10 4 25 / 55%);
+  /* The winning dart can still be corrected: leave the controls reachable. */
+  pointer-events: none;
+}
+
+.result__card {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  min-width: min(34rem, 100%);
+  max-height: calc(100% - 5rem);
+  margin-bottom: 4rem;
+  overflow-y: auto;
+  padding: 1.5rem 2rem;
+  border-radius: 1.5rem;
+  background: var(--panel-strong);
+  box-shadow: 0 0 0 4px var(--gold);
+}
+
+.scoreboard {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  list-style: none;
+}
+
+.scoreboard__place {
+  width: 1.6em;
+  opacity: 0.7;
+}
+
+.scoreboard__name {
+  flex: 1;
+}
+
+.scoreboard__earned {
+  color: var(--mint);
+}
+
+/* ---------------------------------------------------------------- podium */
+
+.screen--podium {
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.podium__title {
+  font-size: 3.5rem;
+}
+
+.podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.podium__spot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 2rem;
+}
+
+.podium__block {
+  width: 7.5em;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 0.5em 0.5em 0 0;
+  color: var(--ink);
+  font-size: 1em;
+  font-weight: 800;
+}
+
+.podium__block span {
+  font-size: 2em;
+  line-height: 1;
+}
+
+.podium__block small {
+  font-size: 0.7em;
+}
+
+.podium__spot--1 .podium__block {
+  height: 26vh;
+}
+
+.podium__spot--2 .podium__block {
+  height: 19vh;
+}
+
+.podium__spot--3 .podium__block {
+  height: 13vh;
+}
+
+.podium__rest {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 2rem;
+  list-style: none;
+  font-size: 1.4rem;
+}
+
+.podium__rest li {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.confetti i {
+  position: absolute;
+  top: -5%;
+  width: 0.8rem;
+  height: 1.3rem;
+  border-radius: 0.2rem;
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(115vh) rotate(720deg);
+  }
+}
+
+/* -------------------------------------------------------------- settings */
+
+.settings {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 44rem;
+  width: 100%;
+  margin: 0 auto;
+  overflow-y: auto;
+}
+
+.settings section {
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  background: var(--panel);
+}
+
+.row--left {
+  justify-content: flex-start;
+}
+
+.row--left .chip {
+  flex: none;
+}
+
+.hint--left {
+  margin-top: 0.5rem;
+  text-align: left;
+  font-size: 1rem;
+}
+
+.input--left {
+  flex: 1;
+  width: auto;
+  text-align: left;
+  font-size: 1.2rem;
+}
+
+.sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.slider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.slider span {
+  width: 9em;
+}
+
+.slider input {
+  flex: 1;
+  min-width: 12rem;
+  height: 48px;
+  accent-color: var(--gold);
+}
+
+/* ------------------------------------------------------------- show mode */
+
+/* The window on the TV shows the same screens with nothing to press. */
+[data-role='show'] button,
+[data-role='show'] .controls,
+[data-role='show'] .update {
+  display: none;
+}
+
+[data-role='show'] body {
+  cursor: none;
 }

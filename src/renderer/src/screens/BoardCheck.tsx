@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import type { BoardSnapshot } from '../../core/board/tracker'
-import { boardView, dartLabel, eventLabel } from '../../shared/board'
-import { strings } from '../../shared/strings'
+import type { BoardSnapshot } from '../../../core/board/tracker'
+import { boardView, dartLabel, eventLabel } from '../../../shared/board'
+import { strings } from '../../../shared/strings'
 
 // A plain view of the Autodarts connection: is the board there, which darts
 // are in it, what happened last. The real show replaces this later; until
@@ -33,12 +33,13 @@ function useBoard(): { snapshot: BoardSnapshot; log: string[] } {
   return { snapshot, log }
 }
 
-export function BoardPanel(): React.JSX.Element {
+export function BoardCheck({ onBack }: { onBack: () => void }): React.JSX.Element {
   const { snapshot, log } = useBoard()
   const view = boardView(snapshot)
 
   return (
     <section className="board">
+      <p className="hint">{strings.home.boardCheckHint}</p>
       <p className={`board__status board__status--${view.tone}`} role="status">
         {view.message}
       </p>
@@ -65,6 +66,10 @@ export function BoardPanel(): React.JSX.Element {
         onClick={() => window.dartParty.resetBoard()}
       >
         {strings.board.reset}
+      </button>
+
+      <button type="button" className="button button--quiet" onClick={onBack}>
+        {strings.common.back}
       </button>
 
       <ul className="board__log">

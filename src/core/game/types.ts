@@ -60,7 +60,8 @@ export function rankByScore(players: readonly PlayerId[], score: (p: PlayerId) =
 /**
  * Walks the turns in order for a game where players simply take turns.
  * `onDart` returns true to end the game at once. Darts beyond the allowed
- * number in a turn, and turns beyond the last round, are ignored.
+ * number in a turn, and turns beyond the last round, are ignored. The game
+ * is over as soon as the last dart of the last turn is thrown.
  */
 export function playTurns(
   rules: Pick<GameRules, 'dartsPerTurn' | 'maxRounds'>,
@@ -77,7 +78,9 @@ export function playTurns(
     for (let d = 0; d < darts.length; d++) {
       if (onDart(darts[d]!.dart, thrower, index, d) === true) return { finished: true, current: null }
     }
-    if (!turn.done) {
+    // The last turn of the game needs no takeout to count as over.
+    const lastDart = index === maxTurns - 1 && darts.length >= rules.dartsPerTurn
+    if (!turn.done && !lastDart) {
       return {
         finished: false,
         current: {

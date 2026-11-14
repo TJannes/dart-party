@@ -25,6 +25,17 @@ const api: DartPartyApi = {
   getEvening: () => ipcRenderer.invoke(ipc.getEvening),
   onEvening: (listener) => subscribe(ipc.evening, listener),
   eveningCommand: (command) => ipcRenderer.send(ipc.eveningCommand, command),
+
+  getPlayers: () => ipcRenderer.invoke(ipc.getPlayers),
+  savePlayers: (players) => ipcRenderer.invoke(ipc.savePlayers, players),
+
+  getSettings: () => ipcRenderer.invoke(ipc.getSettings),
+  onSettings: (listener) => subscribe(ipc.settings, listener),
+  updateSettings: (change) => ipcRenderer.send(ipc.updateSettings, change),
+
+  getScreens: () => ipcRenderer.invoke(ipc.getScreens),
+  onScreens: (listener) => subscribe(ipc.screens, listener),
+  toggleScreens: () => ipcRenderer.send(ipc.toggleScreens),
 }
 
 contextBridge.exposeInMainWorld('dartParty', api)

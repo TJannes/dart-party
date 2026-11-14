@@ -6,8 +6,6 @@ import type { BoardTracker } from '../../core/board/tracker'
 // Safety: the only request here that changes anything is POST /api/reset.
 // GET /api/config returns the board's cloud credentials and is never called.
 
-export const DEFAULT_ADDRESS = 'localhost:3180'
-
 const RETRY_MS = 2000
 const POLL_MS = 2000
 const REQUEST_TIMEOUT_MS = 3000
@@ -20,7 +18,7 @@ export class AutodartsClient {
 
   constructor(
     private readonly tracker: BoardTracker,
-    private readonly address: string = DEFAULT_ADDRESS,
+    private readonly address: string,
   ) {}
 
   start(): void {

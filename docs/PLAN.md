@@ -1,10 +1,11 @@
 # Dart Party: plan and decisions
 
-Status: step 1 is built and releases 0.1.0 and 0.1.1 are published. Updating
-from 0.1.0 to 0.1.1 inside the app works on Ubuntu; the owner still has to
-install on the Surface and do the same on Windows. Step 2 is built. Step 3 is
-in progress: its checklist under [Build steps](#build-steps) says what is
-done and what comes next.
+Status: steps 1 and 2 are built and released (0.1.1). Updating from 0.1.0 to
+0.1.1 inside the app works on Ubuntu; the owner still has to install on the
+Surface and do the same on Windows. Step 3 is built but has only been played
+through by hand on Ubuntu with one display: not with real darts, not with a
+real second screen, not on Windows, and nobody has listened to the sound yet.
+The next thing to build is step 4. See [Build steps](#build-steps).
 
 ## Goal
 
@@ -43,6 +44,10 @@ All of these were agreed with the owner. Do not reopen them unprompted.
 - The app detects which applies and offers one button to switch.
 - Design the show for reading from the throwing line, about 3 metres.
 - Phones as remote controls: not now.
+- For now the main window is the complete app (scene plus controls) in both
+  layouts, and the show window is the same screens without anything to
+  press. A leaner control-only panel for the Surface can come later.
+- The show goes to the display that is not the Surface's built-in one.
 
 ### Technology
 
@@ -102,8 +107,7 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   but not reported as thrown.
 - The bull is assumed to be number 25 (multiplier 2 for the bull, 1 for the
   outer bull), as in the prototype. Still to be confirmed on a real board.
-- The Autodarts address is fixed at `localhost:3180` for now. Making it a
-  setting comes with step 3, when settings are first saved.
+- The Autodarts address is a setting (default `localhost:3180`).
 - "Unofficial, not affiliated with Autodarts" in the README and in the app.
   Their name and logo appear nowhere in the app name or icon.
 
@@ -145,6 +149,8 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   turn does not pass it.
 - After the last dart of a game the result stays on screen until someone
   continues, so the deciding dart can still be corrected.
+- A game with a round limit ends on the last dart of the last turn; it does
+  not wait for those darts to be pulled.
 - The control panel always offers: correct a dart, add a miss, move on by hand,
   reset the board.
 - Every mini-game has a maximum number of rounds.
@@ -164,6 +170,13 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   background music per scene. No spoken caller. Volume control on the control
   panel.
 - Only freely usable sounds (CC0), because the repo is public.
+- For now every sound is synthesised by the app itself (Web Audio), so the
+  first theme pack contains no recordings at all. Effects: hit, big hit,
+  thud, miss, pushed back, win, the reel ticking and stopping, the podium
+  fanfare. Music: a simple generated loop per scene (menu, game, podium).
+  The owner has not yet judged whether this is good enough or whether CC0
+  recordings should replace it.
+- Sound plays in one window only: the show window when there is one.
 
 ## Mini-games
 
@@ -259,7 +272,7 @@ detection.
   the darts of the turn, a reset button, a short log) until the real show
   replaces it. Checked live only against an Autodarts without cameras; not
   yet with real darts, and not on Windows.*
-- [ ] **3. First playable evening.** Players with avatars, starting an
+- [x] **3. First playable evening.** Players with avatars, starting an
   evening, the draw, Race, standings between games, the podium, saving and
   resuming, both screen layouts, the first theme pack with sound.
   - [x] Rules core in `src/core/`: Race, the evening (draw, throwing order,
@@ -268,13 +281,18 @@ detection.
     commands from the windows, saves it after every dart, resumes it, and
     writes the result to the history. Tested without Electron
     (`src/core/evening/session.ts`); no screen uses it yet.
-  - [ ] Player profiles and the avatar set.
-  - [ ] Screens: players and start, the draw, rules card, the Race scene,
-    standings, podium; the control panel (correct a dart, add a miss, next
-    player, reset, volume).
-  - [ ] Show and control windows, one or two displays, the switch button.
-  - [ ] Theme pack with CC0 sounds and music.
-  - [ ] Settings: Autodarts address, mini-games on or off.
+  - [x] Player profiles and the avatar set (twenty animals, drawn from parts
+    in `components/Avatar.tsx`, with idle, cheer and sulk moods).
+  - [x] Screens: players and start, the draw, rules card, the Race scene,
+    standings, deciding round, podium, and the controls (miss, add, undo and
+    correct a dart, next player, reset, volume, stop the evening).
+  - [x] Show and control windows. With a second display the show opens on it
+    full screen with nothing to press; the main window keeps the controls.
+    The switch is under Settings. `DART_PARTY_FORCE_SHOW=1` opens the show
+    window on a machine with one display, for testing.
+  - [x] Theme pack (`src/renderer/src/theme/`): colours, player colours,
+    sound effects and music.
+  - [x] Settings: mini-games on or off, volume, screens, Autodarts address.
 - [ ] **4. The other four specified games**, in this order: Robin Hood,
   Spotlight, Piggy Bank, Land Grab.
 - [ ] **5. The five later games**, in this order: Sniper, Minefield, Last One
