@@ -1,6 +1,6 @@
 # Dart Party: plan and decisions
 
-Status: steps 1 and 2 are built and released (0.1.1). Updating from 0.1.0 to
+Status: steps 1 to 3 are built and released (0.2.0). Updating from 0.1.0 to
 0.1.1 inside the app works on Ubuntu; the owner still has to install on the
 Surface and do the same on Windows. Step 3 is built but has only been played
 through by hand on Ubuntu with one display: not with real darts, not with a
