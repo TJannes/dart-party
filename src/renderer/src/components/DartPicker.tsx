@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { DartInput } from '../../../core/evening/session'
 import { strings } from '../../../shared/strings'
+import { Board } from './Board'
 import { Modal } from './Modal'
 
 const s = strings.controls
@@ -11,8 +12,27 @@ export function DartPicker(props: {
   onClose: () => void
   /** Robin Hood only cares how far from the centre the dart is. */
   zones?: boolean
+  /** Sniper only cares where the dart is: point at it. */
+  cross?: { x: number; y: number }
 }): React.JSX.Element {
   const [multiplier, setMultiplier] = useState<1 | 2 | 3>(1)
+  if (props.cross) {
+    return (
+      <Modal title={strings.games.sniper.tap} onClose={props.onClose}>
+        <div className="picker__board">
+          <Board cross={props.cross} onTap={(x, y) => props.onPick({ position: { x, y } })} />
+        </div>
+        <div className="row">
+          <button type="button" className="button button--miss" onClick={() => props.onPick({ miss: true })}>
+            {s.miss}
+          </button>
+          <button type="button" className="button button--quiet" onClick={props.onClose}>
+            {strings.common.cancel}
+          </button>
+        </div>
+      </Modal>
+    )
+  }
   if (props.zones) {
     const zones = strings.games.robinHood.zones
     const choices: [string, DartInput][] = [

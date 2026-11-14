@@ -11,7 +11,8 @@ import { gameName } from './Draw'
 export function Rules({ evening }: { evening: Evening }): React.JSX.Element {
   const record = evening.games.at(-1)!
   const rules = (strings.games as Record<string, { rules: readonly string[] }>)[record.gameId]?.rules ?? []
-  const segments = record.gameId === 'race' ? (record.setup as RaceSetup).segments : null
+  // Games that deal segments to players show them with the throwing order.
+  const segments = (record.setup as Partial<RaceSetup> | null)?.segments ?? null
 
   return (
     <EveningFrame evening={evening} title={gameName(record.gameId)}>

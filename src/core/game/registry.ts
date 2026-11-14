@@ -1,9 +1,15 @@
 import { decider } from './decider'
+import { higherOrLower } from './higherOrLower'
 import { landGrab } from './landGrab'
+import { lastOneStanding } from './lastOneStanding'
+import { minefield } from './minefield'
 import { piggyBank } from './piggyBank'
 import { race } from './race'
+import { raiseTheBar } from './raiseTheBar'
 import { robinHood } from './robinHood'
+import { sniper } from './sniper'
 import { spotlight } from './spotlight'
+import { timeBomb } from './timeBomb'
 import type { GameRules } from './types'
 
 /** The mini-games that can be drawn in an evening, in menu order. */
@@ -13,6 +19,12 @@ export const drawableGames: readonly GameRules<any, any>[] = [
   spotlight,
   piggyBank,
   landGrab,
+  sniper,
+  minefield,
+  lastOneStanding,
+  higherOrLower,
+  timeBomb,
+  raiseTheBar,
 ]
 
 const all: readonly GameRules<any, any>[] = [...drawableGames, decider]

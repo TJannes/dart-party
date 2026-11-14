@@ -1,12 +1,12 @@
 # Dart Party: plan and decisions
 
-Status: steps 1 to 3 are built and released (0.2.0). Step 4 is built but not
-yet released. Updating from 0.1.0 to 0.1.1 inside the app works on Ubuntu;
-the owner still has to install on the Surface and do the same on Windows.
-Everything from step 3 on has only been played through by hand on Ubuntu with
-one display: not with real darts, not with a real second screen, not on
-Windows, and nobody has listened to the sound yet. The next thing to build is
-step 5, whose rules must first be agreed with the owner. See
+Status: steps 1 to 3 are built and released (0.2.0). Steps 4 and 5 are built
+but not yet released: eleven mini-games are in the draw. Updating from 0.1.0 to
+0.1.1 inside the app works on Ubuntu; the owner still has to install on the
+Surface and do the same on Windows. Everything from step 3 on has only been
+played through by hand on Ubuntu with one display: not with real darts, not
+with a real second screen, not on Windows, and nobody has listened to the
+sound yet. The next thing to build is step 6 (free play). See
 [Build steps](#build-steps).
 
 ## Goal
@@ -146,6 +146,9 @@ All of these were agreed with the owner. Do not reopen them unprompted.
 ### A turn
 
 - Three darts unless a game says otherwise.
+- A rule can end a turn before the darts are pulled (a bomb passed on, a
+  player knocked out). The next dart then counts for the next player; pulling
+  the old darts first does not skip anyone.
 - The turn passes automatically when Autodarts reports the darts removed,
   also after fewer than three darts. A takeout with no dart thrown in the
   turn does not pass it.
@@ -243,19 +246,88 @@ top: 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5.
   Damage does not heal, also not when the owner fortifies.
 - 6 rounds. Most segments wins; on a tie, most fortified segments.
 
-### Later, rules still to be agreed
+### Sniper
 
-Put the detailed rules to the owner when each is about to be built.
+- Each round a cross appears on the board, the same for every player. It can
+  be anywhere inside the double ring, also on a wire.
+- Three darts each; only your closest dart counts, by its exact position.
+- When everyone has thrown, the closest player gets 3 points, the second 2,
+  the third 1. Players level to the millimetre share the place.
+- A dart Autodarts could not place does not count. A dart in the surround
+  does, by its distance. A player without a placed dart gets nothing.
+- 5 rounds, highest total wins.
+- A dart entered by hand is entered by tapping the board on screen.
 
-- **Sniper**: a cross appears somewhere on the board; closest dart wins the
-  round. Uses the exact dart position.
-- **Minefield**: hidden treasures and bombs under the segments, revealed when
-  hit.
-- **Last One Standing**: everyone has lives and a segment; hit someone's
-  segment to take a life. Players are eliminated.
-- **Higher or Lower**: throw higher than the previous dart or lose a life.
-- **Time Bomb**: a bomb ticks down; hit the target to pass it on. Needs a
-  design that copes with players walking to the board in turn.
+### Minefield
+
+- Under the 20 segments lie 3 chests (5 points), 5 coins (2 points), 4 bombs
+  and 8 empty spots, shuffled each game.
+- The first dart on a segment reveals it and gets what is there. After that
+  the segment is empty and safe. The ring does not matter; the bull does
+  nothing.
+- A bomb costs half your points, rounded down like the piggy bank.
+- How much is still hidden is shown, but not where.
+- 6 rounds, or until every treasure is found. Highest total wins.
+
+The numbers of chests, coins and bombs, their values, the five rounds of
+Sniper and the early end of Minefield were filled in while building; the
+owner chose the scoring, where the cross can be, what a bomb does and what
+happens after a reveal.
+
+### Last One Standing
+
+- Everyone has 3 lives and one segment of their own, dealt at random.
+- Hit someone's segment: they lose a life. A double takes 2, a triple 3.
+- Your own segment costs you lives in the same way.
+- A player without lives is out and is skipped. Their segment does nothing
+  from then on. A player who knocks themselves out is done at once.
+- The last player standing wins; the others are ranked by when they went
+  out. After 10 rounds the survivors are ranked by lives.
+
+### Higher or Lower
+
+- Before every dart the game calls "higher" or "lower". The dart must be
+  worth more, or less, than the dart before it, whoever threw that.
+- The first dart of the game is free: any dart on the board sets the value.
+- Wrong, equal, or off the board: lose a life. A dart on the board always
+  becomes the new value, right or wrong; a miss leaves it.
+- The call is a coin flip, except that from 30 up it is always "lower" and
+  up to 5 always "higher", so it is never (nearly) impossible.
+- 3 lives, three darts a turn, knockout as in Last One Standing, 10 rounds.
+
+### Time Bomb
+
+- A bomb with a hidden fuse goes round. The fuse is counted in darts (4 to
+  10), not seconds, so walking to the board costs nothing.
+- At the board you hold the bomb. Hit the target zone (a segment and its two
+  neighbours, new every turn, any ring) and your turn ends safely.
+- Every other dart burns the fuse. The dart that burns the last of it sets
+  the bomb off: the thrower loses a life and their turn ends. A new bomb
+  with a new fuse starts with the next player.
+- How much fuse has burned is shown; how much is left is not.
+- 3 lives, knockout as in Last One Standing, 10 rounds.
+
+### Raise the Bar
+
+The owner's own idea: do better than the player before you.
+
+- An opener throws three darts; the total is the bar.
+- The next player must throw strictly more. Over it: they hold the bar, at
+  their total, and the pot grows by 1. The pot starts at 1.
+- Not over it: the holder wins the pot. The failed attempt is void, and the
+  next opener sets a fresh bar.
+- Everyone opens equally often, in throwing order: three times each with 2
+  players, twice with 3 or 4, once with 5 to 8. The game ends when the last
+  bar falls. Most points wins.
+- An attempt is settled by its third dart, without waiting for the takeout.
+- Filled in while building: the number of openings per player count, and
+  that the first challenger is the player after the opener.
+
+The owner chose: your own segment costs lives, doubles and triples count,
+the game calls higher or lower, and the fuse counts in darts. Filled in while
+building and not yet confirmed: the 10-round limits, the free first dart and
+the 30 and 5 limits of Higher or Lower, the three-segment target zone and the
+fuse length of Time Bomb, and that hitting the target does not burn fuse.
 
 Some names and themes may still change.
 
@@ -309,8 +381,13 @@ detection.
   *Rules in `src/core/game/`, one case each in
   `src/renderer/src/scenes/GameScene.tsx`. Each was played for a few darts by
   hand on Ubuntu; none to the end, none with real darts.*
-- [ ] **5. The five later games**, in this order: Sniper, Minefield, Last One
+- [x] **5. The five later games**, in this order: Sniper, Minefield, Last One
   Standing, Higher or Lower, Time Bomb. Agree the rules first.
+  - [x] Sniper and Minefield. Played for a few darts by hand on Ubuntu.
+  - [x] Raise the Bar, added on the owner's idea. Played a few turns by hand.
+  - [x] Last One Standing, Higher or Lower, Time Bomb. Knockout games:
+    `playKnockout` in `src/core/game/types.ts` skips players who are out.
+    Played for a few darts by hand on Ubuntu.
 - [ ] **6. Free play**: X01 and Around the Clock.
 - [ ] **Later**: seasonal and holiday theme packs, hall of fame, teams,
   players joining or leaving mid-evening, phones as remotes, starting

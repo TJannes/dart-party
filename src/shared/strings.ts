@@ -132,6 +132,76 @@ export const strings = {
       ],
       fortified: (count: number) => `${count} fortified`,
     },
+    sniper: {
+      name: 'Sniper',
+      rules: [
+        'Each round a cross appears somewhere on the board.',
+        'Three darts each. Only your closest dart counts.',
+        'Closest to the cross: 3 points. Second: 2. Third: 1.',
+        'Five rounds. The highest total wins.',
+      ],
+      mm: (mm: number) => `${mm} mm`,
+      noDart: 'No dart yet',
+      tap: 'Tap where the dart is',
+    },
+    minefield: {
+      name: 'Minefield',
+      rules: [
+        'Treasures and bombs are hidden under the segments.',
+        'The first to hit a segment gets what is under it: a chest is 5, a coin 2.',
+        'A bomb costs you half your points.',
+        'Six rounds, or until every treasure is found.',
+      ],
+      left: (chests: number, coins: number, bombs: number) =>
+        `Still hidden: ${chests} chests, ${coins} coins, ${bombs} bombs`,
+    },
+    lastOneStanding: {
+      name: 'Last One Standing',
+      rules: [
+        'Everyone has 3 lives and one segment.',
+        'Hit someone\'s segment: they lose a life. Double 2, triple 3.',
+        'Careful: your own segment costs you lives too.',
+        'Out of lives is out. The last one standing wins.',
+      ],
+    },
+    higherOrLower: {
+      name: 'Higher or Lower',
+      rules: [
+        'Before every dart the game calls higher or lower.',
+        'Your dart must be worth more, or less, than the dart before it.',
+        'Wrong, the same, or off the board: you lose a life.',
+        '3 lives. The last one standing wins.',
+      ],
+      higher: (bar: number) => `Higher than ${bar}!`,
+      lower: (bar: number) => `Lower than ${bar}!`,
+      free: 'Anything on the board',
+    },
+    timeBomb: {
+      name: 'Time Bomb',
+      rules: [
+        'The bomb has a hidden fuse. At the board, you are holding it.',
+        'Hit the target zone and you are safe: your turn is over.',
+        'Every other dart burns the fuse. If it goes off, you lose a life.',
+        '3 lives. The last one standing wins.',
+      ],
+      target: (segments: number[]) => `Hit ${segments.join(', ')} to get rid of the bomb`,
+      burned: (darts: number) => `Fuse burned: ${darts}`,
+    },
+    raiseTheBar: {
+      name: 'Raise the Bar',
+      rules: [
+        'The opener throws three darts. That total is the bar.',
+        'The next player must throw more. Over it? You hold the bar, and the pot grows.',
+        'Not over it? The holder wins the pot, and the next opener sets a new bar.',
+        'Everyone opens equally often. The most points wins.',
+      ],
+      open: 'Set the bar!',
+      beat: (bar: number, needed: number) => `Beat ${bar}: ${needed} to go`,
+      over: (total: number) => `Over the bar! Now ${total}`,
+      holds: (bar: number) => `Holds the bar at ${bar}`,
+      pot: (pot: number) => `Pot: ${pot}`,
+      opening: (opening: number, openings: number) => `Bar ${opening} of ${openings}`,
+    },
     decider: {
       name: 'Deciding round',
       rules: ['Three darts each.', 'The highest score wins the evening.'],
@@ -146,6 +216,7 @@ export const strings = {
     startGame: 'Let\'s play',
     toThrow: 'to throw',
     pullDarts: 'Pull your darts',
+    afterPull: 'is next, once the darts are pulled',
     finish: 'Finish',
     result: (game: string) => `${game}: result`,
     standings: 'Standings',
@@ -158,6 +229,7 @@ export const strings = {
     stopYes: 'Stop the evening',
     stopNo: 'Keep playing',
     place: (place: number) => `${place}.`,
+    out: 'Out',
   },
 
   controls: {

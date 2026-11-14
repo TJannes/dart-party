@@ -50,3 +50,12 @@ export function manualDart(number: number, multiplier: 1 | 2 | 3, inner = false)
           : 'SingleOuter'
   return { name, number, multiplier, bed, miss: false, position: null }
 }
+
+/**
+ * A dart entered by pointing at the board on screen, for games that only
+ * care where it is. It has a position but no segment.
+ */
+export function placedDart(x: number, y: number): Dart {
+  const onBoard = Math.hypot(x, y) <= 1
+  return { name: 'Placed', number: null, multiplier: 0, bed: 'Placed', miss: !onBoard, position: { x, y } }
+}

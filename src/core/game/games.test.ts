@@ -1,15 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { manualDart, manualMiss, neighbour } from '../board/ring'
+import { manualDart, manualMiss, neighbour, placedDart, RING } from '../board/ring'
 import type { Dart } from '../board/state'
 import { seededRandom } from '../random'
 import { landGrab } from './landGrab'
+import { minefield, MINEFIELD_CONTENTS, type Hidden } from './minefield'
 import { piggyBank } from './piggyBank'
 import { drawableGames } from './registry'
+import { openingsEach, raiseTheBar } from './raiseTheBar'
 import { archeryPoints, robinHood } from './robinHood'
+import { sniper } from './sniper'
 import { spotlight, spotlightWorth } from './spotlight'
 import type { Turn } from './types'
 
 const players = ['ann', 'bob']
+const KNOCKOUT = ['lastOneStanding', 'higherOrLower', 'timeBomb', 'raiseTheBar']
 const turn = (...darts: Dart[]): Turn => ({
   darts: darts.map((dart) => ({ dart, by: 'board' })),
   done: true,
@@ -34,15 +38,20 @@ describe('every drawable game', () => {
     for (const rules of drawableGames) {
       const setup = rules.setup(players, seededRandom(1))
       const start = rules.evaluate(setup, players, [])
-      expect(start.current, rules.id).toEqual({ player: 'ann', round: 1, dartsLeft: rules.dartsPerTurn })
+      expect(start.current, rules.id).toEqual({ player: 'ann', round: 1, dartsLeft: rules.dartsPerTurn, turn: 0 })
       expect(start.finished, rules.id).toBe(false)
 
       const all = Array.from({ length: rules.maxRounds * players.length }, () => turn(miss))
       const end = rules.evaluate(setup, players, all)
       expect(end.finished, rules.id).toBe(true)
       expect(end.ranking.flat().sort(), rules.id).toEqual(['ann', 'bob'])
-      expect(end.feedback, rules.id).toHaveLength(all.length)
-      expect(rules.evaluate(setup, players, all.slice(0, -1)).finished, rules.id).toBe(false)
+      expect(end.throwers.length, rules.id).toBeLessThanOrEqual(all.length)
+      expect(end.feedback, rules.id).toHaveLength(end.throwers.length)
+      // Some games can be over before the last round when nobody scores.
+      if (!KNOCKOUT.includes(rules.id)) {
+        expect(end.throwers, rules.id).toHaveLength(all.length)
+        expect(rules.evaluate(setup, players, all.slice(0, -1)).finished, rules.id).toBe(false)
+      }
     }
   })
 
@@ -203,5 +212,173 @@ describe('Land Grab', () => {
     expect(level.ranking).toEqual([['bob'], ['ann']])
     const tied = play(turn(S(1)), turn(S(4)))
     expect(tied.ranking).toEqual([['ann', 'bob']])
+  })
+})
+
+describe('Sniper', () => {
+  // The cross dead centre in round one, at the top of the board in round two.
+  const setup = { targets: [{ x: 0, y: 0 }, { x: 0, y: 0.5 }, { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }] }
+  const three = ['ann', 'bob', 'cy']
+  const at = (x: number, y: number) => placedDart(x, y)
+  const play = (...turns: Turn[]) => sniper.evaluate(setup, three, turns)
+
+  it('puts every cross inside the double ring', () => {
+    for (let seed = 0; seed < 100; seed++) {
+      const { targets } = sniper.setup(three, seededRandom(seed))
+      expect(targets).toHaveLength(5)
+      for (const t of targets) expect(Math.hypot(t.x, t.y)).toBeLessThanOrEqual(0.95)
+    }
+  })
+
+  it('counts only your closest dart, in millimetres from the cross', () => {
+    const { view } = play({ darts: [at(0.5, 0), at(0.1, 0), at(0.3, 0)].map((dart) => ({ dart, by: 'board' })), done: false })
+    expect(view.closest['ann']!.mm).toBeCloseTo(17)
+    expect(view.closest['ann']!.at).toEqual({ x: 0.1, y: 0 })
+  })
+
+  it('pays 3, 2 and 1 once everyone has thrown, not before', () => {
+    const early = play(turn(at(0.1, 0)), turn(at(0.2, 0)))
+    expect(early.view.scores).toEqual({ ann: 0, bob: 0, cy: 0 })
+    const done = play(turn(at(0.2, 0)), turn(at(0.1, 0)), turn(at(0.3, 0)))
+    expect(done.view.scores).toEqual({ ann: 2, bob: 3, cy: 1 })
+    expect(done.view.target).toEqual({ x: 0, y: 0.5 })
+    expect(done.view.closest).toEqual({})
+  })
+
+  it('gives nothing to a player without a placed dart', () => {
+    const state = play(turn(miss, manualDart(20, 3)), turn(at(0.9, 0)), turn(at(0.1, 0)))
+    expect(state.view.scores).toEqual({ ann: 0, bob: 2, cy: 3 })
+    expect(state.feedback.slice(0, 2)).toEqual(['bad', 'bad'])
+  })
+
+  it('counts a dart in the surround by its distance too', () => {
+    const state = play(turn(at(1.1, 0)), turn(miss), turn(miss))
+    expect(state.view.scores['ann']).toBe(3)
+  })
+
+  it('lets players level to the millimetre share the place', () => {
+    const state = play(turn(at(0.1, 0)), turn(at(0, 0.1)), turn(at(0.5, 0)))
+    expect(state.view.scores).toEqual({ ann: 3, bob: 3, cy: 1 })
+  })
+
+  it('tells who took the lead', () => {
+    const state = play(turn(at(0.3, 0), at(0.2, 0), at(0.4, 0)), turn(at(0.25, 0), at(0.1, 0)))
+    expect(state.feedback).toEqual(['great', 'great', 'neutral', 'good', 'great'])
+  })
+
+  it('uses the cross of the round the turn is in', () => {
+    const state = play(turn(miss), turn(miss), turn(miss), turn(at(0, 0.5)), turn(at(0, 0)), turn(at(0, 0.4)))
+    expect(state.view.scores).toEqual({ ann: 3, bob: 1, cy: 2 })
+  })
+})
+
+describe('Minefield', () => {
+  const under: Record<number, Hidden> = {}
+  RING.forEach((segment) => (under[segment] = 'empty'))
+  Object.assign(under, { 20: 'chest', 1: 'coin', 18: 'bomb', 4: 'coin' })
+  const setup = { under }
+  const play = (...turns: Turn[]) => minefield.evaluate(setup, players, turns)
+
+  it('hides three chests, five coins and four bombs under the twenty segments', () => {
+    for (let seed = 0; seed < 30; seed++) {
+      const kinds = Object.values(minefield.setup(players, seededRandom(seed)).under)
+      expect(kinds).toHaveLength(20)
+      for (const kind of Object.keys(MINEFIELD_CONTENTS) as Hidden[]) {
+        expect(kinds.filter((k) => k === kind)).toHaveLength(MINEFIELD_CONTENTS[kind])
+      }
+    }
+  })
+
+  it('gives a treasure to the first who hits it, whatever the ring', () => {
+    const state = play(turn(T(20), S(1)), turn(S(20), D(4)))
+    expect(state.view.scores).toEqual({ ann: 7, bob: 2 })
+    expect(state.view.revealed).toEqual({ 20: 'chest', 1: 'coin', 4: 'coin' })
+    expect(state.feedback).toEqual(['great', 'good', 'neutral', 'good'])
+  })
+
+  it('halves your points on a bomb, once', () => {
+    const state = play(turn(S(20), S(1), S(18)), turn(S(18)))
+    // 7 points, 3 lost.
+    expect(state.view.scores).toEqual({ ann: 4, bob: 0 })
+    expect(state.view.left).toMatchObject({ bomb: 0, chest: 0, coin: 1 })
+  })
+
+  it('reveals an empty segment and ignores the bull', () => {
+    const state = play(turn(S(5), manualDart(25, 2), miss))
+    expect(state.view.revealed).toEqual({ 5: 'empty' })
+    expect(state.feedback).toEqual(['neutral', 'neutral', 'bad'])
+  })
+
+  it('ends at once when the last treasure is found', () => {
+    const small: Record<number, Hidden> = {}
+    RING.forEach((segment) => (small[segment] = 'bomb'))
+    Object.assign(small, { 20: 'chest', 1: 'coin' })
+    const state = minefield.evaluate({ under: small }, players, [turn(S(20)), turn(S(1), S(5))])
+    expect(state.finished).toBe(true)
+    expect(state.view.scores).toEqual({ ann: 5, bob: 2 })
+  })
+})
+
+describe('Raise the Bar', () => {
+  const three = ['ann', 'bob', 'cy']
+  const play = (...turns: Turn[]) => raiseTheBar.evaluate(null, three, turns)
+  const open = (...darts: Dart[]): Turn => ({ ...turn(...darts), done: false })
+
+  it('lets everyone open equally often, more often with few players', () => {
+    expect([2, 3, 4, 5, 8].map(openingsEach)).toEqual([3, 2, 2, 1, 1])
+    expect(play().view).toMatchObject({ opening: 1, openings: 6, holder: null, bar: null, pot: 1 })
+  })
+
+  it('makes the opener\'s total the bar', () => {
+    const state = play(turn(S(20), S(5), S(1)))
+    expect(state.view).toMatchObject({ holder: 'ann', bar: 26, pot: 1 })
+    expect(state.current).toMatchObject({ player: 'bob', dartsLeft: 3, turn: 1 })
+  })
+
+  it('hands over the bar and grows the pot when you throw more', () => {
+    const state = play(turn(S(20)), turn(T(20)), open(S(1)))
+    expect(state.view).toMatchObject({ holder: 'bob', bar: 60, pot: 2, thrown: 1 })
+    expect(state.view.scores).toEqual({ ann: 0, bob: 0, cy: 0 })
+    expect(state.current).toMatchObject({ player: 'cy', dartsLeft: 2 })
+  })
+
+  it('gives the pot to the holder when the next player fails, also on an equal total', () => {
+    const state = play(turn(S(20)), turn(T(20)), turn(S(20), S(20), S(20)))
+    expect(state.view.scores).toEqual({ ann: 0, bob: 2, cy: 0 })
+    // The failed attempt is void: the second opener sets a fresh bar.
+    expect(state.view).toMatchObject({ holder: null, bar: null, pot: 1, opening: 2 })
+    expect(state.current).toMatchObject({ player: 'bob', round: 2 })
+  })
+
+  it('settles an attempt on its third dart, without waiting for the takeout', () => {
+    const state = play(turn(S(20)), open(S(1), S(1), S(1)))
+    expect(state.view.scores['ann']).toBe(1)
+    expect(state.current).toMatchObject({ player: 'bob', turn: 2 })
+  })
+
+  it('does not settle an attempt that is still being thrown', () => {
+    const state = play(turn(S(20)), open(S(1), S(1)))
+    expect(state.view).toMatchObject({ holder: 'ann', thrown: 2 })
+    expect(state.current).toMatchObject({ player: 'bob', dartsLeft: 1, turn: 1 })
+  })
+
+  it('lets the openers take turns: ann, bob, cy, ann, ...', () => {
+    const fail = [turn(S(20)), turn(miss)]
+    const openers = [0, 1, 2, 3].map((n) => play(...Array(n).fill(fail).flat()).current!.player)
+    expect(openers).toEqual(['ann', 'bob', 'cy', 'ann'])
+  })
+
+  it('is over after the last opening, the most points first', () => {
+    // Every opener throws 20, every challenger misses: six openings.
+    const turns = Array(6).fill([turn(S(20)), turn(miss)]).flat()
+    const state = play(...turns)
+    expect(state.finished).toBe(true)
+    expect(state.view.scores).toEqual({ ann: 2, bob: 2, cy: 2 })
+    expect(play(...turns.slice(0, -1)).finished).toBe(false)
+  })
+
+  it('tells when a dart takes you over the bar, and when the attempt failed', () => {
+    expect(play(turn(S(20)), open(S(10), S(11))).feedback).toEqual(['good', 'good', 'great'])
+    expect(play(turn(S(20)), turn(S(10), S(5), S(5))).feedback.at(-1)).toBe('bad')
   })
 })

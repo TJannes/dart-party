@@ -32,12 +32,23 @@ export interface GameState<View> {
   /** Everything the scene needs to draw this game. */
   view: View
   finished: boolean
-  /** Who is at the board. Null once the game is finished. */
-  current: { player: PlayerId; round: number; dartsLeft: number } | null
+  /**
+   * Who is at the board, and which turn (an index into the list of turns)
+   * their next dart belongs to. Null once the game is finished.
+   */
+  current: { player: PlayerId; round: number; dartsLeft: number; turn: number } | null
   /** Final when finished, provisional before. */
   ranking: Ranking
   /** One entry per dart that counted, in throwing order. */
   feedback: DartFeedback[]
+  /** Who threw each turn played so far, in order. */
+  throwers: PlayerId[]
+}
+
+/** What the header calls a round, when a game has its own word for it. */
+export interface WithOpenings {
+  opening: number
+  openings: number
 }
 
 /**
@@ -50,9 +61,12 @@ export interface GameRules<Setup = unknown, View = unknown> {
   maxRounds: number
   /** Whatever is decided by chance before the first dart. */
   setup(players: readonly PlayerId[], random: Random): Setup
-  /** `players` is the throwing order. Turn i belongs to player i mod n. */
+  /** `players` is the throwing order. */
   evaluate(setup: Setup, players: readonly PlayerId[], turns: readonly Turn[]): GameState<View>
 }
+
+/** How far a game has got: everything in its state but the view and the ranking. */
+export type Progress = Pick<GameState<unknown>, 'finished' | 'current' | 'feedback' | 'throwers'>
 
 /** Groups players by a score, highest first; equal scores tie. */
 export function rankByScore(players: readonly PlayerId[], score: (p: PlayerId) => number): Ranking {
@@ -83,13 +97,15 @@ export function playTurns(
     turnIndex: number,
     dartIndex: number,
   ) => DartFeedback | { feedback: DartFeedback; finish: true },
-): Pick<GameState<unknown>, 'finished' | 'current' | 'feedback'> {
+): Progress {
   const maxTurns = rules.maxRounds * players.length
   const feedback: DartFeedback[] = []
+  const throwers: PlayerId[] = []
   let index = 0
   for (; index < turns.length && index < maxTurns; index++) {
     const turn = turns[index]!
     const thrower = players[index % players.length]!
+    throwers.push(thrower)
     const darts = turn.darts.slice(0, rules.dartsPerTurn)
     for (let d = 0; d < darts.length; d++) {
       const result = onDart(darts[d]!.dart, thrower, index, d)
@@ -97,7 +113,7 @@ export function playTurns(
         feedback.push(result)
       } else {
         feedback.push(result.feedback)
-        return { finished: true, current: null, feedback }
+        return { finished: true, current: null, feedback, throwers }
       }
     }
     // The last turn of the game needs no takeout to count as over.
@@ -109,19 +125,104 @@ export function playTurns(
           player: thrower,
           round: Math.floor(index / players.length) + 1,
           dartsLeft: rules.dartsPerTurn - darts.length,
+          turn: index,
         },
         feedback,
+        throwers,
       }
     }
   }
-  if (index >= maxTurns) return { finished: true, current: null, feedback }
+  if (index >= maxTurns) return { finished: true, current: null, feedback, throwers }
   return {
     finished: false,
     current: {
       player: players[index % players.length]!,
       round: Math.floor(index / players.length) + 1,
       dartsLeft: rules.dartsPerTurn,
+      turn: index,
     },
     feedback,
+    throwers,
   }
+}
+
+/**
+ * Walks the turns of a game in which players drop out. Players still take
+ * turns in order, but anyone who is out is skipped, and the game is over
+ * when one player is left or the last round has been played.
+ *
+ * `onDart` may end the thrower's turn early; a thrower who goes out mid-turn
+ * is done at once. A turn ended that way may still be open (the darts are
+ * in the board): the next dart then starts the next player's turn.
+ */
+export function playKnockout(
+  rules: Pick<GameRules, 'dartsPerTurn' | 'maxRounds'>,
+  players: readonly PlayerId[],
+  turns: readonly Turn[],
+  isOut: (player: PlayerId) => boolean,
+  onDart: (
+    dart: Dart,
+    thrower: PlayerId,
+    turnIndex: number,
+    dartIndex: number,
+  ) => DartFeedback | { feedback: DartFeedback; endTurn: true },
+): Progress {
+  const feedback: DartFeedback[] = []
+  const throwers: PlayerId[] = []
+  const over = (): Progress => ({ finished: true, current: null, feedback, throwers })
+  const standing = (): number => players.filter((player) => !isOut(player)).length
+  let seat = -1
+  let round = 1
+
+  for (let index = 0; ; index++) {
+    if (standing() <= 1) return over()
+    // The next player who is still in; passing the end of the order starts a round.
+    let step = 1
+    while (isOut(players[(seat + step) % players.length]!)) step++
+    if (seat >= 0 && seat + step >= players.length) round++
+    seat = (seat + step) % players.length
+    if (round > rules.maxRounds) return over()
+    const thrower = players[seat]!
+
+    const turn = turns[index]
+    if (!turn) {
+      return {
+        finished: false,
+        current: { player: thrower, round, dartsLeft: rules.dartsPerTurn, turn: index },
+        feedback,
+        throwers,
+      }
+    }
+    throwers.push(thrower)
+    const darts = turn.darts.slice(0, rules.dartsPerTurn)
+    let ended = false
+    for (let d = 0; d < darts.length && !ended; d++) {
+      const result = onDart(darts[d]!.dart, thrower, index, d)
+      feedback.push(typeof result === 'string' ? result : result.feedback)
+      ended = typeof result !== 'string' || isOut(thrower) || standing() <= 1
+    }
+    if (!ended && !turn.done) {
+      return {
+        finished: false,
+        current: { player: thrower, round, dartsLeft: rules.dartsPerTurn - darts.length, turn: index },
+        feedback,
+        throwers,
+      }
+    }
+  }
+}
+
+/**
+ * The ranking of a knockout game: whoever lasted longest first. Players
+ * still in are ranked by their lives; players who are out by when they went.
+ */
+export function rankKnockout(
+  players: readonly PlayerId[],
+  lives: Record<PlayerId, number>,
+  outOrder: readonly PlayerId[],
+): Ranking {
+  return rankByScore(players, (player) => {
+    const out = outOrder.indexOf(player)
+    return out < 0 ? 1000 + lives[player]! : out
+  })
 }

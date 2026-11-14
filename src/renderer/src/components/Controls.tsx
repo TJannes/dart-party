@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { activeRecord, type Evening } from '../../../core/evening/evening'
-import { archeryPoints } from '../../../core/game/robinHood'
-import { dartLabel } from '../../../shared/board'
+import { activeRecord, evaluateRecord, type Evening } from '../../../core/evening/evening'
+import type { SniperView } from '../../../core/game/sniper'
+import { dartText } from '../dartText'
 import { strings } from '../../../shared/strings'
 import { playerOf } from '../colours'
 import { send } from '../hooks'
@@ -20,12 +20,14 @@ function recentDarts(evening: Evening): (Target & { label: string })[] {
   const record = activeRecord(evening)
   if (!record) return []
   const list: (Target & { label: string })[] = []
+  const throwers = evaluateRecord(record).throwers
   record.turns.forEach((turn, turnIndex) => {
-    const thrower = playerOf(evening, record.order[turnIndex % record.order.length]!)
+    // Darts in a turn the rules never reached (after the game ended) are not shown.
+    const id = throwers[turnIndex]
+    if (id === undefined) return
+    const thrower = playerOf(evening, id)
     turn.darts.forEach((thrown, index) =>
-      list.push({ turn: turnIndex, index, label: `${thrower.name}: ${
-          record.gameId === 'robinHood' ? archeryPoints(thrown.dart) : dartLabel(thrown.dart)
-        }` }),
+      list.push({ turn: turnIndex, index, label: `${thrower.name}: ${dartText(record, thrown.dart, turnIndex)}` }),
     )
   })
   return list.reverse().slice(0, 9)
@@ -40,7 +42,12 @@ export function Controls({ evening, canThrow }: { evening: Evening; canThrow: bo
   const [choosing, setChoosing] = useState(false)
   const [correcting, setCorrecting] = useState<Target | null>(null)
   const recent = recentDarts(evening)
-  const zones = activeRecord(evening)?.gameId === 'robinHood'
+  const record = activeRecord(evening)
+  // Some games ask for a dart in their own way.
+  const picker = {
+    zones: record?.gameId === 'robinHood',
+    cross: record?.gameId === 'sniper' ? (evaluateRecord(record).view as SniperView).target : undefined,
+  }
 
   return (
     <div className="controls">
@@ -65,7 +72,7 @@ export function Controls({ evening, canThrow }: { evening: Evening; canThrow: bo
 
       {adding && (
         <DartPicker
-          zones={zones}
+          {...picker}
           onClose={() => setAdding(false)}
           onPick={(dart) => {
             send({ type: 'addDart', dart })
@@ -98,7 +105,7 @@ export function Controls({ evening, canThrow }: { evening: Evening; canThrow: bo
       )}
       {correcting && (
         <DartPicker
-          zones={zones}
+          {...picker}
           onClose={() => setCorrecting(null)}
           onPick={(dart) => {
             send({ type: 'correctDart', turn: correcting.turn, index: correcting.index, dart })

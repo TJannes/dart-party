@@ -77,17 +77,17 @@ describe('moving', () => {
 
 describe('turns', () => {
   it('starts with the first player, three darts, round 1', () => {
-    expect(play().current).toEqual({ player: 'ann', round: 1, dartsLeft: 3 })
+    expect(play().current).toMatchObject({ player: 'ann', round: 1, dartsLeft: 3 })
   })
 
   it('counts down the darts of an open turn', () => {
-    expect(play(open(S(20))).current).toEqual({ player: 'ann', round: 1, dartsLeft: 2 })
+    expect(play(open(S(20))).current).toMatchObject({ player: 'ann', round: 1, dartsLeft: 2 })
     expect(play(open(S(20), S(20), S(20))).current).toMatchObject({ player: 'ann', dartsLeft: 0 })
   })
 
   it('passes to the next player and the next round', () => {
-    expect(play(turn(S(20))).current).toEqual({ player: 'bob', round: 1, dartsLeft: 3 })
-    expect(play(turn(), turn(), turn()).current).toEqual({ player: 'ann', round: 2, dartsLeft: 3 })
+    expect(play(turn(S(20))).current).toMatchObject({ player: 'bob', round: 1, dartsLeft: 3 })
+    expect(play(turn(), turn(), turn()).current).toMatchObject({ player: 'ann', round: 2, dartsLeft: 3 })
   })
 
   it('ignores a fourth dart in a turn', () => {
@@ -136,6 +136,6 @@ describe('finishing', () => {
   it('reopens the game when the winning dart is corrected away', () => {
     const state = play(...sprint, open(manualMiss(), manualMiss()))
     expect(state.finished).toBe(false)
-    expect(state.current).toEqual({ player: 'ann', round: 2, dartsLeft: 1 })
+    expect(state.current).toMatchObject({ player: 'ann', round: 2, dartsLeft: 1 })
   })
 })

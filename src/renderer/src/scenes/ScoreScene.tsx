@@ -8,11 +8,8 @@ import { Avatar, type Mood } from '../components/Avatar'
 function lastThrow(record: GameRecord, state: GameState<unknown>): { player: PlayerId; good: boolean } | null {
   const feedback = state.feedback.at(-1)
   if (!feedback) return null
-  for (let turn = record.turns.length - 1; turn >= 0; turn--) {
-    if (record.turns[turn]!.darts.length > 0) {
-      return { player: record.order[turn % record.order.length]!, good: feedback !== 'bad' && feedback !== 'neutral' }
-    }
-  }
+  const thrower = state.throwers.findLast((_, turn) => record.turns[turn]!.darts.length > 0)
+  if (thrower) return { player: thrower, good: feedback !== 'bad' && feedback !== 'neutral' }
   return null
 }
 
@@ -37,6 +34,8 @@ export function ScoreScene(props: {
   detail?: (player: PlayerId) => ReactNode
   /** Shown above the rows. */
   heading?: ReactNode
+  /** Players who are out of the game: their row fades. */
+  out?: readonly PlayerId[]
   board: ReactNode
 }): React.JSX.Element {
   const { evening, record, state } = props
@@ -50,11 +49,13 @@ export function ScoreScene(props: {
           return (
             <div
               key={id}
-              className={state.current?.player === id ? 'lane lane--active' : 'lane'}
+              className={
+                state.current?.player === id ? 'lane lane--active' : props.out?.includes(id) ? 'lane lane--out' : 'lane'
+              }
               style={{ borderColor: colour }}
             >
               <div className="lane__avatar">
-                <Avatar avatar={player.avatar} mood={moodOf(id, record, state)} />
+                <Avatar avatar={player.avatar} mood={props.out?.includes(id) ? 'sulk' : moodOf(id, record, state)} />
               </div>
               <div className="lane__who lane__who--wide">
                 <strong>{player.name}</strong>

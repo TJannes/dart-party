@@ -240,16 +240,24 @@ function withActiveTurns(evening: Evening, change: (turns: Turn[], record: GameR
     : { ...evening, deciders: [...evening.deciders.slice(0, -1), updated] }
 }
 
+/** A turn that a rule ended while its darts are still in the board. */
+function closeStale(turns: Turn[]): Turn[] {
+  const last = turns.at(-1)
+  return last && !last.done ? [...turns.slice(0, -1), { ...last, done: true }] : turns
+}
+
 /** A dart for whoever is at the board. Ignored when nobody can throw. */
 export function addDart(evening: Evening, dart: Dart, by: ThrownDart['by']): Evening {
   return withActiveTurns(evening, (turns, record) => {
     const current = evaluateRecord(record).current
     if (!current || current.dartsLeft <= 0) return turns
-    const open = turns.at(-1)
-    if (open && !open.done) {
-      return [...turns.slice(0, -1), { ...open, darts: [...open.darts, { dart, by }] }]
+    const open = turns[current.turn]
+    if (open) {
+      return turns.map((turn, i) =>
+        i === current.turn ? { ...turn, darts: [...turn.darts, { dart, by }] } : turn,
+      )
     }
-    return [...turns, { darts: [{ dart, by }], done: false }]
+    return [...closeStale(turns), { darts: [{ dart, by }], done: false }]
   })
 }
 
@@ -268,10 +276,12 @@ export function dartsRemoved(evening: Evening): Evening {
 /** "Next player" on the control panel: ends the turn, thrown or not. */
 export function nextPlayer(evening: Evening): Evening {
   return withActiveTurns(evening, (turns, record) => {
-    if (!evaluateRecord(record).current) return turns
-    const open = turns.at(-1)
-    if (open && !open.done) return [...turns.slice(0, -1), { ...open, done: true }]
-    return [...turns, { darts: [], done: true }]
+    const current = evaluateRecord(record).current
+    if (!current) return turns
+    if (turns[current.turn]) {
+      return turns.map((turn, i) => (i === current.turn ? { ...turn, done: true } : turn))
+    }
+    return [...closeStale(turns), { darts: [], done: true }]
   })
 }
 

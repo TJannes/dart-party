@@ -1,19 +1,28 @@
 import { activeRecord, canAdvance, evaluateRecord, standings, type Evening } from '../../../core/evening/evening'
 import { placesOf, pointsForRanking } from '../../../core/evening/points'
 import { rulesFor } from '../../../core/game/registry'
-import { archeryPoints } from '../../../core/game/robinHood'
-import { rankByScore } from '../../../core/game/types'
-import { dartLabel } from '../../../shared/board'
+import { rankByScore, type GameState, type WithOpenings } from '../../../core/game/types'
 import { strings } from '../../../shared/strings'
 import { colourOf, playerOf } from '../colours'
 import { Avatar } from '../components/Avatar'
 import { Controls } from '../components/Controls'
+import { dartText } from '../dartText'
 import { EveningFrame } from '../components/EveningFrame'
 import { send } from '../hooks'
 import { GameScene } from '../scenes/GameScene'
 import { gameName } from './Draw'
 
 const s = strings.evening
+
+/** "Round 2 of 6" in the header, or the game's own way of counting. */
+function roundText(gameId: string, state: GameState<any>, maxRounds: number): string | undefined {
+  if (!state.current) return undefined
+  if (gameId === 'raiseTheBar') {
+    const { opening, openings } = state.view as WithOpenings
+    return strings.games.raiseTheBar.opening(opening, openings)
+  }
+  return maxRounds > 1 ? s.round(state.current.round, maxRounds) : undefined
+}
 
 /** The result of the game just finished, and the standings of the evening. */
 function Result({ evening }: { evening: Evening }): React.JSX.Element {
@@ -58,29 +67,36 @@ export function Play({ evening }: { evening: Evening }): React.JSX.Element {
   const record = activeRecord(evening)!
   const state = evaluateRecord(record)
   const rules = rulesFor(record.gameId)
-  const open = record.turns.at(-1)
-  const darts = open && !open.done ? open.darts.map((d) => d.dart) : []
   const current = state.current
+  // The darts of the turn in progress. A turn that a rule ended (a bomb
+  // passed on, a player knocked out) may still have its darts in the board.
+  const darts = current ? (record.turns[current.turn]?.darts ?? []).map((d) => d.dart) : []
+  const last = record.turns.at(-1)
+  const uncleared = current !== null && last !== undefined && !last.done && current.turn >= record.turns.length
   const thrower = current ? playerOf(evening, current.player) : null
 
   return (
     <EveningFrame
       evening={evening}
       title={gameName(record.gameId)}
-      detail={current && rules.maxRounds > 1 ? s.round(current.round, rules.maxRounds) : undefined}
+      detail={roundText(record.gameId, state, rules.maxRounds)}
     >
       <div className="turn" style={{ borderColor: current ? colourOf(evening, current.player) : 'transparent' }}>
         {thrower && current && (
           <>
             <Avatar avatar={thrower.avatar} size="1.5em" />
             <span className="turn__name">{thrower.name}</span>
-            <span className="turn__what">{current.dartsLeft === 0 ? s.pullDarts : s.toThrow}</span>
+            <span className="turn__what">{current.dartsLeft === 0 ? s.pullDarts : uncleared ? s.afterPull : s.toThrow}</span>
             <span className="turn__darts">
-              {Array.from({ length: rules.dartsPerTurn }, (_, slot) => (
-                <span key={slot} className={darts[slot] ? 'dart' : 'dart dart--empty'}>
-                  {darts[slot] ? (record.gameId === 'robinHood' ? archeryPoints(darts[slot]) : dartLabel(darts[slot])) : ''}
-                </span>
-              ))}
+              {Array.from({ length: rules.dartsPerTurn }, (_, slot) => {
+                const text = darts[slot] ? dartText(record, darts[slot], current.turn) : ''
+                const style = !darts[slot] ? 'dart dart--empty' : text.length > 4 ? 'dart dart--long' : 'dart'
+                return (
+                  <span key={slot} className={style}>
+                    {text}
+                  </span>
+                )
+              })}
             </span>
           </>
         )}

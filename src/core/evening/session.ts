@@ -1,5 +1,5 @@
 import type { BoardEvent } from '../board/events'
-import { BULL, manualDart, manualMiss, RING } from '../board/ring'
+import { BULL, manualDart, manualMiss, placedDart, RING } from '../board/ring'
 import type { Dart } from '../board/state'
 import { drawableGames } from '../game/registry'
 import type { PlayerId, Ranking } from '../game/types'
@@ -27,6 +27,8 @@ import {
 export type DartInput =
   | { miss: true }
   | { miss?: false; number: number; multiplier: 1 | 2 | 3; /** An inner single. */ inner?: boolean }
+  /** Pointed at on the board, in board coordinates. */
+  | { position: { x: number; y: number } }
 
 export type EveningCommand =
   | { type: 'start'; players: Player[]; games: number }
@@ -63,6 +65,11 @@ const HISTORY = 'history'
 const FORMAT = 1
 
 function toDart(input: DartInput): Dart | null {
+  if ('position' in input) {
+    const { x, y } = input.position ?? {}
+    const sane = (n: unknown): n is number => typeof n === 'number' && Math.abs(n) <= 1.5
+    return sane(x) && sane(y) ? placedDart(x, y) : null
+  }
   if (input.miss) return manualMiss()
   const { number, multiplier } = input
   const known = RING.includes(number) || (number === BULL && multiplier !== 3)

@@ -28,7 +28,15 @@ export interface BoardProps {
   marks?: Record<number, string>
   /** 'target' draws the board as an archery target, by distance only. */
   variant?: 'board' | 'target'
+  /** A cross to aim at, in board coordinates. */
+  cross?: { x: number; y: number }
+  /** Small coloured dots, for darts that are no longer in the board. */
+  dots?: { x: number; y: number; colour: string }[]
+  /** Called with board coordinates when the board is tapped. */
+  onTap?: (x: number, y: number) => void
 }
+
+const VIEW = 1.32
 
 const ZONES: [radius: number, colour: string, points: number][] = [
   [R.doubleOut, '#f3ead7', 3],
@@ -72,13 +80,35 @@ function Target({ darts }: { darts: Dart[] }): React.JSX.Element {
   )
 }
 
-export function Board({ owners = {}, darts = [], marks = {}, variant = 'board' }: BoardProps): React.JSX.Element {
+export function Board({
+  owners = {},
+  darts = [],
+  marks = {},
+  variant = 'board',
+  cross,
+  dots = [],
+  onTap,
+}: BoardProps): React.JSX.Element {
   if (variant === 'target') return <Target darts={darts} />
   // When segments belong to players, the rest of the board goes quiet so the
   // usual red and green rings are not mistaken for a player's colour.
   const quiet = Object.keys(owners).length > 0
+  const tap = (event: React.MouseEvent<SVGSVGElement>): void => {
+    const box = event.currentTarget.getBoundingClientRect()
+    // The drawing is square and centred inside the element.
+    const size = Math.min(box.width, box.height)
+    const x = ((event.clientX - box.left - (box.width - size) / 2) / size) * 2 * VIEW - VIEW
+    const y = ((event.clientY - box.top - (box.height - size) / 2) / size) * 2 * VIEW - VIEW
+    onTap?.(x, -y)
+  }
   return (
-    <svg viewBox="-1.32 -1.32 2.64 2.64" className="dartboard" aria-hidden>
+    <svg
+      viewBox="-1.32 -1.32 2.64 2.64"
+      className="dartboard"
+      aria-hidden={!onTap}
+      onClick={onTap ? tap : undefined}
+      style={onTap ? { cursor: 'crosshair' } : undefined}
+    >
       <circle r="1.3" fill="#1b0a38" />
       {RING.map((segment, index) => {
         const owner = owners[segment]
@@ -126,6 +156,15 @@ export function Board({ owners = {}, darts = [], marks = {}, variant = 'board' }
             {marks[segment]}
           </text>
         ) : null,
+      )}
+      {dots.map((dot, index) => (
+        <circle key={index} cx={dot.x} cy={-dot.y} r="0.045" fill={dot.colour} stroke="#1b0a38" strokeWidth="0.015" />
+      ))}
+      {cross && (
+        <g transform={`translate(${cross.x} ${-cross.y})`} strokeLinecap="round">
+          <path d="M-0.11 -0.11 L0.11 0.11 M-0.11 0.11 L0.11 -0.11" strokeWidth="0.075" stroke="#1b0a38" />
+          <path d="M-0.11 -0.11 L0.11 0.11 M-0.11 0.11 L0.11 -0.11" strokeWidth="0.04" stroke="#ff2d55" />
+        </g>
       )}
       <DartMarks darts={darts} />
     </svg>
