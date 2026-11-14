@@ -23,7 +23,7 @@ function memoryStore(initial: Record<string, unknown> = {}) {
 
 function session(store: Store) {
   const changes: (Evening | null)[] = []
-  const s = new EveningSession(store, seededRandom(5), (e) => changes.push(e), () => new Date(0))
+  const s = new EveningSession(store, seededRandom(5), (e) => changes.push(e), () => new Date(0), () => ['race'])
   return { s, changes }
 }
 

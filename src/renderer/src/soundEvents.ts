@@ -1,45 +1,38 @@
 import { useEffect, useRef } from 'react'
 import { activeRecord, evaluateRecord, type Evening } from '../../core/evening/evening'
-import type { RaceView } from '../../core/game/race'
-import { dartScore } from '../../core/board/ring'
+import type { DartFeedback } from '../../core/game/types'
 import { sound } from './sound'
 import type { EffectName, MusicScene } from './theme/types'
 
 interface Heard {
   stage: string
   game: number
+  /** How many darts have counted in the game so far. */
   darts: number
-  moves: number
   finished: boolean
+  effect: EffectName | null
+}
+
+const EFFECT: Record<DartFeedback, EffectName> = {
+  great: 'bigHit',
+  good: 'hit',
+  attack: 'pushed',
+  neutral: 'thud',
+  bad: 'miss',
 }
 
 function listen(evening: Evening | null): Heard | null {
   if (!evening) return null
   const record = activeRecord(evening)
   const state = record ? evaluateRecord(record) : null
+  const last = state?.feedback.at(-1)
   return {
     stage: evening.stage,
     game: evening.games.length + evening.deciders.length,
-    darts: record ? record.turns.reduce((sum, turn) => sum + turn.darts.length, 0) : 0,
-    moves: record?.gameId === 'race' ? (state!.view as RaceView).moves.length : 0,
+    darts: state?.feedback.length ?? 0,
     finished: state?.finished ?? false,
+    effect: last ? EFFECT[last] : null,
   }
-}
-
-/** The sound of one new dart, going by what it did in the game. */
-function dartEffect(evening: Evening, before: Heard, after: Heard): EffectName {
-  const record = activeRecord(evening)!
-  const dart = record.turns.at(-1)?.darts.at(-1)?.dart
-  if (record.gameId === 'race') {
-    if (after.moves > before.moves) {
-      const move = (evaluateRecord(record).view as RaceView).moves.at(-1)!
-      if (move.to < move.from) return 'pushed'
-      return move.to - move.from >= 2 ? 'bigHit' : 'hit'
-    }
-    return dart?.miss ? 'miss' : 'thud'
-  }
-  if (!dart || dart.miss) return 'miss'
-  return dartScore(dart) >= 40 ? 'bigHit' : 'hit'
 }
 
 function sceneOf(evening: Evening | null): MusicScene {
@@ -64,7 +57,6 @@ export function useSoundEvents(evening: Evening | null | undefined): void {
     if (after.stage === 'podium' && before.stage !== 'podium') return sound.play('fanfare')
     if (after.game !== before.game || after.stage !== before.stage) return
     if (after.finished && !before.finished) return sound.play('win')
-    if (after.darts > before.darts) return sound.play(dartEffect(evening, before, after))
-    if (after.moves !== before.moves) return sound.play('thud') // a correction changed the race
+    if (after.darts > before.darts && after.effect) return sound.play(after.effect)
   }, [evening])
 }

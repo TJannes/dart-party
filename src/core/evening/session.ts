@@ -24,7 +24,9 @@ import {
 // it is over. Storage is passed in, so this has no Electron in it.
 
 /** A dart as the control panel enters it. */
-export type DartInput = { miss: true } | { miss?: false; number: number; multiplier: 1 | 2 | 3 }
+export type DartInput =
+  | { miss: true }
+  | { miss?: false; number: number; multiplier: 1 | 2 | 3; /** An inner single. */ inner?: boolean }
 
 export type EveningCommand =
   | { type: 'start'; players: Player[]; games: number }
@@ -65,7 +67,7 @@ function toDart(input: DartInput): Dart | null {
   const { number, multiplier } = input
   const known = RING.includes(number) || (number === BULL && multiplier !== 3)
   if (!known || ![1, 2, 3].includes(multiplier)) return null
-  return manualDart(number, multiplier)
+  return manualDart(number, multiplier, input.inner === true)
 }
 
 /** A saved evening is only resumed if every game in it can be recounted. */

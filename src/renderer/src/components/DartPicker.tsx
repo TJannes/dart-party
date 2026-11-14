@@ -6,8 +6,39 @@ import { Modal } from './Modal'
 const s = strings.controls
 
 /** Entering a dart by hand: ring first, then the number. */
-export function DartPicker(props: { onPick: (dart: DartInput) => void; onClose: () => void }): React.JSX.Element {
+export function DartPicker(props: {
+  onPick: (dart: DartInput) => void
+  onClose: () => void
+  /** Robin Hood only cares how far from the centre the dart is. */
+  zones?: boolean
+}): React.JSX.Element {
   const [multiplier, setMultiplier] = useState<1 | 2 | 3>(1)
+  if (props.zones) {
+    const zones = strings.games.robinHood.zones
+    const choices: [string, DartInput][] = [
+      [zones[6], { number: 25, multiplier: 2 }],
+      [zones[5], { number: 25, multiplier: 1 }],
+      [zones[4], { number: 20, multiplier: 1, inner: true }],
+      [zones[3], { number: 20, multiplier: 1 }],
+    ]
+    return (
+      <Modal title={s.pickTitle} onClose={props.onClose}>
+        <div className="correct-list">
+          {choices.map(([label, dart]) => (
+            <button key={label} type="button" className="key key--wide" onClick={() => props.onPick(dart)}>
+              {label}
+            </button>
+          ))}
+          <button type="button" className="key key--wide key--miss" onClick={() => props.onPick({ miss: true })}>
+            {zones[0]}
+          </button>
+        </div>
+        <button type="button" className="button button--quiet" onClick={props.onClose}>
+          {strings.common.cancel}
+        </button>
+      </Modal>
+    )
+  }
   const rings: [1 | 2 | 3, string][] = [
     [1, s.single],
     [2, s.double],

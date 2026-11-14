@@ -19,7 +19,9 @@ export const decider: GameRules<null, DeciderView> = {
     const scores: Record<PlayerId, number> = {}
     for (const player of players) scores[player] = 0
     const progress = playTurns(decider, players, turns, (dart, thrower) => {
-      scores[thrower]! += dartScore(dart)
+      const score = dartScore(dart)
+      scores[thrower]! += score
+      return score === 0 ? 'bad' : score >= 40 ? 'great' : 'good'
     })
     return {
       ...progress,

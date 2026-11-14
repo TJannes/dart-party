@@ -25,7 +25,11 @@ describe('settings', () => {
   })
 
   it('never lets every game be switched off', () => {
-    expect(cleanSettings({ disabledGames: ['race', 'unknown'] }).disabledGames).toEqual([])
-    expect(enabledGames(DEFAULT_SETTINGS)).toEqual(['race'])
+    const all = enabledGames(DEFAULT_SETTINGS)
+    expect(all).toContain('race')
+    expect(cleanSettings({ disabledGames: [...all, 'unknown'] }).disabledGames).toEqual([])
+    const some = cleanSettings({ disabledGames: ['race', 'unknown', 'race'] })
+    expect(some.disabledGames).toEqual(['race'])
+    expect(enabledGames(some)).not.toContain('race')
   })
 })

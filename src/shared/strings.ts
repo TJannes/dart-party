@@ -88,6 +88,50 @@ export const strings = {
         'First across the finish wins!',
       ],
     },
+    robinHood: {
+      name: 'Robin Hood',
+      rules: [
+        'The board is an archery target: only the distance to the centre counts.',
+        'Bullseye 6, outer bull 5, inside the triple ring 4, the rest of the board 3.',
+        'Six rounds. The highest total wins.',
+      ],
+      zones: {
+        6: 'Bullseye · 6',
+        5: 'Outer bull · 5',
+        4: 'Inside the triple ring · 4',
+        3: 'Rest of the board · 3',
+        0: 'Miss · 0',
+      },
+    },
+    spotlight: {
+      name: 'Spotlight',
+      rules: [
+        'Each round the spotlight lands on one segment.',
+        'Hit it for 3 points, its neighbours for 2, the ones next to those for 1.',
+        'Doubles and triples count the same. The bull scores nothing.',
+        'Six rounds. The highest total wins.',
+      ],
+      target: (segment: number) => `Spotlight on ${segment}`,
+    },
+    piggyBank: {
+      name: 'Piggy Bank',
+      rules: [
+        'Every dart adds its value to your piggy bank.',
+        'A dart off the board breaks the pig: you lose half.',
+        'Six rounds. The fullest pig wins.',
+      ],
+      breaks: (count: number) => (count === 0 ? 'Pig intact' : `Broken ${count}×`),
+    },
+    landGrab: {
+      name: 'Land Grab',
+      rules: [
+        'Hit a free segment to make it yours. Hit it again to fortify it.',
+        'Someone else\'s falls after 2 hits, a fortified one after 3. The last hit takes it.',
+        'A double is 2 hits, a triple 3. The bull does nothing.',
+        'Six rounds. The most segments wins.',
+      ],
+      fortified: (count: number) => `${count} fortified`,
+    },
     decider: {
       name: 'Deciding round',
       rules: ['Three darts each.', 'The highest score wins the evening.'],

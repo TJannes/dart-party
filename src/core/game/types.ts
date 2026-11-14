@@ -21,6 +21,13 @@ export interface Turn {
  */
 export type Ranking = PlayerId[][]
 
+/**
+ * What one dart did, for sound and for how the thrower feels: 'great' and
+ * 'good' helped the thrower, 'attack' hurt someone else, 'bad' hurt the
+ * thrower, 'neutral' did nothing.
+ */
+export type DartFeedback = 'great' | 'good' | 'attack' | 'neutral' | 'bad'
+
 export interface GameState<View> {
   /** Everything the scene needs to draw this game. */
   view: View
@@ -29,6 +36,8 @@ export interface GameState<View> {
   current: { player: PlayerId; round: number; dartsLeft: number } | null
   /** Final when finished, provisional before. */
   ranking: Ranking
+  /** One entry per dart that counted, in throwing order. */
+  feedback: DartFeedback[]
 }
 
 /**
@@ -59,24 +68,37 @@ export function rankByScore(players: readonly PlayerId[], score: (p: PlayerId) =
 
 /**
  * Walks the turns in order for a game where players simply take turns.
- * `onDart` returns true to end the game at once. Darts beyond the allowed
- * number in a turn, and turns beyond the last round, are ignored. The game
- * is over as soon as the last dart of the last turn is thrown.
+ * `onDart` says what the dart did, and may end the game at once. Darts
+ * beyond the allowed number in a turn, and turns beyond the last round, are
+ * ignored. The game is over as soon as the last dart of the last turn is
+ * thrown.
  */
 export function playTurns(
   rules: Pick<GameRules, 'dartsPerTurn' | 'maxRounds'>,
   players: readonly PlayerId[],
   turns: readonly Turn[],
-  onDart: (dart: Dart, thrower: PlayerId, turnIndex: number, dartIndex: number) => boolean | void,
-): Pick<GameState<unknown>, 'finished' | 'current'> {
+  onDart: (
+    dart: Dart,
+    thrower: PlayerId,
+    turnIndex: number,
+    dartIndex: number,
+  ) => DartFeedback | { feedback: DartFeedback; finish: true },
+): Pick<GameState<unknown>, 'finished' | 'current' | 'feedback'> {
   const maxTurns = rules.maxRounds * players.length
+  const feedback: DartFeedback[] = []
   let index = 0
   for (; index < turns.length && index < maxTurns; index++) {
     const turn = turns[index]!
     const thrower = players[index % players.length]!
     const darts = turn.darts.slice(0, rules.dartsPerTurn)
     for (let d = 0; d < darts.length; d++) {
-      if (onDart(darts[d]!.dart, thrower, index, d) === true) return { finished: true, current: null }
+      const result = onDart(darts[d]!.dart, thrower, index, d)
+      if (typeof result === 'string') {
+        feedback.push(result)
+      } else {
+        feedback.push(result.feedback)
+        return { finished: true, current: null, feedback }
+      }
     }
     // The last turn of the game needs no takeout to count as over.
     const lastDart = index === maxTurns - 1 && darts.length >= rules.dartsPerTurn
@@ -88,10 +110,11 @@ export function playTurns(
           round: Math.floor(index / players.length) + 1,
           dartsLeft: rules.dartsPerTurn - darts.length,
         },
+        feedback,
       }
     }
   }
-  if (index >= maxTurns) return { finished: true, current: null }
+  if (index >= maxTurns) return { finished: true, current: null, feedback }
   return {
     finished: false,
     current: {
@@ -99,5 +122,6 @@ export function playTurns(
       round: Math.floor(index / players.length) + 1,
       dartsLeft: rules.dartsPerTurn,
     },
+    feedback,
   }
 }

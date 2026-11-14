@@ -24,8 +24,11 @@ export function manualMiss(): Dart {
   return { name: 'Miss', number: null, multiplier: 0, bed: 'Outside', miss: true, position: null }
 }
 
-/** A dart entered or corrected by hand. It has no position. */
-export function manualDart(number: number, multiplier: 1 | 2 | 3): Dart {
+/**
+ * A dart entered or corrected by hand. It has no position. `inner` is for a
+ * single between the bull and the triple ring, where a game cares.
+ */
+export function manualDart(number: number, multiplier: 1 | 2 | 3, inner = false): Dart {
   const isBull = number === BULL
   if (!isBull && !RING.includes(number)) throw new Error(`Not a segment: ${number}`)
   if (isBull && multiplier === 3) throw new Error('The bull has no triple')
@@ -42,6 +45,8 @@ export function manualDart(number: number, multiplier: 1 | 2 | 3): Dart {
       ? 'Triple'
       : multiplier === 2
         ? 'Double'
-        : 'SingleOuter'
+        : inner
+          ? 'SingleInner'
+          : 'SingleOuter'
   return { name, number, multiplier, bed, miss: false, position: null }
 }

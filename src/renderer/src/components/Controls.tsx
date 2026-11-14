@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { activeRecord, type Evening } from '../../../core/evening/evening'
+import { archeryPoints } from '../../../core/game/robinHood'
 import { dartLabel } from '../../../shared/board'
 import { strings } from '../../../shared/strings'
 import { playerOf } from '../colours'
@@ -22,7 +23,9 @@ function recentDarts(evening: Evening): (Target & { label: string })[] {
   record.turns.forEach((turn, turnIndex) => {
     const thrower = playerOf(evening, record.order[turnIndex % record.order.length]!)
     turn.darts.forEach((thrown, index) =>
-      list.push({ turn: turnIndex, index, label: `${thrower.name}: ${dartLabel(thrown.dart)}` }),
+      list.push({ turn: turnIndex, index, label: `${thrower.name}: ${
+          record.gameId === 'robinHood' ? archeryPoints(thrown.dart) : dartLabel(thrown.dart)
+        }` }),
     )
   })
   return list.reverse().slice(0, 9)
@@ -37,6 +40,7 @@ export function Controls({ evening, canThrow }: { evening: Evening; canThrow: bo
   const [choosing, setChoosing] = useState(false)
   const [correcting, setCorrecting] = useState<Target | null>(null)
   const recent = recentDarts(evening)
+  const zones = activeRecord(evening)?.gameId === 'robinHood'
 
   return (
     <div className="controls">
@@ -61,6 +65,7 @@ export function Controls({ evening, canThrow }: { evening: Evening; canThrow: bo
 
       {adding && (
         <DartPicker
+          zones={zones}
           onClose={() => setAdding(false)}
           onPick={(dart) => {
             send({ type: 'addDart', dart })
@@ -93,6 +98,7 @@ export function Controls({ evening, canThrow }: { evening: Evening; canThrow: bo
       )}
       {correcting && (
         <DartPicker
+          zones={zones}
           onClose={() => setCorrecting(null)}
           onPick={(dart) => {
             send({ type: 'correctDart', turn: correcting.turn, index: correcting.index, dart })

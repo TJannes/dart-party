@@ -1,11 +1,13 @@
 # Dart Party: plan and decisions
 
-Status: steps 1 to 3 are built and released (0.2.0). Updating from 0.1.0 to
-0.1.1 inside the app works on Ubuntu; the owner still has to install on the
-Surface and do the same on Windows. Step 3 is built but has only been played
-through by hand on Ubuntu with one display: not with real darts, not with a
-real second screen, not on Windows, and nobody has listened to the sound yet.
-The next thing to build is step 4. See [Build steps](#build-steps).
+Status: steps 1 to 3 are built and released (0.2.0). Step 4 is built but not
+yet released. Updating from 0.1.0 to 0.1.1 inside the app works on Ubuntu;
+the owner still has to install on the Surface and do the same on Windows.
+Everything from step 3 on has only been played through by hand on Ubuntu with
+one display: not with real darts, not with a real second screen, not on
+Windows, and nobody has listened to the sound yet. The next thing to build is
+step 5, whose rules must first be agreed with the owner. See
+[Build steps](#build-steps).
 
 ## Goal
 
@@ -203,6 +205,8 @@ top: 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5.
   everything further out (triple ring, outer single, double ring) 3.
 - Zone borders follow the wires, so everyone can see which zone a dart is in.
 - 6 rounds, highest total wins.
+- A dart entered by hand is entered as a zone (6, 5, 4, 3 or miss), not as a
+  segment.
 
 ### Spotlight
 
@@ -210,6 +214,7 @@ top: 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5.
   segments next to those: 1.
 - A new target every round, the same for all players in that round.
 - Doubles and triples do not count extra. The bull scores nothing.
+- The six targets of a game are all different.
 - 6 rounds, highest total wins.
 
 ### Piggy Bank
@@ -230,6 +235,12 @@ top: 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5.
   a fortified one after 3. Whoever lands the last hit takes it.
 - Hits by different attackers add up.
 - Double counts as 2 hits, triple as 3.
+- The hits of one dart are played out one after the other, on any segment.
+  So a double on a free segment takes it and fortifies it, and a triple on
+  someone's plain segment knocks it down, takes it and fortifies it. (Filled
+  in while building; the owner has not confirmed it.)
+- A segment that changes hands starts again with one wall and no damage.
+  Damage does not heal, also not when the owner fortifies.
 - 6 rounds. Most segments wins; on a tie, most fortified segments.
 
 ### Later, rules still to be agreed
@@ -293,8 +304,11 @@ detection.
   - [x] Theme pack (`src/renderer/src/theme/`): colours, player colours,
     sound effects and music.
   - [x] Settings: mini-games on or off, volume, screens, Autodarts address.
-- [ ] **4. The other four specified games**, in this order: Robin Hood,
+- [x] **4. The other four specified games**, in this order: Robin Hood,
   Spotlight, Piggy Bank, Land Grab.
+  *Rules in `src/core/game/`, one case each in
+  `src/renderer/src/scenes/GameScene.tsx`. Each was played for a few darts by
+  hand on Ubuntu; none to the end, none with real darts.*
 - [ ] **5. The five later games**, in this order: Sniper, Minefield, Last One
   Standing, Higher or Lower, Time Bomb. Agree the rules first.
 - [ ] **6. Free play**: X01 and Around the Clock.

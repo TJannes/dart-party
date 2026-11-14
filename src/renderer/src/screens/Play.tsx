@@ -1,6 +1,7 @@
 import { activeRecord, canAdvance, evaluateRecord, standings, type Evening } from '../../../core/evening/evening'
 import { placesOf, pointsForRanking } from '../../../core/evening/points'
 import { rulesFor } from '../../../core/game/registry'
+import { archeryPoints } from '../../../core/game/robinHood'
 import { rankByScore } from '../../../core/game/types'
 import { dartLabel } from '../../../shared/board'
 import { strings } from '../../../shared/strings'
@@ -9,8 +10,7 @@ import { Avatar } from '../components/Avatar'
 import { Controls } from '../components/Controls'
 import { EveningFrame } from '../components/EveningFrame'
 import { send } from '../hooks'
-import { DeciderScene } from '../scenes/DeciderScene'
-import { RaceScene } from '../scenes/RaceScene'
+import { GameScene } from '../scenes/GameScene'
 import { gameName } from './Draw'
 
 const s = strings.evening
@@ -78,7 +78,7 @@ export function Play({ evening }: { evening: Evening }): React.JSX.Element {
             <span className="turn__darts">
               {Array.from({ length: rules.dartsPerTurn }, (_, slot) => (
                 <span key={slot} className={darts[slot] ? 'dart' : 'dart dart--empty'}>
-                  {darts[slot] ? dartLabel(darts[slot]) : ''}
+                  {darts[slot] ? (record.gameId === 'robinHood' ? archeryPoints(darts[slot]) : dartLabel(darts[slot])) : ''}
                 </span>
               ))}
             </span>
@@ -86,8 +86,7 @@ export function Play({ evening }: { evening: Evening }): React.JSX.Element {
         )}
       </div>
 
-      {record.gameId === 'race' && <RaceScene evening={evening} record={record} state={state} darts={darts} />}
-      {record.gameId === 'decider' && <DeciderScene evening={evening} record={record} state={state} darts={darts} />}
+      <GameScene evening={evening} record={record} state={state} darts={darts} />
 
       <Controls evening={evening} canThrow={current !== null && current.dartsLeft > 0} />
       {canAdvance(evening) && <Result evening={evening} />}
