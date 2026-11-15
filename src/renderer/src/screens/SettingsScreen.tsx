@@ -8,7 +8,7 @@ import { gameName } from './Draw'
 
 const s = strings.settings
 
-export function SettingsScreen({ onBack }: { onBack: () => void }): React.JSX.Element {
+export function SettingsScreen({ onBack, onPreview }: { onBack: () => void; onPreview: () => void }): React.JSX.Element {
   const settings = useSettings()
   const screens = useScreens()
   const [address, setAddress] = useState(settings.autodartsAddress)
@@ -56,6 +56,30 @@ export function SettingsScreen({ onBack }: { onBack: () => void }): React.JSX.El
         <section>
           <h3>{s.volume}</h3>
           <Volume />
+        </section>
+
+        <section>
+          <h3>{s.animations}</h3>
+          <div className="row row--left">
+            <button
+              type="button"
+              className={settings.calmAnimations ? 'chip' : 'chip chip--on'}
+              onClick={() => window.dartParty.updateSettings({ calmAnimations: false })}
+            >
+              {s.lively}
+            </button>
+            <button
+              type="button"
+              className={settings.calmAnimations ? 'chip chip--on' : 'chip'}
+              onClick={() => window.dartParty.updateSettings({ calmAnimations: true })}
+            >
+              {s.calm}
+            </button>
+            <button type="button" className="button" onClick={onPreview}>
+              {s.preview}
+            </button>
+          </div>
+          <p className="hint hint--left">{s.calmHint}</p>
         </section>
 
         <section>

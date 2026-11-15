@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { strings } from '../../shared/strings'
+import { Stage } from './animation/Stage'
 import { ROLE, useEvening, useScreens, useSettings } from './hooks'
+import { AnimationsScreen } from './screens/AnimationsScreen'
 import { BoardCheck } from './screens/BoardCheck'
 import { Draw } from './screens/Draw'
 import { Home } from './screens/Home'
@@ -10,11 +12,20 @@ import { Rules } from './screens/Rules'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { Setup } from './screens/Setup'
 import { sound } from './sound'
-import { useSoundEvents } from './soundEvents'
+import { useMusic } from './soundEvents'
 
 export function App(): React.JSX.Element | null {
   const evening = useEvening()
-  const [menu, setMenu] = useState<'home' | 'setup' | 'check' | 'settings'>('home')
+  const settings = useSettings()
+  return (
+    <Stage evening={evening} calm={settings.calmAnimations}>
+      <Screen evening={evening} />
+    </Stage>
+  )
+}
+
+function Screen({ evening }: { evening: ReturnType<typeof useEvening> }): React.JSX.Element | null {
+  const [menu, setMenu] = useState<'home' | 'setup' | 'check' | 'settings' | 'animations'>('home')
   const settings = useSettings()
   const screens = useScreens()
 
@@ -24,7 +35,7 @@ export function App(): React.JSX.Element | null {
     () => sound.setVolumes(settings.effectsVolume, settings.musicVolume),
     [settings.effectsVolume, settings.musicVolume],
   )
-  useSoundEvents(evening)
+  useMusic(evening)
 
   if (evening === undefined) return null
   if (evening === null) {
@@ -39,7 +50,8 @@ export function App(): React.JSX.Element | null {
         </main>
       )
     }
-    if (menu === 'settings') return <SettingsScreen onBack={() => setMenu('home')} />
+    if (menu === 'settings') return <SettingsScreen onBack={() => setMenu('home')} onPreview={() => setMenu('animations')} />
+    if (menu === 'animations') return <AnimationsScreen onBack={() => setMenu('settings')} />
     if (menu === 'setup') return <Setup onBack={() => setMenu('home')} />
     if (menu === 'check') {
       return (

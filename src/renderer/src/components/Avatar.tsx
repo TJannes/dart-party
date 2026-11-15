@@ -5,7 +5,9 @@ import { isAvatar } from '../../../core/players'
 // The twenty characters, drawn from a handful of parts so each can show a
 // mood. A new character is one line in SPECS.
 
-export type Mood = 'idle' | 'cheer' | 'sulk'
+export type Mood = 'idle' | 'cheer' | 'sulk' | 'shocked' | 'hit' | 'laugh' | 'sweat' | 'out'
+
+export const MOODS: readonly Mood[] = ['idle', 'cheer', 'sulk', 'shocked', 'hit', 'laugh', 'sweat', 'out']
 
 type Ears = 'pointy' | 'round' | 'big' | 'long' | 'floppy' | 'tufts' | 'side' | 'horns' | 'bumps' | 'none'
 type Face = 'muzzle' | 'mask' | 'none'
@@ -159,7 +161,32 @@ function Eyes({ mood, frog, onDark }: { mood: Mood; frog: boolean; onDark: boole
   const y = frog ? 28 : 50
   const [left, right] = frog ? [33, 67] : [38, 62]
   const ink = onDark ? '#ffffff' : INK
-  if (mood === 'cheer') {
+  if (mood === 'hit' || mood === 'out') {
+    // Squeezed shut after a knock, or crossed out.
+    const mark = (x: number, flip: 1 | -1): string =>
+      mood === 'out'
+        ? `M${x - 5} ${y - 5} L${x + 5} ${y + 5} M${x - 5} ${y + 5} L${x + 5} ${y - 5}`
+        : `M${x - 5 * flip} ${y - 5} L${x + 4 * flip} ${y} L${x - 5 * flip} ${y + 5}`
+    return (
+      <g fill="none" stroke={frog ? INK : ink} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+        {frog && <circle cx={left} cy={y} r="8" fill="#fff" stroke="none" />}
+        {frog && <circle cx={right} cy={y} r="8" fill="#fff" stroke="none" />}
+        <path d={mark(left, 1)} />
+        <path d={mark(right, -1)} />
+      </g>
+    )
+  }
+  if (mood === 'shocked') {
+    return (
+      <g>
+        <circle cx={left} cy={y} r="8" fill="#fff" stroke={INK} strokeWidth="1.5" />
+        <circle cx={right} cy={y} r="8" fill="#fff" stroke={INK} strokeWidth="1.5" />
+        <circle cx={left} cy={y} r="2.6" fill={INK} />
+        <circle cx={right} cy={y} r="2.6" fill={INK} />
+      </g>
+    )
+  }
+  if (mood === 'cheer' || mood === 'laugh') {
     return (
       <g fill={frog ? '#fff' : 'none'} stroke={frog ? INK : ink} strokeWidth="3.5" strokeLinecap="round">
         {frog && <circle cx={left} cy={y} r="8" stroke="none" />}
@@ -191,20 +218,101 @@ function Eyes({ mood, frog, onDark }: { mood: Mood; frog: boolean; onDark: boole
           <path d={`M${right + 7} ${y - 9} L${right - 5} ${y - 5}`} />
         </g>
       )}
+      {mood === 'sweat' && (
+        // Worried brows: up in the middle.
+        <g stroke={frog ? INK : ink} strokeWidth="3" strokeLinecap="round">
+          <path d={`M${left - 6} ${y - 6} L${left + 5} ${y - 10}`} />
+          <path d={`M${right + 6} ${y - 6} L${right - 5} ${y - 10}`} />
+        </g>
+      )}
     </g>
   )
 }
 
 function Mouth({ mood, y }: { mood: Mood; y: number }): React.JSX.Element {
   if (mood === 'cheer') return <path d={`M42 ${y - 2} Q50 ${y + 13} 58 ${y - 2} Z`} fill="#8c1c3a" />
+  if (mood === 'laugh') {
+    return (
+      <g>
+        <path d={`M39 ${y - 3} Q50 ${y + 19} 61 ${y - 3} Z`} fill="#8c1c3a" />
+        <path d={`M45 ${y + 6} Q50 ${y + 2} 55 ${y + 6} Q50 ${y + 12} 45 ${y + 6} Z`} fill="#ff8fab" />
+      </g>
+    )
+  }
+  if (mood === 'shocked') return <ellipse cx="50" cy={y + 3} rx="4.5" ry="6" fill="#8c1c3a" />
+  if (mood === 'hit') {
+    return <path d={`M41 ${y + 2} L45.5 ${y - 2} L50 ${y + 2} L54.5 ${y - 2} L59 ${y + 2}`} fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+  }
+  if (mood === 'sweat') {
+    return <path d={`M42 ${y + 2} Q46 ${y - 2} 50 ${y + 2} Q54 ${y + 6} 58 ${y + 2}`} fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round" />
+  }
+  if (mood === 'out') {
+    return (
+      <g>
+        <path d={`M43 ${y + 1} L57 ${y + 1}`} fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round" />
+        <path d={`M50 ${y + 1} L57 ${y + 1} L57 ${y + 6} Q53.5 ${y + 10} 50 ${y + 6} Z`} fill="#ff8fab" />
+      </g>
+    )
+  }
   const d = mood === 'sulk' ? `M44 ${y + 4} Q50 ${y - 2} 56 ${y + 4}` : `M44 ${y} Q50 ${y + 6} 56 ${y}`
   return <path d={d} fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round" />
 }
 
+// Every mood names every property it moves, so nothing is left hanging
+// from the mood before it.
 const MOTION: Record<Mood, TargetAndTransition> = {
-  idle: { y: [0, -1.5, 0], rotate: 0, transition: { duration: 3, repeat: Infinity, ease: 'easeInOut' } },
-  cheer: { y: [0, -14, 0], rotate: [0, -6, 6, 0], transition: { duration: 0.6, repeat: Infinity, ease: 'easeOut' } },
-  sulk: { y: 5, rotate: [0, -4, 0], transition: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } },
+  idle: { x: 0, y: [0, -1.5, 0], rotate: 0, scale: 1, transition: { duration: 3, repeat: Infinity, ease: 'easeInOut' } },
+  cheer: { x: 0, y: [0, -14, 0], rotate: [0, -6, 6, 0], scale: 1, transition: { duration: 0.6, repeat: Infinity, ease: 'easeOut' } },
+  sulk: { x: 0, y: 5, rotate: [0, -4, 0], scale: 1, transition: { duration: 2.4, repeat: Infinity, ease: 'easeInOut' } },
+  shocked: { x: 0, y: [0, -10, 0], rotate: 0, scale: [1, 1.15, 1], transition: { duration: 0.45, ease: 'easeOut' } },
+  hit: { x: [0, -9, 9, -6, 6, 0], y: 0, rotate: [0, -10, 8, -5, 0], scale: 1, transition: { duration: 0.5, ease: 'easeOut' } },
+  laugh: { x: 0, y: [0, -5, 0], rotate: [0, -3, 3, 0], scale: 1, transition: { duration: 0.28, repeat: Infinity, ease: 'easeInOut' } },
+  sweat: { x: [0, -1.5, 1.5, 0], y: 0, rotate: 0, scale: 1, transition: { duration: 0.22, repeat: Infinity, ease: 'linear' } },
+  out: { x: 0, y: 7, rotate: 18, scale: 1, transition: { duration: 0.5, ease: 'easeOut' } },
+}
+
+/** Things around the head that belong to a mood: sweat drops, dizzy stars. */
+function MoodMarks({ mood }: { mood: Mood }): React.JSX.Element | null {
+  if (mood === 'sweat') {
+    const drop = 'M0 -6 Q5 1 0 4 Q-5 1 0 -6 Z'
+    return (
+      <g fill="#7fd4ff" stroke="#2b7fb8" strokeWidth="1">
+        {[
+          { x: 13, y: 34, delay: 0 },
+          { x: 88, y: 42, delay: 0.45 },
+        ].map((at) => (
+          <motion.path
+            key={at.x}
+            d={drop}
+            initial={{ x: at.x, y: at.y, opacity: 0 }}
+            animate={{ y: [at.y, at.y + 16], opacity: [0, 1, 0] }}
+            transition={{ duration: 0.9, repeat: Infinity, delay: at.delay, ease: 'easeIn' }}
+          />
+        ))}
+      </g>
+    )
+  }
+  if (mood === 'out') {
+    const star = 'M0 -5 L1.5 -1.5 L5 -1.5 L2.2 0.8 L3.2 4.5 L0 2.3 L-3.2 4.5 L-2.2 0.8 L-5 -1.5 L-1.5 -1.5 Z'
+    return (
+      <g fill="#ffd23f" stroke="#b8860b" strokeWidth="0.8">
+        {[
+          { x: 30, y: 13 },
+          { x: 50, y: 6 },
+          { x: 70, y: 13 },
+        ].map((at, n) => (
+          <motion.path
+            key={at.x}
+            d={star}
+            initial={{ x: at.x, y: at.y, scale: 0.6 }}
+            animate={{ y: [at.y, at.y - 4, at.y], scale: [0.6, 1.1, 0.6] }}
+            transition={{ duration: 0.9, repeat: Infinity, delay: n * 0.3, ease: 'easeInOut' }}
+          />
+        ))}
+      </g>
+    )
+  }
+  return null
 }
 
 export function Avatar(props: { avatar: string; mood?: Mood; size?: number | string }): React.JSX.Element {
@@ -244,6 +352,7 @@ export function Avatar(props: { avatar: string; mood?: Mood; size?: number | str
         <path d="M43 58 Q42 84 50 92 Q58 84 57 58 Z" fill={spec.fur} stroke="rgb(0 0 0 / 18%)" strokeWidth="1.5" />
       )}
       {spec.nose !== 'beak' && spec.nose !== 'trunk' && <Mouth mood={mood} y={frog ? 66 : mouthY} />}
+      <MoodMarks mood={mood} />
     </motion.svg>
   )
 }

@@ -36,26 +36,35 @@ export const landGrab: GameRules<null, LandGrabView> = {
     const plots: Record<number, Plot> = {}
     for (const segment of RING) plots[segment] = { owner: null, fortified: false, damage: 0 }
 
-    const progress = playTurns(landGrab, players, turns, (dart, thrower) => {
+    const progress = playTurns(landGrab, players, turns, (dart, thrower, _turn, _index, emit) => {
       if (dart.miss || dart.number === null) return 'bad'
       const plot = plots[dart.number]
       if (!plot) return 'neutral' // the bull
       let feedback: DartFeedback = 'neutral'
+      // Wall-hits on each victim; a triple can hit two owners in a row.
+      const hits = new Map<PlayerId, number>()
       // Each hit is played out on its own, so a triple can knock a castle
       // down, take it and start fortifying it in one dart.
       for (let hit = 0; hit < dart.multiplier; hit++) {
         if (plot.owner === null) {
           plot.owner = thrower
           feedback = 'great'
+          emit({ kind: 'scored', player: thrower, amount: 1 })
         } else if (plot.owner === thrower) {
           if (!plot.fortified) {
             plot.fortified = true
             if (feedback === 'neutral') feedback = 'good'
           }
         } else {
+          const victim = plot.owner
           plot.damage += 1
+          hits.set(victim, (hits.get(victim) ?? 0) + 1)
           feedback = 'attack'
           if (plot.damage >= hitsToFall(plot)) {
+            emit({ kind: 'attacked', by: thrower, victim, amount: hits.get(victim)! })
+            hits.delete(victim)
+            emit({ kind: 'lost', player: victim, amount: 1 })
+            emit({ kind: 'scored', player: thrower, amount: 1 })
             plot.owner = thrower
             plot.fortified = false
             plot.damage = 0
@@ -63,6 +72,7 @@ export const landGrab: GameRules<null, LandGrabView> = {
           }
         }
       }
+      for (const [victim, amount] of hits) emit({ kind: 'attacked', by: thrower, victim, amount })
       return feedback
     })
 

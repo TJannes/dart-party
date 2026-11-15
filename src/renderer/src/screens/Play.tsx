@@ -1,11 +1,14 @@
 import { activeRecord, canAdvance, evaluateRecord, standings, type Evening } from '../../../core/evening/evening'
 import { placesOf, pointsForRanking } from '../../../core/evening/points'
 import { rulesFor } from '../../../core/game/registry'
-import { rankByScore, type GameState, type WithOpenings } from '../../../core/game/types'
+import { useRef } from 'react'
+import { activeGameKey } from '../../../core/evening/cues'
+import type { GameState, WithOpenings } from '../../../core/game/types'
 import { strings } from '../../../shared/strings'
 import { colourOf, playerOf } from '../colours'
 import { Avatar } from '../components/Avatar'
 import { Controls } from '../components/Controls'
+import { Standings } from '../components/Standings'
 import { dartText } from '../dartText'
 import { EveningFrame } from '../components/EveningFrame'
 import { send } from '../hooks'
@@ -25,35 +28,45 @@ function roundText(gameId: string, state: GameState<any>, maxRounds: number): st
 }
 
 /** The result of the game just finished, and the standings of the evening. */
-function Result({ evening }: { evening: Evening }): React.JSX.Element {
+function Result({ evening, animate }: { evening: Evening; animate: boolean }): React.JSX.Element {
   const record = activeRecord(evening)!
   const state = evaluateRecord(record)
   const places = placesOf(state.ranking)
   const isGame = evening.stage === 'playing'
   const earned = isGame ? pointsForRanking(state.ranking) : {}
   const totals = new Map(standings(evening).map((row) => [row.player, row.points]))
-  // In the standings, players level on points share a place.
-  const standingPlaces = placesOf(rankByScore([...totals.keys()], (id) => totals.get(id)!))
-  const rows = isGame ? standings(evening).map((row) => row.player) : state.ranking.flat()
 
   return (
     <div className="result">
       <div className="result__card">
         <h2>{isGame ? s.standings : s.result(gameName(record.gameId))}</h2>
-        <ol className="scoreboard">
-          {rows.map((id) => {
-            const player = playerOf(evening, id)
-            return (
-              <li key={id} style={{ borderColor: colourOf(evening, id) }}>
-                <span className="scoreboard__place">{s.place(isGame ? standingPlaces[id]! : places[id]!)}</span>
-                <Avatar avatar={player.avatar} size="2em" mood={places[id] === 1 ? 'cheer' : 'idle'} />
-                <span className="scoreboard__name">{player.name}</span>
-                {isGame && <span className="scoreboard__earned">{s.earned(earned[id] ?? 0)}</span>}
-                {isGame && <strong>{s.points(totals.get(id) ?? 0)}</strong>}
-              </li>
-            )
-          })}
-        </ol>
+        {isGame ? (
+          <Standings
+            animate={animate}
+            rows={evening.players.map((player) => ({
+              id: player.id,
+              name: player.name,
+              avatar: player.avatar,
+              colour: colourOf(evening, player.id),
+              before: (totals.get(player.id) ?? 0) - (earned[player.id] ?? 0),
+              earned: earned[player.id] ?? 0,
+              mood: places[player.id] === 1 ? 'cheer' : 'idle',
+            }))}
+          />
+        ) : (
+          <ol className="scoreboard">
+            {state.ranking.flat().map((id) => {
+              const player = playerOf(evening, id)
+              return (
+                <li key={id} style={{ borderColor: colourOf(evening, id) }}>
+                  <span className="scoreboard__place">{s.place(places[id]!)}</span>
+                  <Avatar avatar={player.avatar} size="2em" mood={places[id] === 1 ? 'cheer' : 'idle'} />
+                  <span className="scoreboard__name">{player.name}</span>
+                </li>
+              )
+            })}
+          </ol>
+        )}
         <button type="button" className="button button--big" onClick={() => send({ type: 'advance' })}>
           {strings.common.continue}
         </button>
@@ -74,6 +87,11 @@ export function Play({ evening }: { evening: Evening }): React.JSX.Element {
   const last = record.turns.at(-1)
   const uncleared = current !== null && last !== undefined && !last.done && current.turn >= record.turns.length
   const thrower = current ? playerOf(evening, current.player) : null
+  // The standings only play out when this window saw the game being won:
+  // not after a restart into a game that was already over.
+  const game = activeGameKey(evening)
+  const live = useRef<string | null>(null)
+  if (!state.finished) live.current = game
 
   return (
     <EveningFrame
@@ -105,7 +123,7 @@ export function Play({ evening }: { evening: Evening }): React.JSX.Element {
       <GameScene evening={evening} record={record} state={state} darts={darts} />
 
       <Controls evening={evening} canThrow={current !== null && current.dartsLeft > 0} />
-      {canAdvance(evening) && <Result evening={evening} />}
+      {canAdvance(evening) && <Result evening={evening} animate={live.current === game} />}
     </EveningFrame>
   )
 }

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { Evening, GameRecord } from '../../../core/evening/evening'
 import type { GameState, PlayerId } from '../../../core/game/types'
+import { useMoods } from '../animation/Stage'
 import { colourOf, playerOf } from '../colours'
 import { Avatar, type Mood } from '../components/Avatar'
 
@@ -36,9 +37,15 @@ export function ScoreScene(props: {
   heading?: ReactNode
   /** Players who are out of the game: their row fades. */
   out?: readonly PlayerId[]
+  /** Who has reason to be nervous right now. */
+  nervous?: (player: PlayerId) => boolean
   board: ReactNode
 }): React.JSX.Element {
   const { evening, record, state } = props
+  const moods = useMoods()
+  // The animation in progress goes first, then how the game stands.
+  const mood = (id: PlayerId): Mood =>
+    moods[id] ?? (props.out?.includes(id) ? 'out' : props.nervous?.(id) ? 'sweat' : moodOf(id, record, state))
   return (
     <section className="race">
       <div className="race__track">
@@ -54,19 +61,19 @@ export function ScoreScene(props: {
               }
               style={{ borderColor: colour }}
             >
-              <div className="lane__avatar">
-                <Avatar avatar={player.avatar} mood={props.out?.includes(id) ? 'sulk' : moodOf(id, record, state)} />
+              <div className="lane__avatar" data-anim-avatar={id}>
+                <Avatar avatar={player.avatar} mood={mood(id)} />
               </div>
               <div className="lane__who lane__who--wide">
                 <strong>{player.name}</strong>
                 {props.detail && <span style={{ color: colour }}>{props.detail(id)}</span>}
               </div>
-              <strong className="lane__score">{props.score(id)}</strong>
+              <strong className="lane__score" data-anim-score={id}>{props.score(id)}</strong>
             </div>
           )
         })}
       </div>
-      <div className="race__board">{props.board}</div>
+      <div className="race__board" data-anim-board>{props.board}</div>
     </section>
   )
 }

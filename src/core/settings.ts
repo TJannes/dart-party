@@ -15,6 +15,11 @@ export interface Settings {
    * 'single': everything stays in one window.
    */
   screens: 'auto' | 'single'
+  /**
+   * Drops screen flashes, shaking, full-screen moments and teasing; the
+   * small reactions stay.
+   */
+  calmAnimations: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -23,6 +28,7 @@ export const DEFAULT_SETTINGS: Settings = {
   effectsVolume: 0.8,
   musicVolume: 0.3,
   screens: 'auto',
+  calmAnimations: false,
 }
 
 /** A host:port as typed, tidied. Null when it cannot be an address. */
@@ -56,6 +62,7 @@ export function cleanSettings(raw: unknown): Settings {
     effectsVolume: volume(given['effectsVolume'], DEFAULT_SETTINGS.effectsVolume),
     musicVolume: volume(given['musicVolume'], DEFAULT_SETTINGS.musicVolume),
     screens: given['screens'] === 'single' ? 'single' : 'auto',
+    calmAnimations: given['calmAnimations'] === true,
   }
 }
 

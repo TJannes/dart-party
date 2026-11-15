@@ -42,13 +42,14 @@ export const spotlight: GameRules<SpotlightSetup, SpotlightView> = {
     for (const player of players) scores[player] = 0
     const targetOf = (round: number): number => setup.targets[round % setup.targets.length]!
 
-    const progress = playTurns(spotlight, players, turns, (dart, thrower, turnIndex) => {
+    const progress = playTurns(spotlight, players, turns, (dart, thrower, turnIndex, _index, emit) => {
       if (dart.miss || dart.number === null) return 'bad'
       // Doubles and triples count no extra; the bull scores nothing.
       if (dart.number === BULL) return 'neutral'
       const round = Math.floor(turnIndex / players.length)
       const points = spotlightWorth(targetOf(round))[dart.number] ?? 0
       scores[thrower]! += points
+      if (points > 0) emit({ kind: 'scored', player: thrower, amount: points })
       return points === 3 ? 'great' : points > 0 ? 'good' : 'neutral'
     })
 

@@ -32,15 +32,17 @@ export const robinHood: GameRules<null, RobinHoodView> = {
   id: 'robinHood',
   dartsPerTurn: 3,
   maxRounds: 6,
+  feats: ['bullseye'],
 
   setup: () => null,
 
   evaluate(_setup, players, turns) {
     const scores: Record<PlayerId, number> = {}
     for (const player of players) scores[player] = 0
-    const progress = playTurns(robinHood, players, turns, (dart, thrower) => {
+    const progress = playTurns(robinHood, players, turns, (dart, thrower, _turn, _index, emit) => {
       const points = archeryPoints(dart)
       scores[thrower]! += points
+      if (points > 0) emit({ kind: 'scored', player: thrower, amount: points })
       return points === 0 ? 'bad' : points >= 5 ? 'great' : points === 4 ? 'good' : 'neutral'
     })
     return {

@@ -28,6 +28,34 @@ export type Ranking = PlayerId[][]
  */
 export type DartFeedback = 'great' | 'good' | 'attack' | 'neutral' | 'bad'
 
+/**
+ * What a dart did and to whom, for the windows to animate and to make
+ * sound with. Pure data: a moment never changes a score, it only reports
+ * what the rules already decided.
+ */
+export type Moment =
+  /** Points, steps or plots gained. */
+  | { kind: 'scored'; player: PlayerId; amount: number }
+  /** Points lost. */
+  | { kind: 'lost'; player: PlayerId; amount: number }
+  /** `by` hurt `victim`: steps pushed back, hits on a wall, lives taken. */
+  | { kind: 'attacked'; by: PlayerId; victim: PlayerId; amount: number }
+  | { kind: 'lifeLost'; player: PlayerId; amount: number; left: number }
+  | { kind: 'knockedOut'; player: PlayerId }
+
+export type Emit = (moment: Moment) => void
+
+/** A dart that counted: where it sits in the turns, and what it caused. */
+export interface PlayedDart {
+  turn: number
+  index: number
+  thrower: PlayerId
+  moments: Moment[]
+}
+
+/** The ordinary darts feats a game can call spectacular. */
+export type ScoreFeat = 'bullseye' | 'triple20' | 'oneEighty'
+
 export interface GameState<View> {
   /** Everything the scene needs to draw this game. */
   view: View
@@ -43,6 +71,8 @@ export interface GameState<View> {
   feedback: DartFeedback[]
   /** Who threw each turn played so far, in order. */
   throwers: PlayerId[]
+  /** One entry per dart that counted, alongside `feedback`. */
+  played: PlayedDart[]
 }
 
 /** What the header calls a round, when a game has its own word for it. */
@@ -59,6 +89,11 @@ export interface GameRules<Setup = unknown, View = unknown> {
   id: string
   dartsPerTurn: number
   maxRounds: number
+  /**
+   * Which ordinary darts feats are something special in this game. Three
+   * darts in one segment and three misses in a turn always are.
+   */
+  feats?: readonly ScoreFeat[]
   /** Whatever is decided by chance before the first dart. */
   setup(players: readonly PlayerId[], random: Random): Setup
   /** `players` is the throwing order. */
@@ -66,7 +101,7 @@ export interface GameRules<Setup = unknown, View = unknown> {
 }
 
 /** How far a game has got: everything in its state but the view and the ranking. */
-export type Progress = Pick<GameState<unknown>, 'finished' | 'current' | 'feedback' | 'throwers'>
+export type Progress = Pick<GameState<unknown>, 'finished' | 'current' | 'feedback' | 'throwers' | 'played'>
 
 /** Groups players by a score, highest first; equal scores tie. */
 export function rankByScore(players: readonly PlayerId[], score: (p: PlayerId) => number): Ranking {
@@ -96,11 +131,13 @@ export function playTurns(
     thrower: PlayerId,
     turnIndex: number,
     dartIndex: number,
+    emit: Emit,
   ) => DartFeedback | { feedback: DartFeedback; finish: true },
 ): Progress {
   const maxTurns = rules.maxRounds * players.length
   const feedback: DartFeedback[] = []
   const throwers: PlayerId[] = []
+  const played: PlayedDart[] = []
   let index = 0
   for (; index < turns.length && index < maxTurns; index++) {
     const turn = turns[index]!
@@ -108,12 +145,14 @@ export function playTurns(
     throwers.push(thrower)
     const darts = turn.darts.slice(0, rules.dartsPerTurn)
     for (let d = 0; d < darts.length; d++) {
-      const result = onDart(darts[d]!.dart, thrower, index, d)
+      const moments: Moment[] = []
+      const result = onDart(darts[d]!.dart, thrower, index, d, (moment) => moments.push(moment))
+      played.push({ turn: index, index: d, thrower, moments })
       if (typeof result === 'string') {
         feedback.push(result)
       } else {
         feedback.push(result.feedback)
-        return { finished: true, current: null, feedback, throwers }
+        return { finished: true, current: null, feedback, throwers, played }
       }
     }
     // The last turn of the game needs no takeout to count as over.
@@ -129,10 +168,11 @@ export function playTurns(
         },
         feedback,
         throwers,
+        played,
       }
     }
   }
-  if (index >= maxTurns) return { finished: true, current: null, feedback, throwers }
+  if (index >= maxTurns) return { finished: true, current: null, feedback, throwers, played }
   return {
     finished: false,
     current: {
@@ -143,6 +183,7 @@ export function playTurns(
     },
     feedback,
     throwers,
+    played,
   }
 }
 
@@ -165,11 +206,13 @@ export function playKnockout(
     thrower: PlayerId,
     turnIndex: number,
     dartIndex: number,
+    emit: Emit,
   ) => DartFeedback | { feedback: DartFeedback; endTurn: true },
 ): Progress {
   const feedback: DartFeedback[] = []
   const throwers: PlayerId[] = []
-  const over = (): Progress => ({ finished: true, current: null, feedback, throwers })
+  const played: PlayedDart[] = []
+  const over = (): Progress => ({ finished: true, current: null, feedback, throwers, played })
   const standing = (): number => players.filter((player) => !isOut(player)).length
   let seat = -1
   let round = 1
@@ -191,13 +234,16 @@ export function playKnockout(
         current: { player: thrower, round, dartsLeft: rules.dartsPerTurn, turn: index },
         feedback,
         throwers,
+        played,
       }
     }
     throwers.push(thrower)
     const darts = turn.darts.slice(0, rules.dartsPerTurn)
     let ended = false
     for (let d = 0; d < darts.length && !ended; d++) {
-      const result = onDart(darts[d]!.dart, thrower, index, d)
+      const moments: Moment[] = []
+      const result = onDart(darts[d]!.dart, thrower, index, d, (moment) => moments.push(moment))
+      played.push({ turn: index, index: d, thrower, moments })
       feedback.push(typeof result === 'string' ? result : result.feedback)
       ended = typeof result !== 'string' || isOut(thrower) || standing() <= 1
     }
@@ -207,6 +253,7 @@ export function playKnockout(
         current: { player: thrower, round, dartsLeft: rules.dartsPerTurn - darts.length, turn: index },
         feedback,
         throwers,
+        played,
       }
     }
   }

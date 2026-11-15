@@ -49,13 +49,19 @@ export const lastOneStanding: GameRules<LastOneStandingSetup, LastOneStandingVie
       players,
       turns,
       (player) => lives[player]! <= 0,
-      (dart, thrower) => {
+      (dart, thrower, _turn, _index, emit) => {
         if (dart.miss || dart.number === null) return 'bad'
         const hit = owner.get(dart.number)
         // Nobody's segment, or the segment of someone already out.
         if (hit === undefined || lives[hit]! <= 0) return 'neutral'
-        lives[hit] = Math.max(0, lives[hit]! - dart.multiplier)
-        if (lives[hit] === 0) out.push(hit)
+        const taken = Math.min(lives[hit]!, dart.multiplier)
+        lives[hit]! -= taken
+        if (hit !== thrower) emit({ kind: 'attacked', by: thrower, victim: hit, amount: taken })
+        emit({ kind: 'lifeLost', player: hit, amount: taken, left: lives[hit]! })
+        if (lives[hit] === 0) {
+          out.push(hit)
+          emit({ kind: 'knockedOut', player: hit })
+        }
         if (hit === thrower) return 'bad'
         return lives[hit] === 0 ? 'great' : 'attack'
       },

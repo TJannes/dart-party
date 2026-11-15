@@ -63,7 +63,7 @@ export const race: GameRules<RaceSetup, RaceView> = {
     const moves: RaceMove[] = []
     let winner: PlayerId | null = null
 
-    const progress = playTurns(race, players, turns, (dart, thrower, turn, dartIndex) => {
+    const progress = playTurns(race, players, turns, (dart, thrower, turn, dartIndex, emit) => {
       if (dart.miss || dart.number === null) return 'bad'
       const hit = owner.get(dart.number)
       if (hit === undefined) return 'neutral'
@@ -75,6 +75,8 @@ export const race: GameRules<RaceSetup, RaceView> = {
       if (to === from) return 'neutral'
       positions[hit] = to
       moves.push({ turn, dart: dartIndex, thrower, player: hit, from, to })
+      if (forward) emit({ kind: 'scored', player: hit, amount: to - from })
+      else emit({ kind: 'attacked', by: thrower, victim: hit, amount: from - to })
       const feedback = !forward ? 'attack' : to - from >= 2 ? 'great' : 'good'
       if (to >= RACE_TRACK_LENGTH) {
         winner = hit

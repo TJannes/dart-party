@@ -16,6 +16,7 @@ export const piggyBank: GameRules<null, PiggyBankView> = {
   id: 'piggyBank',
   dartsPerTurn: 3,
   maxRounds: 6,
+  feats: ['bullseye', 'triple20', 'oneEighty'],
 
   setup: () => null,
 
@@ -26,14 +27,17 @@ export const piggyBank: GameRules<null, PiggyBankView> = {
       scores[player] = 0
       breaks[player] = 0
     }
-    const progress = playTurns(piggyBank, players, turns, (dart, thrower) => {
+    const progress = playTurns(piggyBank, players, turns, (dart, thrower, _turn, _index, emit) => {
       if (dart.miss) {
-        scores[thrower]! -= Math.floor(scores[thrower]! / 2)
+        const half = Math.floor(scores[thrower]! / 2)
+        scores[thrower]! -= half
+        if (half > 0) emit({ kind: 'lost', player: thrower, amount: half })
         breaks[thrower]! += 1
         return 'bad'
       }
       const value = dartScore(dart)
       scores[thrower]! += value
+      if (value > 0) emit({ kind: 'scored', player: thrower, amount: value })
       return value >= 40 ? 'great' : 'good'
     })
     return {

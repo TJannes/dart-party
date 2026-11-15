@@ -54,7 +54,7 @@ export const higherOrLower: GameRules<HigherOrLowerSetup, HigherOrLowerView> = {
       players,
       turns,
       (player) => lives[player]! <= 0,
-      (dart, thrower) => {
+      (dart, thrower, _turn, _index, emit) => {
         const call = callFor(bar, flip())
         thrown++
         const value = dartScore(dart)
@@ -64,7 +64,11 @@ export const higherOrLower: GameRules<HigherOrLowerSetup, HigherOrLowerView> = {
         if (!dart.miss) bar = value
         if (right) return 'good'
         lives[thrower]! -= 1
-        if (lives[thrower] === 0) out.push(thrower)
+        emit({ kind: 'lifeLost', player: thrower, amount: 1, left: lives[thrower]! })
+        if (lives[thrower] === 0) {
+          out.push(thrower)
+          emit({ kind: 'knockedOut', player: thrower })
+        }
         return 'bad'
       },
     )

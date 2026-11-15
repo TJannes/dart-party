@@ -61,7 +61,7 @@ export const timeBomb: GameRules<TimeBombSetup, TimeBombView> = {
       players,
       turns,
       (player) => lives[player]! <= 0,
-      (dart, thrower, turnIndex) => {
+      (dart, thrower, turnIndex, _index, emit) => {
         if (!dart.miss && dart.number !== null && zone(turnIndex).includes(dart.number)) {
           return { feedback: 'great', endTurn: true }
         }
@@ -71,7 +71,11 @@ export const timeBomb: GameRules<TimeBombSetup, TimeBombView> = {
         explosions++
         burned = 0
         lives[thrower]! -= 1
-        if (lives[thrower] === 0) out.push(thrower)
+        emit({ kind: 'lifeLost', player: thrower, amount: 1, left: lives[thrower]! })
+        if (lives[thrower] === 0) {
+          out.push(thrower)
+          emit({ kind: 'knockedOut', player: thrower })
+        }
         return { feedback: 'bad', endTurn: true }
       },
     )

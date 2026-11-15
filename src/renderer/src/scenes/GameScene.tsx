@@ -46,6 +46,10 @@ function hearts(view: KnockoutView, player: string): string {
   return lives > 0 ? '♥'.repeat(lives) : strings.evening.out
 }
 
+/** On your last life and at the board: reason to sweat. */
+const lastLife = (view: KnockoutView, state: GameState<unknown>) => (player: string): boolean =>
+  view.lives[player] === 1 && state.current?.player === player
+
 /** The scene of whichever game is being played. A new game adds a case. */
 export function GameScene(props: {
   evening: Evening
@@ -165,6 +169,7 @@ export function GameScene(props: {
         <ScoreScene
           {...common}
           out={view.out}
+          nervous={lastLife(view, state)}
           score={(id) => hearts(view, id)}
           detail={(id) => view.segments[id]![0]}
           board={<Board owners={owners} darts={darts} />}
@@ -182,6 +187,7 @@ export function GameScene(props: {
         <ScoreScene
           {...common}
           out={view.out}
+          nervous={lastLife(view, state)}
           heading={<span className="scene__call">{call}</span>}
           score={(id) => hearts(view, id)}
           board={<Board darts={darts} />}
@@ -197,6 +203,7 @@ export function GameScene(props: {
         <ScoreScene
           {...common}
           out={view.out}
+          nervous={lastLife(view, state)}
           heading={
             <>
               {g.timeBomb.target(view.target)}

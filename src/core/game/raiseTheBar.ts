@@ -1,5 +1,5 @@
 import { dartScore } from '../board/ring'
-import { rankByScore, type DartFeedback, type GameRules, type PlayerId } from './types'
+import { rankByScore, type DartFeedback, type GameRules, type PlayedDart, type PlayerId } from './types'
 
 // Raise the Bar: do better than the player before you. An opener throws
 // three darts and their total is the bar. The next player must throw more.
@@ -31,6 +31,7 @@ export const raiseTheBar: GameRules<null, RaiseTheBarView> = {
   dartsPerTurn: 3,
   // An upper bound only; the real length is the number of openings.
   maxRounds: 8,
+  feats: ['bullseye', 'triple20', 'oneEighty'],
 
   setup: () => null,
 
@@ -40,6 +41,7 @@ export const raiseTheBar: GameRules<null, RaiseTheBarView> = {
     const openings = players.length * openingsEach(players.length)
     const feedback: DartFeedback[] = []
     const throwers: PlayerId[] = []
+    const played: PlayedDart[] = []
 
     let opening = 0
     let holder: PlayerId | null = null
@@ -62,6 +64,7 @@ export const raiseTheBar: GameRules<null, RaiseTheBarView> = {
       current: current && { player: players[seat]!, round: opening + 1, ...current },
       feedback,
       throwers,
+      played,
       ranking: rankByScore(players, (player) => scores[player]!),
       view: view(thrown),
     })
@@ -72,8 +75,9 @@ export const raiseTheBar: GameRules<null, RaiseTheBarView> = {
       throwers.push(thrower)
       const darts = turn.darts.slice(0, raiseTheBar.dartsPerTurn)
       let total = 0
-      for (const { dart } of darts) {
+      for (const [d, { dart }] of darts.entries()) {
         const value = dartScore(dart)
+        played.push({ turn: index, index: d, thrower, moments: [] })
         const wasOver = bar !== null && total > bar
         total += value
         const nowOver = bar !== null && total > bar
@@ -98,7 +102,10 @@ export const raiseTheBar: GameRules<null, RaiseTheBarView> = {
         seat = (seat + 1) % players.length
       } else {
         // Not over: the holder takes the pot and the attempt is void.
-        if (darts.length > 0) feedback[feedback.length - 1] = 'bad'
+        if (darts.length > 0) {
+          feedback[feedback.length - 1] = 'bad'
+          played.at(-1)!.moments.push({ kind: 'scored', player: holder, amount: pot })
+        }
         scores[holder]! += pot
         opening += 1
         holder = null

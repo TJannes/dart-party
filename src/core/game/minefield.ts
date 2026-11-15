@@ -48,7 +48,7 @@ export const minefield: GameRules<MinefieldSetup, MinefieldView> = {
     const left: Record<Hidden, number> = { chest: 0, coin: 0, bomb: 0, empty: 0 }
     for (const hidden of Object.values(setup.under)) left[hidden] += 1
 
-    const progress = playTurns(minefield, players, turns, (dart, thrower) => {
+    const progress = playTurns(minefield, players, turns, (dart, thrower, _turn, _index, emit) => {
       if (dart.miss || dart.number === null) return 'bad'
       const hidden = setup.under[dart.number]
       // The bull, or a segment that was already dug up.
@@ -57,10 +57,13 @@ export const minefield: GameRules<MinefieldSetup, MinefieldView> = {
       left[hidden] -= 1
       if (hidden === 'empty') return 'neutral'
       if (hidden === 'bomb') {
-        scores[thrower]! -= Math.floor(scores[thrower]! / 2)
+        const half = Math.floor(scores[thrower]! / 2)
+        scores[thrower]! -= half
+        if (half > 0) emit({ kind: 'lost', player: thrower, amount: half })
         return 'bad'
       }
       scores[thrower]! += TREASURE_VALUE[hidden]
+      emit({ kind: 'scored', player: thrower, amount: TREASURE_VALUE[hidden] })
       const feedback = hidden === 'chest' ? 'great' : 'good'
       // With every treasure found there is nothing left to play for.
       return left.chest + left.coin === 0 ? { feedback, finish: true } : feedback

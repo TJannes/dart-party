@@ -3,6 +3,7 @@ import type { Dart } from '../../../core/board/state'
 import type { Evening, GameRecord } from '../../../core/evening/evening'
 import type { RaceView } from '../../../core/game/race'
 import type { GameState, PlayerId } from '../../../core/game/types'
+import { useMoods } from '../animation/Stage'
 import { colourOf, playerOf } from '../colours'
 import { Avatar, type Mood } from '../components/Avatar'
 import { Board } from '../components/Board'
@@ -24,6 +25,7 @@ export function RaceScene(props: {
 }): React.JSX.Element {
   const { evening, record, state } = props
   const { segments, positions, trackLength } = state.view
+  const moods = useMoods()
   const owners: Record<number, string> = {}
   for (const id of record.order) {
     for (const segment of segments[id] ?? []) owners[segment] = colourOf(evening, id)
@@ -48,10 +50,12 @@ export function RaceScene(props: {
                 ))}
                 <motion.div
                   className="lane__racer"
+                  data-anim-avatar={id}
+                  data-anim-score={id}
                   animate={{ left: `${(positions[id]! / trackLength) * 100}%` }}
                   transition={{ type: 'spring', stiffness: 120, damping: 14 }}
                 >
-                  <Avatar avatar={player.avatar} mood={moodOf(id, state)} />
+                  <Avatar avatar={player.avatar} mood={moods[id] ?? moodOf(id, state)} />
                 </motion.div>
               </div>
               <div className="lane__flag" aria-hidden />
@@ -59,7 +63,7 @@ export function RaceScene(props: {
           )
         })}
       </div>
-      <div className="race__board">
+      <div className="race__board" data-anim-board>
         <Board owners={owners} darts={props.darts} />
       </div>
     </section>

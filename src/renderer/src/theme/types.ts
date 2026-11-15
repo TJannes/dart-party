@@ -1,3 +1,5 @@
+import type { AnimationPack } from '../animation/pack'
+
 // A theme pack: everything about the look and the sound that can be swapped
 // as one, for a season or a holiday. Only one ships for now.
 
@@ -23,6 +25,20 @@ export type EffectName =
   | 'tick'
   | 'reveal'
   | 'fanfare'
+  | 'lifeLost'
+  | 'knockedOut'
+  /** A spectacular dart. */
+  | 'sparkle'
+  /** Three misses in a turn. */
+  | 'trombone'
+  /** The next player is up. */
+  | 'turn'
+  /** Points landing on the scoreboard. */
+  | 'coin'
+  /** The crown hops to a new leader. */
+  | 'crown'
+  /** Someone lands on their podium step. */
+  | 'climb'
 
 export type MusicScene = 'menu' | 'game' | 'podium'
 
@@ -43,4 +59,6 @@ export interface Theme {
   playerColours: string[]
   effects: Record<EffectName, Tone[]>
   music: Record<MusicScene, Music>
+  /** How each moment looks. Replaceable as a whole or per game. */
+  animations: AnimationPack
 }

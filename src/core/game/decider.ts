@@ -12,15 +12,17 @@ export const decider: GameRules<null, DeciderView> = {
   id: 'decider',
   dartsPerTurn: 3,
   maxRounds: 1,
+  feats: ['bullseye', 'triple20', 'oneEighty'],
 
   setup: () => null,
 
   evaluate(_setup, players, turns) {
     const scores: Record<PlayerId, number> = {}
     for (const player of players) scores[player] = 0
-    const progress = playTurns(decider, players, turns, (dart, thrower) => {
+    const progress = playTurns(decider, players, turns, (dart, thrower, _turn, _index, emit) => {
       const score = dartScore(dart)
       scores[thrower]! += score
+      if (score > 0) emit({ kind: 'scored', player: thrower, amount: score })
       return score === 0 ? 'bad' : score >= 40 ? 'great' : 'good'
     })
     return {
