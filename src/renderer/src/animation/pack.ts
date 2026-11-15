@@ -84,6 +84,30 @@ function spotOf(element: Element | null): Spot | null {
   return { x: box.left + box.width / 2, y: box.top + box.height / 2, size: Math.min(box.width, box.height) }
 }
 
+/**
+ * Where a prop comes to rest. A prop may be sliding in or being nudged by
+ * its own transform when an effect starts (the pig slides in for each new
+ * player), and an effect aims at where it will be, not where it is passing.
+ */
+function restingSpotOf(element: Element | null): Spot | null {
+  const spot = spotOf(element)
+  if (!spot || !(element instanceof HTMLElement)) return spot
+  const transform = getComputedStyle(element).transform
+  let dx = 0
+  let dy = 0
+  if (transform && transform !== 'none') {
+    try {
+      const matrix = new DOMMatrixReadOnly(transform)
+      dx = matrix.m41
+      dy = matrix.m42
+    } catch {
+      // Not a transform we can read: take the box as it is.
+    }
+  }
+  const size = Math.min(element.offsetWidth, element.offsetHeight) || spot.size
+  return { x: spot.x - dx, y: spot.y - dy, size }
+}
+
 /** Where a dart is in board units: as placed, or else the middle of its bed. */
 export function boardPosition(dart: Dart): { x: number; y: number } {
   if (dart.position) return dart.position
@@ -99,11 +123,23 @@ export function boardPosition(dart: Dart): { x: number; y: number } {
 export function stageInfo(party: Party, calm: boolean, story: DartStory | null): StageInfo {
   const dart = story?.dart ?? null
   const find = (selector: string): Element | null => document.querySelector(selector)
-  const avatar = (player: PlayerId): Spot | null => spotOf(find(`[data-anim-avatar="${CSS.escape(player)}"]`))
+  // Each place is measured once per cue. Avatars hop, the board shakes and
+  // scenes render again while a cue plays; an effect whose path changed on
+  // a later render would make Motion start it over, late.
+  const measured = new Map<string, Spot>()
+  const once = (key: string, measure: () => Spot | null): Spot | null => {
+    const known = measured.get(key)
+    if (known) return known
+    const spot = measure()
+    if (spot) measured.set(key, spot)
+    return spot
+  }
+  const avatar = (player: PlayerId): Spot | null =>
+    once(`avatar:${player}`, () => spotOf(find(`[data-anim-avatar="${CSS.escape(player)}"]`)))
   const scoreElement = (player: PlayerId): Element | null => find(`[data-anim-score="${CSS.escape(player)}"]`)
   const boardElement = (): Element | null => find('[data-anim-board] svg, svg[data-anim-board]')
   const propElement = (name: string): Element | null => find(`[data-anim-prop="${CSS.escape(name)}"]`)
-  const board = (): Spot | null => spotOf(boardElement())
+  const board = (): Spot | null => once('board', () => spotOf(boardElement()))
   const boardScale = (): number => (board()?.size ?? 0) / (2 * BOARD_VIEW)
   const boardXY = (at: { x: number; y: number }): { x: number; y: number } | null => {
     const spot = board()
@@ -125,11 +161,11 @@ export function stageInfo(party: Party, calm: boolean, story: DartStory | null):
     nameOf: (player) => playerOf(party, player)?.name ?? '',
     avatarOf: (player) => playerOf(party, player)?.avatar ?? 'fox',
     avatar,
-    score: (player) => spotOf(scoreElement(player)) ?? avatar(player),
+    score: (player) => once(`score:${player}`, () => spotOf(scoreElement(player))) ?? avatar(player),
     scoreElement,
     board,
     boardElement,
-    prop: (name) => spotOf(propElement(name)),
+    prop: (name) => once(`prop:${name}`, () => restingSpotOf(propElement(name))),
     propElement,
     boardPoint,
     dartPoint: () => (dart ? boardPoint(dart) : board()),

@@ -859,16 +859,20 @@ function HammerBlow(props: { stage: SceneProps['stage']; at: number; length: num
   const ground = pig.y + pig.size * 0.45
   return (
     <>
-      <Pin at={{ x: pig.x - pig.size * 0.35, y: pig.y - pig.size * 0.75 }}>
+      {/* Drawn upright and swung about the end of the handle, which is held
+          left of the pig at the height of its back: wound back first, then
+          down so the head lands on top of the pig. */}
+      <Pin at={{ x: pig.x - pig.size * 0.8, y: pig.y - pig.size * 0.7 }}>
         <motion.svg
           className="fx-hammer"
           viewBox="0 0 60 60"
-          initial={{ rotate: -75, opacity: 0 }}
-          animate={{ rotate: [-75, -80, 12, -6, -6], opacity: [0, 1, 1, 1, 0] }}
+          style={{ width: pig.size, height: pig.size }}
+          initial={{ rotate: -15, opacity: 0 }}
+          animate={{ rotate: [-15, -35, 78, 66, 66], opacity: [0, 1, 1, 1, 0] }}
           transition={{ duration: length, delay: at, times: [0, 0.14, 0.3, 0.45, 1], ease: 'easeIn' }}
         >
-          <rect x="24" y="20" width="7" height="38" rx="3" transform="rotate(35 27 39)" fill="#b98a5a" stroke="#1b0a38" strokeWidth="2" />
-          <rect x="2" y="6" width="34" height="18" rx="4" transform="rotate(35 19 15)" fill="#9a97a6" stroke="#1b0a38" strokeWidth="2" />
+          <rect x="27" y="14" width="6" height="44" rx="3" fill="#b98a5a" stroke="#1b0a38" strokeWidth="2" />
+          <rect x="11" y="2" width="38" height="16" rx="4" fill="#9a97a6" stroke="#1b0a38" strokeWidth="2" />
         </motion.svg>
       </Pin>
       <Pow at={{ x: pig.x, y: pig.y - pig.size * 0.3 }} size={pig.size * 0.9} delay={hit} />

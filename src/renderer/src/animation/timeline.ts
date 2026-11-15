@@ -55,6 +55,17 @@ export interface Timeline {
 /** A chain may take this long, however much one dart caused. */
 export const MAX_CHAIN = 3
 
+/**
+ * Land Grab's catapult: the attack step lasts longer there, and the stone is
+ * in the air for this part of it. A plot changes hands when it lands.
+ */
+const STONE_STEP = 1
+export const STONE_FLIGHT = 0.7
+
+function lengthOf(beat: Beat, gameId: string): number {
+  return gameId === 'landGrab' && beat.kind === 'attacked' ? STONE_STEP : LENGTH[beat.kind]
+}
+
 const LENGTH: Record<Beat['kind'], number> = {
   scored: 0.8,
   lost: 0.9,
@@ -123,19 +134,17 @@ type Sound = { at: number; effect: EffectName }
 function soundsOf(beat: Beat, story: DartStory, step: Step): Sound[] {
   const { gameId } = story
   const one = (effect: EffectName, after = 0): Sound[] => [{ at: step.at + after * step.length, effect }]
-  // In Land Grab a plot changes hands when the catapult stone has landed.
-  const stone = gameId === 'landGrab' && story.chain.some((other) => other.kind === 'attacked') ? 0.6 : 0
   switch (beat.kind) {
     case 'scored':
       if (gameId === 'piggyBank') return one(beat.amount >= 40 ? 'goldCoin' : 'clink', 0.6)
       if (gameId === 'race') return one(beat.amount >= 3 ? 'nitro' : 'vroom')
       if (gameId === 'spotlight') return beat.amount === 3 ? one('applause', 0.3) : []
-      if (gameId === 'landGrab') return one('build', stone)
+      if (gameId === 'landGrab') return one('build')
       if (gameId === 'raiseTheBar') return one('coin', 0.6)
       return []
     case 'lost':
       if (gameId === 'piggyBank') return one('smash', 0.3)
-      if (gameId === 'landGrab') return one('crumble', stone)
+      if (gameId === 'landGrab') return one('crumble')
       return []
     case 'dug': {
       const found = { chest: 'chest', coin: 'flip', empty: 'crab', bomb: null } as const
@@ -228,8 +237,15 @@ export function timelineOf(cue: Cue, calm: boolean, others: readonly PlayerId[] 
   const start = lead + (story.chain.some((beat) => beat.kind === 'exploded') ? BANG_START : CHAIN_START)
   let cursor = start
   const chained: Step[] = []
+  // In Land Grab a plot changes hands once the catapult stone has landed.
+  const catapult = story.gameId === 'landGrab' && story.chain.some((beat) => beat.kind === 'attacked')
+  const afterStone: Step[] = []
   story.chain.forEach((beat, n) => {
     const key = `${beat.kind}${n}`
+    if (catapult && (beat.kind === 'scored' || beat.kind === 'lost')) {
+      afterStone.push({ key, at: 0, length: LENGTH[beat.kind], scene: beat })
+      return
+    }
     if (ALONGSIDE.includes(beat.kind)) {
       // The dig itself starts with the dart; what it turns up waits for it.
       const at = beat.kind === 'dug' ? 0 : lead + 0.15
@@ -239,8 +255,8 @@ export function timelineOf(cue: Cue, calm: boolean, others: readonly PlayerId[] 
       if (beat.kind === 'lost') moods.push({ player: beat.player, mood: 'shocked', from: at, until: at + 1.05 })
       return
     }
-    chained.push({ key, at: cursor, length: LENGTH[beat.kind], scene: beat })
-    cursor += LENGTH[beat.kind]
+    chained.push({ key, at: cursor, length: lengthOf(beat, story.gameId), scene: beat })
+    cursor += lengthOf(beat, story.gameId)
   })
 
   // Squeeze a long chain into the time it may take.
@@ -276,6 +292,15 @@ export function timelineOf(cue: Cue, calm: boolean, others: readonly PlayerId[] 
     steps.push(step)
   }
   cursor = start + (cursor - start) * squeeze
+
+  const attack = chained.find((step) => step.scene.kind === 'attacked')
+  for (const step of afterStone) {
+    step.at = attack ? attack.at + attack.length * STONE_FLIGHT : start
+    steps.push(step)
+    sounds.push(...soundsOf(step.scene as Beat, story, step))
+    const beat = step.scene as Beat
+    if (beat.kind === 'lost') moods.push({ player: beat.player, mood: 'shocked', from: step.at, until: step.at + 1.05 })
+  }
 
   const won = story.chain.some((beat) => beat.kind === 'won')
   if (cue.next && !won) {

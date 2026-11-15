@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Beat, Cue, DartStory } from '../../../core/party/cues'
 import { manualDart } from '../../../core/board/ring'
-import { blowTimes, DIG_TIME, MAX_CHAIN, timelineOf } from './timeline'
+import { blowTimes, DIG_TIME, MAX_CHAIN, STONE_FLIGHT, timelineOf } from './timeline'
 
 const story = (feedback: DartStory['feedback'], chain: Beat[]): DartStory => ({
   game: 'g0',
@@ -41,6 +41,30 @@ describe('the timeline of a cue', () => {
     const { steps } = timelineOf(dart('great', long), false)
     const end = Math.max(...steps.filter((step) => step.scene.kind !== 'turn').map((step) => step.at + step.length))
     expect(end).toBeLessThanOrEqual(MAX_CHAIN + 0.001)
+  })
+
+  it('changes a Land Grab plot hands only when the catapult stone lands', () => {
+    const capture: Cue = {
+      kind: 'dart',
+      story: {
+        ...story('great', [
+          { kind: 'attacked', by: 'ann', victim: 'bob', amount: 1 },
+          { kind: 'lost', player: 'bob', amount: 1 },
+          { kind: 'scored', player: 'ann', amount: 1 },
+        ]),
+        gameId: 'landGrab',
+      },
+      next: null,
+    }
+    const { steps, sounds } = timelineOf(capture, false)
+    const attack = steps.find((step) => step.scene.kind === 'attacked')!
+    const landing = attack.at + attack.length * STONE_FLIGHT
+    expect(attack.length * STONE_FLIGHT).toBeGreaterThanOrEqual(0.6)
+    for (const kind of ['lost', 'scored']) {
+      expect(steps.find((step) => step.scene.kind === kind)!.at).toBeCloseTo(landing)
+    }
+    expect(sounds.find((sound) => sound.effect === 'crumble')!.at).toBeCloseTo(landing)
+    expect(sounds.find((sound) => sound.effect === 'build')!.at).toBeCloseTo(landing)
   })
 
   it('lets points fly while the dart lands', () => {

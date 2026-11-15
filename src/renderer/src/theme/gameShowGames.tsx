@@ -4,7 +4,7 @@ import type { SniperView } from '../../../core/game/sniper'
 import type { SpotlightView } from '../../../core/game/spotlight'
 import { RING } from '../../../core/board/ring'
 import type { AnimationSet, SceneProps, Spot } from '../animation/pack'
-import { DIG_TIME } from '../animation/timeline'
+import { DIG_TIME, STONE_FLIGHT } from '../animation/timeline'
 import { Avatar } from '../components/Avatar'
 import {
   Burst,
@@ -397,15 +397,12 @@ function SpotlightBlank({ step, stage }: SceneProps<'blank'>): React.JSX.Element
 
 // -------------------------------------------------------------- Land Grab
 
-/** When a plot changes hands: once the catapult stone has landed, if one flies. */
-const stoneLands = (stage: Stage, step: { at: number; length: number }): number =>
-  stage.story?.chain.some((beat) => beat.kind === 'attacked') ? step.at + step.length * 0.6 : step.at
-
 /** A plot is yours: a flag in your colour goes up on it. */
 function LandClaimed(props: SceneProps<'scored'>): React.JSX.Element {
   const { step, stage } = props
   const at = segmentOf(stage)
-  const delay = stoneLands(stage, step)
+  // The timeline already waits for a catapult stone to land.
+  const delay = step.at
   const size = stage.boardScale() * 0.34
   return (
     <>
@@ -461,27 +458,52 @@ function LandFortified({ step, stage }: SceneProps<'fortified'>): React.JSX.Elem
   )
 }
 
-/** A stone flies from the attacker's avatar to the castle and cracks its wall. */
+/**
+ * A stone is launched from the attacker's avatar, flies one arc to the castle
+ * and cracks its wall: level at an even pace, up slowing and down speeding.
+ */
 function LandAttacked({ step, stage }: SceneProps<'attacked'>): React.JSX.Element | null {
-  const from = stage.avatar(step.scene.by)
-  const to = segmentOf(stage)
-  const flight = step.length * 0.6
+  const flight = step.length * STONE_FLIGHT
   useNudge(stage.boardElement, SHAKE, step.at + flight, 260, stage.calm)
-  if (!from || !to) return null
-  const lift = unit() * 18
+  // Measured once. The attacker's avatar moves while it laughs, and a path
+  // that changes on a later render makes Motion start the flight over.
+  const [arc] = useState(() => {
+    const from = stage.avatar(step.scene.by)
+    const to = segmentOf(stage)
+    if (!from || !to) return null
+    const dx = to.x - from.x
+    const dy = to.y - from.y
+    // One arc, as points along a parabola at even steps in time: level at an
+    // even pace, rising slower and falling faster as a thrown stone does.
+    const lift = unit() * 18 + Math.abs(dy) * 0.25
+    const points = Array.from({ length: 13 }, (_, n) => n / 12)
+    return {
+      from,
+      to,
+      animate: {
+        x: points.map((t) => dx * t),
+        y: points.map((t) => dy * t - 4 * lift * t * (1 - t)),
+        opacity: [0, 1, 1, 0],
+        rotate: [0, 360],
+      },
+    }
+  })
+  if (!arc) return null
+  const { from, to } = arc
   return (
     <>
+      <Burst at={from} delay={step.at} colours={['#e7d3ae', '#ffffff']} pieces={6} reach={3} length={0.35} />
       <Pin at={from}>
         <motion.i
           className="fx-boulder"
           initial={{ x: 0, y: 0, opacity: 0, rotate: 0 }}
-          animate={{
-            x: [0, (to.x - from.x) / 2, to.x - from.x],
-            y: [0, (to.y - from.y) / 2 - lift, to.y - from.y],
-            opacity: [0, 1, 1, 0],
-            rotate: 360,
+          animate={arc.animate}
+          transition={{
+            duration: flight,
+            delay: step.at,
+            ease: 'linear',
+            opacity: { duration: flight + 0.05, delay: step.at, times: [0, 0.06, 0.95, 1] },
           }}
-          transition={{ duration: flight, delay: step.at, ease: 'easeIn', opacity: { duration: flight + 0.05, delay: step.at, times: [0, 0.1, 0.95, 1] } }}
         />
       </Pin>
       <Pow at={to} size={stage.boardScale() * 0.5} delay={step.at + flight} />
@@ -494,7 +516,7 @@ function LandAttacked({ step, stage }: SceneProps<'attacked'>): React.JSX.Elemen
 function LandLost(props: SceneProps<'lost'>): React.JSX.Element {
   const { step, stage } = props
   const at = segmentOf(stage)
-  const delay = stoneLands(stage, step)
+  const delay = step.at
   return (
     <>
       <Lost {...props} step={{ ...step, at: delay }} />

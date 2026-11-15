@@ -178,11 +178,12 @@ export const gameShow: Theme = {
       ...knock(0.14, 0.32),
       ...knock(0.28, 0.34),
     ],
+    // The landing matches the stone's flight in the timeline (STONE_FLIGHT).
     catapult: [
       { wave: 'triangle', from: 90, to: 240, at: 0, length: 0.12, gain: 0.4 },
-      { wave: 'sine', from: 700, to: 300, at: 0.1, length: 0.35, gain: 0.2 },
-      { wave: 'sine', from: 130, to: 50, at: 0.42, length: 0.2, gain: 0.8 },
-      ...knock(0.42, 0.35),
+      { wave: 'sine', from: 700, to: 300, at: 0.1, length: 0.6, gain: 0.2 },
+      { wave: 'sine', from: 130, to: 50, at: 0.7, length: 0.2, gain: 0.8 },
+      ...knock(0.7, 0.35),
     ],
     crumble: [
       { wave: 'sawtooth', from: 220, to: 60, at: 0, length: 0.4, gain: 0.3 },

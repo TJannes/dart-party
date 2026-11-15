@@ -1287,10 +1287,9 @@ h1 {
 }
 
 .fx-hammer {
-  width: 20vmin;
-  height: 20vmin;
   overflow: visible;
-  transform-origin: 85% 90%;
+  /* The end of the handle, where it is held. */
+  transform-origin: 50% 93.33%;
 }
 
 .fx-crack {
