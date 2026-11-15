@@ -243,6 +243,27 @@ All of these were agreed with the owner. Do not reopen them unprompted.
     Triumphant (Emma_MA). Funky Victory Loop was dropped: only 8 seconds.
 - Sound plays in one window only: the show window when there is one.
 
+### Bug reports
+
+- Every party, free play included, keeps a log: what Autodarts sent (a
+  repeated poll once), what the app made of it, every control-panel action,
+  every reset and why, and where the party stands, each with the time. Logs
+  live in the app's data folder. A log with a bug is kept until it is
+  deleted by hand; of the logs without one, the oldest go once there are
+  more than 20 logs. `/api/config` is never
+  called, so it is never in a log.
+- A Bug button (a beetle and the word "Bug") on the control panel marks the
+  moment at the tap, with the party and the board as they were; a note is
+  optional and can be written then or later.
+- Under Settings, "Bug reports" lists the logs with a bug ("Show all
+  parties" shows the others too), lets the notes be edited, and "Save for
+  analysis" saves one log with its bugs as one file for Claude to read.
+  "Delete" removes a log with its bugs, after a confirmation. There is no
+  "solved" status per bug.
+- Logs hold the players' names: they stay out of the public repo. A log used
+  as a fixture gets neutral names first.
+- Decided with the owner on 2026-11-15.
+
 ### Animations
 
 Agreed with the owner in an interview on 2026-11-15. Ideas that are not yet

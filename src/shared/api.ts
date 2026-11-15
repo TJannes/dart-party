@@ -1,5 +1,6 @@
 import type { BoardEvent } from '../core/board/events'
 import type { BoardSnapshot } from '../core/board/tracker'
+import type { BugFlag, LogSummary } from '../core/log/partyLog'
 import type { Party, Player } from '../core/party/party'
 import type { PartyCommand } from '../core/party/session'
 import type { Settings } from '../core/settings'
@@ -38,6 +39,15 @@ export interface DartPartyApi {
   onSettings(listener: (settings: Settings) => void): () => void
   updateSettings(change: Partial<Settings>): void
 
+  /** Marks this moment in the party's log. Null when no party is on. */
+  flagBug(): Promise<{ log: string; flag: BugFlag } | null>
+  noteBug(log: string, flag: number, note: string): void
+  listLogs(): Promise<LogSummary[]>
+  /** Asks where to save one log with its flags. True when it was saved. */
+  saveLog(log: string): Promise<boolean>
+  /** Removes a log and its bugs. True when it was removed. */
+  deleteLog(log: string): Promise<boolean>
+
   getScreens(): Promise<ScreensState>
   onScreens(listener: (screens: ScreensState) => void): () => void
   /** Switches between one window and a separate show window. */
@@ -60,6 +70,11 @@ export const ipc = {
   getSettings: 'settings:get',
   settings: 'settings:changed',
   updateSettings: 'settings:update',
+  flagBug: 'log:flag',
+  noteBug: 'log:note',
+  listLogs: 'log:list',
+  saveLog: 'log:save',
+  deleteLog: 'log:delete',
   getScreens: 'screens:get',
   screens: 'screens:changed',
   toggleScreens: 'screens:toggle',

@@ -38,6 +38,18 @@ export const strings = {
     checkoutOn: 'Show',
     checkoutOff: 'Hide',
     checkoutHint: 'Shows the route to finish when the player at the board can go out.',
+    bugs: 'Bug reports',
+    bugsHint: `Every party keeps a log of the board. Mark a bug with the Bug button during play and write or change its note here. A party with a bug is kept until you delete it; of the others, the last 20 are kept.`,
+    noLogs: 'No party logged yet.',
+    noFlagged: 'No bugs marked.',
+    showAll: 'Show all parties',
+    showFlagged: 'Only parties with a bug',
+    deleteLog: 'Delete this party log and its bugs?',
+    freePlay: 'Free play',
+    noBugs: 'No bugs marked.',
+    bugNote: 'What went wrong?',
+    saveLog: 'Save for analysis',
+    saved: 'Saved',
   },
 
   animations: {
@@ -385,6 +397,11 @@ export const strings = {
     triple: 'Triple',
     outerBull: '25',
     bull: 'Bull',
+    bug: 'Bug',
+    bugTitle: (time: string) => `Bug marked at ${time}`,
+    bugHint: 'The moment is saved. Add what went wrong now or later under Settings.',
+    bugNote: 'What went wrong? (optional)',
+    bugFailed: 'Could not mark it: no party is on.',
   },
 
   board: {

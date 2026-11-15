@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { drawableGames } from '../../../core/game/registry'
 import { cleanAddress } from '../../../core/settings'
 import { strings } from '../../../shared/strings'
+import { BugReports } from '../components/BugReports'
 import { Volume } from '../components/Volume'
 import { useScreens, useSettings } from '../hooks'
 import { gameName } from './Draw'
@@ -146,6 +147,12 @@ export function SettingsScreen({ onBack, onPreview }: { onBack: () => void; onPr
             </button>
           </div>
           <p className="hint hint--left">{s.addressHint}</p>
+        </section>
+
+        <section>
+          <h3>{s.bugs}</h3>
+          <p className="hint hint--left">{s.bugsHint}</p>
+          <BugReports />
         </section>
       </div>
     </main>

@@ -1646,3 +1646,48 @@ h1 {
   flex-wrap: wrap;
   justify-content: center;
 }
+
+/* ------------------------------------------------------------------ bugs */
+
+.bug-icon {
+  width: 1.1em;
+  height: 1.1em;
+  vertical-align: -0.15em;
+}
+
+.textarea {
+  min-height: 5em;
+  resize: vertical;
+  font-weight: 400;
+}
+
+.bug-logs {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.8rem;
+}
+
+.bug-log {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  border-radius: 0.8rem;
+  background: rgb(0 0 0 / 20%);
+  text-align: left;
+}
+
+.bug-log__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.bug-log__flag {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}

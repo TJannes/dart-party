@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import type { BugFlag } from '../../../core/log/partyLog'
 import { activeRecord, evaluateRecord, type Party } from '../../../core/party/party'
 import type { SniperView } from '../../../core/game/sniper'
 import { dartText } from '../dartText'
 import { strings } from '../../../shared/strings'
 import { playerOf } from '../colours'
 import { send } from '../hooks'
+import { BugIcon } from './BugIcon'
 import { DartPicker } from './DartPicker'
 import { Modal } from './Modal'
 
@@ -41,6 +43,8 @@ export function Controls({ party, canThrow }: { party: Party; canThrow: boolean 
   const [adding, setAdding] = useState(false)
   const [choosing, setChoosing] = useState(false)
   const [correcting, setCorrecting] = useState<Target | null>(null)
+  const [bug, setBug] = useState<{ log: string; flag: BugFlag } | 'failed' | null>(null)
+  const [note, setNote] = useState('')
   const recent = recentDarts(party)
   const record = activeRecord(party)
   // Some games ask for a dart in their own way.
@@ -69,6 +73,56 @@ export function Controls({ party, canThrow }: { party: Party; canThrow: boolean 
       <button type="button" className="button button--quiet" onClick={() => window.dartParty.resetBoard()}>
         {strings.board.reset}
       </button>
+      <button
+        type="button"
+        className="button button--quiet"
+        onClick={() => {
+          // The moment is saved at the tap; the note may follow.
+          setNote('')
+          void window.dartParty.flagBug().then((marked) => setBug(marked ?? 'failed'))
+        }}
+      >
+        <BugIcon /> {s.bug}
+      </button>
+
+      {bug === 'failed' && (
+        <Modal title={s.bug} onClose={() => setBug(null)}>
+          <p>{s.bugFailed}</p>
+          <button type="button" className="button" onClick={() => setBug(null)}>
+            {strings.common.continue}
+          </button>
+        </Modal>
+      )}
+      {bug && bug !== 'failed' && (
+        <Modal
+          title={s.bugTitle(new Date(bug.flag.at).toLocaleTimeString())}
+          onClose={() => {
+            if (note.trim()) window.dartParty.noteBug(bug.log, bug.flag.id, note.trim())
+            setBug(null)
+          }}
+        >
+          <p className="hint">{s.bugHint}</p>
+          <textarea
+            className="input input--left textarea"
+            rows={3}
+            autoFocus
+            placeholder={s.bugNote}
+            aria-label={s.bugNote}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
+          <button
+            type="button"
+            className="button"
+            onClick={() => {
+              if (note.trim()) window.dartParty.noteBug(bug.log, bug.flag.id, note.trim())
+              setBug(null)
+            }}
+          >
+            {note.trim() ? strings.common.save : strings.common.continue}
+          </button>
+        </Modal>
+      )}
 
       {adding && (
         <DartPicker

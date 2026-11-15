@@ -5,3 +5,5 @@ release/
 *.log
 .env
 *.tsbuildinfo
+# Party logs saved for analysis: they hold the players' names.
+dart-party-log-*.json

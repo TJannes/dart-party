@@ -33,6 +33,12 @@ const api: DartPartyApi = {
   onSettings: (listener) => subscribe(ipc.settings, listener),
   updateSettings: (change) => ipcRenderer.send(ipc.updateSettings, change),
 
+  flagBug: () => ipcRenderer.invoke(ipc.flagBug),
+  noteBug: (log, flag, note) => ipcRenderer.send(ipc.noteBug, log, flag, note),
+  listLogs: () => ipcRenderer.invoke(ipc.listLogs),
+  saveLog: (log) => ipcRenderer.invoke(ipc.saveLog, log),
+  deleteLog: (log) => ipcRenderer.invoke(ipc.deleteLog, log),
+
   getScreens: () => ipcRenderer.invoke(ipc.getScreens),
   onScreens: (listener) => subscribe(ipc.screens, listener),
   toggleScreens: () => ipcRenderer.send(ipc.toggleScreens),

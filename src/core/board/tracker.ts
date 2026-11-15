@@ -36,6 +36,8 @@ export interface BoardTrackerOptions {
    * hand that is still in view time to leave.
    */
   resetDelayMs?: number
+  /** Everything Autodarts sends, as it came, before it is judged. */
+  onRaw?: (source: 'socket' | 'poll', raw: unknown) => void
 }
 
 /**
@@ -65,15 +67,19 @@ export class BoardTracker {
 
   /** A message from the WebSocket `/api/events`, already JSON-decoded. */
   receiveMessage(message: unknown): void {
-    if (typeof message !== 'object' || message === null) return this.unexpected('empty message')
+    if (typeof message !== 'object' || message === null) {
+      this.options.onRaw?.('socket', message)
+      return this.unexpected('empty message')
+    }
     const { type, data } = message as { type?: unknown; data?: unknown }
     // Only state messages have been seen. Others are not ours to judge.
-    if (type !== 'state') return
-    this.receiveState(data)
+    if (type !== 'state') return this.options.onRaw?.('socket', { notAState: type })
+    this.receiveState(data, 'socket')
   }
 
   /** An answer of `GET /api/state`, or the data of a state message. */
-  receiveState(raw: unknown): void {
+  receiveState(raw: unknown, source: 'socket' | 'poll' = 'poll'): void {
+    this.options.onRaw?.(source, raw)
     let next: BoardState
     try {
       next = parseBoardState(raw)

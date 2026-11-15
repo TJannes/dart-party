@@ -88,6 +88,22 @@ export function activeRecord(party: Party): GameRecord | null {
   return null
 }
 
+/** Where the party stands, briefly: for the log, not for the screen. */
+export function partySummary(party: Party): unknown {
+  const record = activeRecord(party)
+  const state = record ? evaluateRecord(record) : null
+  const open = record?.turns.at(-1)
+  return {
+    stage: party.stage,
+    game: record?.gameId ?? party.games.at(-1)?.gameId ?? null,
+    gamesPlayed: party.games.length,
+    turns: record?.turns.length ?? 0,
+    lastTurn: open ? { done: open.done, darts: open.darts.map((d) => `${d.dart.name}/${d.by}`) } : null,
+    current: state?.current ?? null,
+    finished: state?.finished ?? null,
+  }
+}
+
 export function activeState(party: Party): GameState<any> | null {
   const record = activeRecord(party)
   return record ? evaluateRecord(record) : null
