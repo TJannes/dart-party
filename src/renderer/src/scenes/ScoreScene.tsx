@@ -39,6 +39,14 @@ export function ScoreScene(props: {
   out?: readonly PlayerId[]
   /** Who has reason to be nervous right now. */
   nervous?: (player: PlayerId) => boolean
+  /** Who is blackened by a bomb. */
+  scorched?: (player: PlayerId) => boolean
+  /** Something a player holds, shown in their row before the score. */
+  held?: (player: PlayerId) => ReactNode
+  /** Something big of the game's own, above the board. */
+  feature?: ReactNode
+  /** Two players left: the lights go down. */
+  duel?: boolean
   board: ReactNode
 }): React.JSX.Element {
   const { evening, record, state } = props
@@ -47,7 +55,7 @@ export function ScoreScene(props: {
   const mood = (id: PlayerId): Mood =>
     moods[id] ?? (props.out?.includes(id) ? 'out' : props.nervous?.(id) ? 'sweat' : moodOf(id, record, state))
   return (
-    <section className="race">
+    <section className={props.duel ? 'race race--duel' : 'race'}>
       <div className="race__track">
         {props.heading && <p className="scene__heading">{props.heading}</p>}
         {record.order.map((id) => {
@@ -62,18 +70,24 @@ export function ScoreScene(props: {
               style={{ borderColor: colour }}
             >
               <div className="lane__avatar" data-anim-avatar={id}>
-                <Avatar avatar={player.avatar} mood={mood(id)} />
+                <Avatar avatar={player.avatar} mood={mood(id)} scorched={props.scorched?.(id)} />
               </div>
               <div className="lane__who lane__who--wide">
                 <strong>{player.name}</strong>
                 {props.detail && <span style={{ color: colour }}>{props.detail(id)}</span>}
               </div>
+              {props.held?.(id)}
               <strong className="lane__score" data-anim-score={id}>{props.score(id)}</strong>
             </div>
           )
         })}
       </div>
-      <div className="race__board" data-anim-board>{props.board}</div>
+      <div className={props.feature ? 'race__board race__board--feature' : 'race__board'}>
+        {props.feature}
+        <div className="race__dartboard" data-anim-board>
+          {props.board}
+        </div>
+      </div>
     </section>
   )
 }

@@ -39,12 +39,38 @@ export interface DartStory {
 
 export type Cue =
   /** A dart counted, or a corrected dart got a new outcome. */
-  | { kind: 'dart'; story: DartStory; /** Who is up next, if the turn passed with this dart. */ next: PlayerId | null }
-  /** The turn passed to another player. */
-  | { kind: 'turn'; game: string; player: PlayerId }
+  | {
+      kind: 'dart'
+      story: DartStory
+      /** Who is up next, if the turn passed with this dart. */
+      next: PlayerId | null
+      /** The round that starts with that player, if one does. */
+      round?: number
+    }
+  /** The turn passed to another player; `round` when that starts a new round. */
+  | { kind: 'turn'; game: string; gameId: string; player: PlayerId; round?: number }
 
 /** The order a chain is shown in: cause first, the biggest last. */
-const ORDER: Beat['kind'][] = ['scored', 'lost', 'attacked', 'lifeLost', 'knockedOut', 'spectacle', 'won']
+const ORDER: Beat['kind'][] = [
+  'dug',
+  'measured',
+  'call',
+  'scored',
+  'lost',
+  'fuse',
+  'passed',
+  'exploded',
+  'attacked',
+  'fortified',
+  'lifeLost',
+  'knockedOut',
+  'finalDuel',
+  'jump',
+  'roundResult',
+  'blank',
+  'spectacle',
+  'won',
+]
 
 /** With one of these in the chain the game is already showing something big. */
 const BIG: Beat['kind'][] = ['knockedOut', 'won']
@@ -101,6 +127,7 @@ export function storiesOf(record: GameRecord, game: string): DartStory[] {
     }
 
     const big = chain.some((beat) => BIG.includes(beat.kind))
+    const over = chain.some((beat) => beat.kind === 'won')
     return {
       game,
       gameId: record.gameId,
@@ -112,6 +139,8 @@ export function storiesOf(record: GameRecord, game: string): DartStory[] {
       chain: chain
         // A general spectacle gives way when the game itself shows something big.
         .filter((beat) => beat.kind !== 'spectacle' || !big || beat.what === 'lastDart')
+        // Nobody is left to take the bomb once the game is over.
+        .filter((beat) => beat.kind !== 'passed' || !over)
         .sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind)),
     }
   })
@@ -141,14 +170,17 @@ export function cueBetween(before: Evening | null | undefined, after: Evening | 
 
   const was = storiesOf(recordBefore, game)
   const now = storiesOf(recordAfter, game)
-  const playerBefore = evaluateRecord(recordBefore).current?.player ?? null
-  const playerAfter = evaluateRecord(recordAfter).current?.player ?? null
-  const next = playerAfter !== null && playerAfter !== playerBefore ? playerAfter : null
+  const currentBefore = evaluateRecord(recordBefore).current
+  const currentAfter = evaluateRecord(recordAfter).current
+  const playerAfter = currentAfter?.player ?? null
+  const next = playerAfter !== null && playerAfter !== (currentBefore?.player ?? null) ? playerAfter : null
+  const newRound = next !== null && currentBefore && currentAfter!.round > currentBefore.round
+  const round = newRound ? { round: currentAfter!.round } : {}
 
-  if (now.length > was.length) return { kind: 'dart', story: now.at(-1)!, next }
+  if (now.length > was.length) return { kind: 'dart', story: now.at(-1)!, next, ...round }
   if (now.length < was.length) return null
   // As many darts as before: one was corrected, or only the turn passed.
   const changed = now.find((story, n) => signature(story) !== signature(was[n]!))
-  if (changed) return { kind: 'dart', story: changed, next }
-  return next ? { kind: 'turn', game, player: next } : null
+  if (changed) return { kind: 'dart', story: changed, next, ...round }
+  return next ? { kind: 'turn', game, gameId: recordAfter.gameId, player: next, ...round } : null
 }

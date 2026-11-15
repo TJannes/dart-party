@@ -620,7 +620,7 @@ h1 {
 .race {
   flex: 1;
   display: grid;
-  grid-template-columns: 3fr 2fr;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: 1.5rem;
   min-height: 0;
 }
@@ -635,8 +635,45 @@ h1 {
 
 .race__board {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   min-height: 0;
+}
+
+.race__dartboard {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+/* A game's own big thing above the board: the pig. */
+.race__board--feature {
+  grid-template-rows: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 0.5rem;
+}
+
+.pig {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.pig__body {
+  height: 100%;
+  aspect-ratio: 16 / 11;
+  max-width: 100%;
+}
+
+/* Two left in a knockout: the lights go down around the scene. */
+.race--duel {
+  border-radius: 1.5rem;
+  box-shadow:
+    inset 0 0 9vmin 2vmin rgb(8 3 20 / 75%),
+    0 0 0 100vmax rgb(8 3 20 / 35%);
 }
 
 .dartboard {
@@ -740,6 +777,99 @@ h1 {
   width: 2.6em;
   height: 2.6em;
   flex: none;
+}
+
+/* Higher or Lower: the call as a big arrow beside its words. */
+.call {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.15em 0.6em;
+  border-radius: 0.5em;
+  background: var(--panel-strong);
+}
+
+.call__arrow {
+  width: 1.9em;
+  height: 2.3em;
+  flex: none;
+}
+
+/* Raise the Bar: the high-jump set above the board. */
+.jump {
+  position: relative;
+  width: 100%;
+  max-width: 24rem;
+  max-height: 100%;
+  aspect-ratio: 3 / 2;
+  margin: 0 auto;
+  border-bottom: 0.35rem solid #3bceac;
+}
+
+.jump__post {
+  position: absolute;
+  left: 34%;
+  bottom: 0;
+  width: 0.45rem;
+  height: 92%;
+  border-radius: 0.3rem;
+  background: repeating-linear-gradient(#f3ead7 0 0.9rem, #ee4266 0.9rem 1.8rem);
+}
+
+.jump__post--far {
+  left: 74%;
+}
+
+.jump__bar {
+  position: absolute;
+  left: 32%;
+  width: 46%;
+  height: 0.5rem;
+  margin-bottom: -0.25rem;
+  border-radius: 0.3rem;
+  background: var(--gold);
+  box-shadow: 0 0 0.8rem var(--gold);
+}
+
+.jump__bar b {
+  position: absolute;
+  left: 50%;
+  bottom: 0.5rem;
+  translate: -50% 0;
+  font-size: 2rem;
+  color: var(--gold);
+}
+
+.jump__jumper {
+  position: absolute;
+  left: 4%;
+  width: 22%;
+  aspect-ratio: 1;
+  display: grid;
+  justify-items: center;
+}
+
+.jump__jumper b {
+  position: absolute;
+  top: 100%;
+  font-size: 1.6rem;
+}
+
+.jump__pot {
+  position: absolute;
+  right: 0;
+  bottom: 4%;
+  width: 17%;
+  aspect-ratio: 1;
+}
+
+.lane__held {
+  flex: none;
+  width: 2.3em;
+  height: 2.3em;
+  margin-right: 0.6em;
+  position: relative;
+  z-index: 2;
 }
 
 .scene__heading {
@@ -1074,6 +1204,231 @@ h1 {
   overflow: visible;
 }
 
+.fx-prop {
+  width: 12vmin;
+  height: 12vmin;
+}
+
+.fx-spring {
+  position: absolute;
+  height: 0;
+  transform-origin: 0 50%;
+}
+
+.fx-spring__coil {
+  position: absolute;
+  inset: -1.1vmin 5vmin -1.1vmin 0;
+  background: repeating-linear-gradient(100deg, #d9d6e4 0 0.7vmin, #6f6a85 0.7vmin 1.4vmin, transparent 1.4vmin 2.4vmin);
+  border-radius: 1vmin;
+}
+
+.fx-spring__glove {
+  position: absolute;
+  right: -3vmin;
+  top: -5vmin;
+  width: 11vmin;
+  height: 10vmin;
+}
+
+.fx-count {
+  color: #fff;
+  font-size: 11vmin;
+  font-weight: 900;
+  line-height: 1;
+  -webkit-text-stroke: 0.5vmin #1b0a38;
+  paint-order: stroke fill;
+}
+
+.fx-orbit {
+  width: 0;
+  height: 0;
+}
+
+.fx-orbit svg {
+  position: absolute;
+  width: 3.4vmin;
+  height: 3.4vmin;
+  margin: -1.7vmin;
+  overflow: visible;
+}
+
+.fx-smoke {
+  width: 7vmin;
+  height: 7vmin;
+  border-radius: 50%;
+  background: #6b6678;
+}
+
+.fx-boom {
+  color: var(--gold);
+  font-size: 13vmin;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+  -webkit-text-stroke: 0.6vmin #1b0a38;
+  paint-order: stroke fill;
+  text-shadow: 0 0.06em 0 var(--hot);
+}
+
+.fx-coin {
+  width: 4.4vmin;
+  height: 4.4vmin;
+  border: 0.5vmin solid #b8860b;
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: radial-gradient(circle at 35% 30%, #fff3b0, #ffd23f 55%, #e0a90f);
+}
+
+.fx-coin--gold {
+  width: 9vmin;
+  height: 9vmin;
+  border-width: 0.8vmin;
+  box-shadow: 0 0 3vmin var(--gold);
+}
+
+.fx-hammer {
+  width: 20vmin;
+  height: 20vmin;
+  overflow: visible;
+  transform-origin: 85% 90%;
+}
+
+.fx-crack {
+  width: 14vmin;
+  height: 14vmin;
+  overflow: visible;
+}
+
+.fx-duel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2vmin;
+}
+
+.fx-duel__pair {
+  display: flex;
+  align-items: center;
+  gap: 4vmin;
+  color: #fff;
+  font-size: 9vmin;
+  font-weight: 900;
+  -webkit-text-stroke: 0.4vmin #1b0a38;
+  paint-order: stroke fill;
+}
+
+.fx-streak {
+  position: absolute;
+  width: 9vmin;
+  height: 0.7vmin;
+  border-radius: 0.4vmin;
+  background: #fff;
+  transform-origin: 100% 50%;
+}
+
+.fx-smoke--dust {
+  width: 5vmin;
+  height: 5vmin;
+  background: #c9b79a;
+}
+
+.fx-tape {
+  position: absolute;
+  top: 48vh;
+  width: 50vw;
+  height: 1.4vmin;
+  background: repeating-linear-gradient(90deg, #fff 0 3vmin, var(--hot) 3vmin 6vmin);
+}
+
+.fx-tape:first-of-type {
+  transform-origin: 0 50%;
+}
+
+.fx-chequered {
+  width: 26vmin;
+  height: 17vmin;
+  border: 0.6vmin solid #1b0a38;
+  border-radius: 1vmin;
+  background: repeating-conic-gradient(#fff 0% 25%, #222 0% 50%) 0 0 / 5.2vmin 5.2vmin;
+}
+
+.fx-arrow {
+  width: 15vmin;
+  height: 15vmin;
+  overflow: visible;
+  transform-origin: 10.5% 89.5%;
+  translate: -10.5% -89.5% !important;
+}
+
+.fx-pool {
+  display: block;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 243 176 / 85%) 0%, rgb(255 210 63 / 55%) 45%, transparent 70%);
+  translate: -50% -50%;
+}
+
+.fx-stagelight {
+  position: absolute;
+  top: 0;
+  background: linear-gradient(rgb(255 243 176 / 10%), rgb(255 243 176 / 55%));
+  clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  transform-origin: 50% 0;
+}
+
+.fx-rose {
+  width: 5vmin;
+  height: auto;
+  overflow: visible;
+}
+
+.fx-stone {
+  border: 0.25vmin solid #1b0a38;
+  border-radius: 0.3vmin;
+  box-sizing: border-box;
+  background: #cfc4ad;
+}
+
+.fx-boulder {
+  width: 4.5vmin;
+  height: 4.5vmin;
+  border: 0.4vmin solid #1b0a38;
+  border-radius: 45% 55% 50% 50%;
+  box-sizing: border-box;
+  background: #8a8496;
+}
+
+.fx-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.fx-number.fx-number--small {
+  font-size: 5vmin;
+}
+
+.fx-ring--medal {
+  width: 6vmin;
+  height: 6vmin;
+  border-width: 1.1vmin;
+}
+
+.fx-bar {
+  height: 1vmin;
+  border-radius: 0.5vmin;
+  background: var(--gold);
+}
+
+.fx-thrown,
+.fx-flame,
+.fx-tree,
+.fx-bird,
+.fx-flag,
+.fx-scope,
+.fx-shovel,
+.fx-chest,
+.fx-crab,
 .fx-missile,
 .fx-pow,
 .fx-cloud,

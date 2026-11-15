@@ -38,10 +38,35 @@ export type Moment =
   | { kind: 'scored'; player: PlayerId; amount: number }
   /** Points lost. */
   | { kind: 'lost'; player: PlayerId; amount: number }
-  /** `by` hurt `victim`: steps pushed back, hits on a wall, lives taken. */
+  /**
+   * `by` hurt `victim`: steps pushed back, hits on a wall, lives taken.
+   * `by` and `victim` are the same player when someone hurt themselves.
+   */
   | { kind: 'attacked'; by: PlayerId; victim: PlayerId; amount: number }
   | { kind: 'lifeLost'; player: PlayerId; amount: number; left: number }
   | { kind: 'knockedOut'; player: PlayerId }
+  /** A knockout left exactly these two standing. */
+  | { kind: 'finalDuel'; players: [PlayerId, PlayerId] }
+  /** A dart burned fuse on the bomb `player` holds; `burned` darts so far. */
+  | { kind: 'fuse'; player: PlayerId; burned: number }
+  /** The bomb went from one player to the next. */
+  | { kind: 'passed'; from: PlayerId; to: PlayerId }
+  /** A bomb went off in the hands, or under the dart, of `player`. */
+  | { kind: 'exploded'; player: PlayerId }
+  /** A whole turn that brought `player` nothing. */
+  | { kind: 'blank'; player: PlayerId }
+  /** `player` built a second wall on a plot of their own. */
+  | { kind: 'fortified'; player: PlayerId }
+  /** How far a dart landed from the cross at `target`, in millimetres. */
+  | { kind: 'measured'; player: PlayerId; mm: number; target: { x: number; y: number } }
+  /** A round is over: whose darts were closest and where, best first, at most three. */
+  | { kind: 'roundResult'; places: { player: PlayerId; at: { x: number; y: number } }[] }
+  /** `player` dug up a segment and found this under it. */
+  | { kind: 'dug'; player: PlayerId; segment: number; found: 'chest' | 'coin' | 'bomb' | 'empty' }
+  /** `player` had to throw higher or lower, and did or did not. */
+  | { kind: 'call'; player: PlayerId; call: 'higher' | 'lower'; right: boolean }
+  /** `player` tried to get over the bar `holder` held. */
+  | { kind: 'jump'; player: PlayerId; holder: PlayerId; cleared: boolean }
 
 export type Emit = (moment: Moment) => void
 

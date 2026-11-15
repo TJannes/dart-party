@@ -62,6 +62,7 @@ export const higherOrLower: GameRules<HigherOrLowerSetup, HigherOrLowerView> = {
           !dart.miss && (call === null || (call === 'higher' ? value > bar! : value < bar!))
         // A miss leaves the bar where it was.
         if (!dart.miss) bar = value
+        if (call !== null) emit({ kind: 'call', player: thrower, call, right })
         if (right) return 'good'
         lives[thrower]! -= 1
         emit({ kind: 'lifeLost', player: thrower, amount: 1, left: lives[thrower]! })

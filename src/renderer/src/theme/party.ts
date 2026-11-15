@@ -1,4 +1,5 @@
 import { partyAnimations } from './partyAnimations'
+import { partyGames } from './partyGames'
 import type { Theme, Tone } from './types'
 
 // The default theme: a purple game show. All sound is synthesised here, so
@@ -14,6 +15,16 @@ const blip = (semitones: number, at: number, length = 0.12, gain = 0.5): Tone =>
   length,
   gain,
 })
+
+/** A run of short ticks, for a burning fuse. */
+const ticks = (count: number, over: number, pitch: number): Tone[] =>
+  Array.from({ length: count }, (_, n) => ({
+    wave: 'square' as const,
+    from: pitch + n * 25,
+    at: (n * over) / count,
+    length: 0.03,
+    gain: 0.2,
+  }))
 
 // Chords as semitones above middle C.
 const chord = (...semitones: number[]): number[] => semitones.map(note)
@@ -72,6 +83,116 @@ export const party: Theme = {
       { wave: 'sine', from: 180, to: 110, at: 0, length: 0.14, gain: 0.55 },
       blip(12, 0.02, 0.2, 0.3),
     ],
+    fuseSlow: ticks(2, 0.5, 900),
+    fuseMid: ticks(4, 0.5, 1100),
+    fuseFast: ticks(8, 0.55, 1300),
+    toss: [{ wave: 'sine', from: 280, to: 920, at: 0, length: 0.3, gain: 0.3 }],
+    boom: [
+      { wave: 'sawtooth', from: 180, to: 35, at: 0, length: 0.5, gain: 0.45 },
+      { wave: 'sine', from: 110, to: 28, at: 0, length: 0.9, gain: 0.9 },
+      { wave: 'square', from: 70, to: 30, at: 0.05, length: 0.35, gain: 0.3 },
+    ],
+    punch: [
+      { wave: 'square', from: 240, to: 90, at: 0, length: 0.07, gain: 0.3 },
+      { wave: 'sine', from: 130, to: 60, at: 0, length: 0.16, gain: 0.7 },
+    ],
+    bell: [blip(31, 0, 0.3, 0.4), blip(31, 0.2, 0.3, 0.4), blip(31, 0.4, 0.7, 0.45), blip(43, 0.4, 0.5, 0.15)],
+    duel: [
+      { wave: 'sawtooth', from: note(-17), at: 0, length: 0.35, gain: 0.3 },
+      { wave: 'sawtooth', from: note(-10), at: 0, length: 0.35, gain: 0.22 },
+      { wave: 'sawtooth', from: note(-16), at: 0.45, length: 0.8, gain: 0.3 },
+      { wave: 'sawtooth', from: note(-9), at: 0.45, length: 0.8, gain: 0.22 },
+    ],
+    clink: [
+      { wave: 'square', from: note(31), at: 0, length: 0.04, gain: 0.16 },
+      { wave: 'triangle', from: note(36), at: 0.04, length: 0.14, gain: 0.35 },
+      { wave: 'triangle', from: note(33), at: 0.13, length: 0.1, gain: 0.25 },
+    ],
+    goldCoin: [blip(24, 0, 0.08, 0.4), blip(28, 0.07, 0.08, 0.4), blip(31, 0.14, 0.08, 0.4), blip(36, 0.21, 0.45, 0.45)],
+    smash: [
+      { wave: 'sine', from: 150, to: 50, at: 0, length: 0.22, gain: 0.8 },
+      { wave: 'square', from: 1400, to: 300, at: 0.02, length: 0.12, gain: 0.2 },
+      { wave: 'sawtooth', from: 700, to: 120, at: 0.08, length: 0.25, gain: 0.22 },
+    ],
+    vroom: [{ wave: 'sawtooth', from: 110, to: 260, at: 0, length: 0.3, gain: 0.25 }],
+    nitro: [
+      { wave: 'sawtooth', from: 120, to: 520, at: 0, length: 0.45, gain: 0.3 },
+      { wave: 'square', from: 240, to: 1040, at: 0.05, length: 0.4, gain: 0.12 },
+    ],
+    slip: [{ wave: 'sine', from: 900, to: 300, at: 0, length: 0.25, gain: 0.35 }, blip(-5, 0.25, 0.12, 0.4)],
+    skid: [
+      { wave: 'sawtooth', from: 1100, to: 500, at: 0, length: 0.5, gain: 0.2 },
+      { wave: 'square', from: 1150, to: 540, at: 0, length: 0.5, gain: 0.1 },
+      blip(-7, 0.5, 0.15, 0.45),
+    ],
+    arrow: [
+      { wave: 'sine', from: 170, to: 80, at: 0, length: 0.08, gain: 0.6 },
+      { wave: 'triangle', from: 330, to: 300, at: 0.05, length: 0.3, gain: 0.25 },
+      { wave: 'triangle', from: 345, to: 315, at: 0.05, length: 0.3, gain: 0.2 },
+    ],
+    bird: [
+      { wave: 'sine', from: 2200, to: 3000, at: 0, length: 0.08, gain: 0.25 },
+      { wave: 'sine', from: 2400, to: 3200, at: 0.12, length: 0.08, gain: 0.25 },
+      { wave: 'sine', from: 2600, to: 3400, at: 0.24, length: 0.1, gain: 0.2 },
+    ],
+    split: [
+      { wave: 'sawtooth', from: 900, to: 200, at: 0, length: 0.12, gain: 0.3 },
+      blip(19, 0.1, 0.1, 0.4),
+      blip(26, 0.2, 0.5, 0.45),
+    ],
+    drumroll: [
+      ...Array.from({ length: 14 }, (_, n): Tone => ({ wave: 'triangle', from: 150, to: 110, at: n * 0.06, length: 0.05, gain: 0.25 + n * 0.02 })),
+      { wave: 'sine', from: 120, to: 60, at: 0.86, length: 0.3, gain: 0.8 },
+      blip(24, 0.86, 0.4, 0.35),
+    ],
+    applause: [blip(12, 0, 0.1, 0.35), blip(16, 0.1, 0.1, 0.35), blip(19, 0.2, 0.1, 0.35), blip(24, 0.3, 0.5, 0.4), blip(19, 0.3, 0.5, 0.25)],
+    cough: [
+      { wave: 'sawtooth', from: 260, to: 150, at: 0, length: 0.09, gain: 0.3 },
+      { wave: 'sawtooth', from: 230, to: 130, at: 0.16, length: 0.12, gain: 0.3 },
+    ],
+    build: [
+      { wave: 'sine', from: 200, to: 120, at: 0, length: 0.07, gain: 0.55 },
+      { wave: 'sine', from: 230, to: 140, at: 0.14, length: 0.07, gain: 0.55 },
+      { wave: 'sine', from: 260, to: 160, at: 0.28, length: 0.09, gain: 0.55 },
+    ],
+    catapult: [
+      { wave: 'triangle', from: 90, to: 240, at: 0, length: 0.12, gain: 0.4 },
+      { wave: 'sine', from: 700, to: 300, at: 0.1, length: 0.35, gain: 0.2 },
+      { wave: 'sine', from: 130, to: 50, at: 0.42, length: 0.2, gain: 0.8 },
+    ],
+    crumble: [
+      { wave: 'sawtooth', from: 220, to: 60, at: 0, length: 0.4, gain: 0.3 },
+      { wave: 'square', from: 140, to: 50, at: 0.1, length: 0.4, gain: 0.2 },
+      { wave: 'sine', from: 90, to: 40, at: 0.3, length: 0.3, gain: 0.6 },
+    ],
+    lock: [
+      { wave: 'sine', from: 1400, to: 700, at: 0, length: 0.35, gain: 0.2 },
+      { wave: 'square', from: 880, at: 0.4, length: 0.05, gain: 0.2 },
+      { wave: 'square', from: 1320, at: 0.5, length: 0.12, gain: 0.2 },
+    ],
+    measure: ticks(6, 0.45, 700),
+    medals: [blip(24, 0, 0.3, 0.4), blip(21, 0.2, 0.3, 0.4), blip(17, 0.4, 0.5, 0.4)],
+    dig: [
+      { wave: 'sawtooth', from: 180, to: 90, at: 0, length: 0.12, gain: 0.3 },
+      { wave: 'sawtooth', from: 200, to: 100, at: 0.2, length: 0.12, gain: 0.3 },
+    ],
+    chest: [blip(7, 0, 0.12, 0.4), blip(12, 0.1, 0.12, 0.4), blip(16, 0.2, 0.12, 0.4), blip(19, 0.3, 0.12, 0.4), blip(24, 0.4, 0.6, 0.45)],
+    flip: [
+      { wave: 'square', from: note(28), at: 0, length: 0.05, gain: 0.16 },
+      { wave: 'triangle', from: note(33), at: 0.06, length: 0.2, gain: 0.35 },
+    ],
+    crab: ticks(5, 0.4, 500),
+    whoosh: [{ wave: 'sine', from: 300, to: 1200, at: 0, length: 0.25, gain: 0.3 }, blip(24, 0.2, 0.2, 0.3)],
+    buzzer: [
+      { wave: 'sawtooth', from: 110, at: 0, length: 0.45, gain: 0.3 },
+      { wave: 'square', from: 117, at: 0, length: 0.45, gain: 0.18 },
+    ],
+    jump: [{ wave: 'sine', from: 220, to: 880, at: 0, length: 0.35, gain: 0.35 }, blip(24, 0.4, 0.25, 0.35)],
+    clatter: [
+      { wave: 'square', from: 500, to: 300, at: 0, length: 0.06, gain: 0.25 },
+      { wave: 'square', from: 420, to: 250, at: 0.12, length: 0.06, gain: 0.22 },
+      { wave: 'square', from: 360, to: 200, at: 0.22, length: 0.08, gain: 0.2 },
+    ],
     fanfare: [
       blip(7, 0, 0.18),
       blip(7, 0.2, 0.09),
@@ -88,5 +209,5 @@ export const party: Theme = {
     game: { tempo: 112, chords: [Am, F, C, G], wave: 'triangle' },
     podium: { tempo: 126, chords: [C, F, G, C], wave: 'triangle' },
   },
-  animations: partyAnimations,
+  animations: { general: partyAnimations.general, games: { ...partyAnimations.games, ...partyGames } },
 }

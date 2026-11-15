@@ -9,8 +9,10 @@ Surface and do the same on Windows. Everything from step 3 on has only been
 played through by hand on Ubuntu with one display: not with real darts, not
 with a real second screen, not on Windows, and nobody has listened to the
 sound yet. The owner still has to judge step 6 (animations in every game) on the
-Surface, under Settings, "Try the animations". The next thing to build is
-step 8 (themed animations per game); agree the ideas per game first. See
+Surface, under Settings, "Try the animations". Step 8 (themed animations per
+game) is built for all eleven games, not yet released and seen only on the
+Animations screen on Ubuntu. The next thing to build is step 9 (rules
+explained by animation). See
 [Build steps](#build-steps).
 
 ## Goal
@@ -243,6 +245,64 @@ decided are in `ANIMATION-IDEAS.md`.
 - The themed ideas per game in `ANIMATION-IDEAS.md` are a starting point.
   They are put to the owner when that game is about to be done, like the
   rules.
+
+Agreed per game on 2026-11-15:
+
+- **Time Bomb.** The bomb sits in the row of the player at the board. The
+  fuse is secret, so it never gets visibly shorter: every burned dart makes
+  the bomb bigger and redder, the spark fiercer and the ticking faster, and
+  the holder sweats. That shows only how much has burned. Target hit: the
+  avatar throws the bomb to the next player. Boom: full-screen flash, a
+  life falls off, and the avatar stays blackened until that player is back
+  at the board (not in calm mode).
+- **Last One Standing.** A boxing glove on a spring from the attacker to
+  the victim, one blow per life taken (2 or 3 for a double or triple). Your
+  own segment: the glove flies out, turns round and hits the thrower. Out:
+  counted out, with stars round the head. Two players left (in a game that
+  started with more): a "Final duel" banner, once, and the lights stay
+  dimmed for the rest of the game.
+- **Piggy Bank.** One big pig above the board, in the colour of the player
+  at the board, with their total on it; the next player's pig slides in on
+  the turn change. Coins drop into it, it grows fatter with the total and
+  wiggles. A dart of 40 or more: one golden coin and the pig grins. Off the
+  board: a hammer, a crack, coins roll away, and the pig looks grumpy. It
+  keeps a plaster per break.
+- **Race.** Forward: a dust cloud and speed lines; a triple adds a nitro
+  flame. Pushed back: the attacker throws a banana peel for a single and
+  an oil slick, with a bigger skid, for a double or triple; the victim
+  spins backwards. Finish: chequered flag, the finish tape snaps, a camera
+  flash.
+- **Robin Hood.** Darts land as arrows that quiver in the target. Bullseye:
+  an arrow is split, feathers fly. Off the board only: the arrow thuds
+  into a tree and a bird flies up (teasing, so not in calm mode). The
+  lowest zone gets the plain quivering arrow.
+- **Spotlight.** New round: the spotlight sweeps over the board with a drum
+  roll and stops. Hit the target (3 points): the avatar bows in the beam
+  and roses are thrown. A whole turn without points: the beam swings away
+  and someone coughs (teasing, so not in calm mode).
+- **Land Grab.** Everything plays on the segment on the board, which shows
+  a small castle per plot instead of the marks. Claim: a flag in the
+  player's colour, the castle rises. Fortify: a second wall, stone by
+  stone. Attack: a catapult stone from the attacker's avatar, a crack in
+  the wall. Capture: the wall crumbles, the old flag drops, the new one
+  goes up. The steps of a double or triple play shortly after each other.
+- **Sniper.** New round: the cross drops in like a scope locking on. Every
+  dart: a dotted line measures the distance to the cross while the
+  millimetres count up. End of the round: gold, silver and bronze rings
+  on the three closest darts.
+- **Minefield.** A shovel digs for about half a second before the segment
+  shows what was under it. Chest: the lid opens, a glow and coins. Coin: one
+  flip. Bomb: explosion, half the points blown away, the avatar blackened
+  until that player is back at the board, as in Time Bomb. Empty: a small
+  crab walks out.
+- **Higher or Lower.** The call is a big arrow, up or down, with the number
+  to beat; it flips like a card at every new call. Right: it turns green
+  and shoots onward. Wrong: it breaks, a buzzer, a heart cracks.
+- **Raise the Bar.** A high-jump set with the bar at the height of the
+  total to beat, instead of the meter. The thrower's avatar rises with
+  their total per dart. Over it: the avatar jumps over, the bar moves up,
+  a coin drops in the pot. Not over it: the avatar knocks the bar off and
+  the holder collects the pot.
 
 ## Mini-games
 
@@ -576,9 +636,55 @@ number hit, with the next one under the name.
   the Clock, finishing a 301 straight out, playing again, stopping. Not with
   real darts, not on Windows, and no game of 501 with double out was played
   to the end by hand (the tests do).*
-- [ ] **8. Themed animations per game.** First Time Bomb, Last One Standing
+- [x] **8. Themed animations per game.** First Time Bomb, Last One Standing
   and Piggy Bank; then the other eight in the order of this plan. Agree the
   ideas per game first.
+  - [x] Time Bomb, Last One Standing, Piggy Bank.
+    *New moments from the rules: `fuse`, `passed`, `exploded`, `finalDuel`,
+    and hitting your own segment is now an `attacked` on yourself. The
+    drawings a scene and its animations share (bomb, pig, glove) are in
+    `src/renderer/src/theme/partyProps.tsx`; the game's own animations are
+    registered under `games` in `partyAnimations.tsx`, its own sounds in
+    `soundsOf` in `animation/timeline.ts`. Eleven new synthesised sounds.
+    Under Settings, "Try the animations", there is a "Per game" block.
+    Looked at on Ubuntu on that screen: fuse, boom and the blackened
+    avatar, the triple punch with counting out, the final duel, the golden
+    coin, the hammer. Not looked at: the bomb being thrown, the glove on
+    your own segment, calm mode, a real game on the play screen, a second
+    screen, Windows; nobody has heard the new sounds. Filled in while
+    building, not put to the owner: the pig is fullest at 300 and shows at
+    most four plasters; ordinary darts drop one coin per 10 points, at most
+    five; the hammer also comes down on an empty pig; the holder of the
+    bomb sweats from three burned darts; the ticking has three speeds (up
+    to 2, up to 5, more); at the end of Piggy Bank the winner's pig is
+    shown; a knocked-out player who was blackened stays so.*
+  - [x] The other eight games: Race, Robin Hood, Spotlight, Land Grab,
+    Sniper, Minefield, Higher or Lower, Raise the Bar.
+    *More moments from the rules: `blank`, `fortified`, `measured`,
+    `roundResult`, `dug`, `call`, `jump`; Minefield also reports `exploded`.
+    A cue now says when the next player starts a new round, which Spotlight
+    and Sniper animate. Their animations are in
+    `src/renderer/src/theme/partyGames.tsx`. Digging keeps its secret: for
+    half a second (`DIG_TIME`) the scene shows the game as it was before
+    the dart (`useSuspense` in `animation/Stage.tsx`) and no sound or score
+    gives the find away. The board draws castles for Land Grab; Higher or
+    Lower shows its call as an arrow; Raise the Bar has a high-jump set
+    above the board instead of the meter. Twenty-four more synthesised
+    sounds. Every one of these has a button under "Per game" on the
+    Animations screen, and most were looked at there on Ubuntu. Not looked
+    at: the banana peel, forward without nitro, a single attack and the
+    plain capture in Land Grab, a dug-up coin, calm mode, a real game on
+    the play screen, a second screen, Windows; nobody has heard the
+    sounds. Known gaps: the first round of a game gets no spotlight sweep
+    or scope (nothing plays when a screen is first opened); the scene
+    shows a captured castle at once while the stone is still flying.
+    Filled in while building, not put to the owner: the spotlight makes
+    five stops before its target; the cough needs three darts, so two
+    darts and a takeout is no blank turn; the three rings appear only
+    when the last player throws a third dart; a blackened digger clears
+    at the start of their next turn; the pot shows its size as a number;
+    the avatar in the high-jump set stands at the height of its total so
+    far.*
 - [ ] **9. Rules explained by animation** on the rules card.
 - [ ] **Later**: streaks (a flame after three good turns), a comeback
   animation, a polished version of one game to compare, seasonal and holiday theme packs, hall of fame, teams,

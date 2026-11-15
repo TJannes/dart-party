@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Beat, Cue, DartStory } from '../../../core/evening/cues'
 import { manualDart } from '../../../core/board/ring'
-import { MAX_CHAIN, timelineOf } from './timeline'
+import { blowTimes, DIG_TIME, MAX_CHAIN, timelineOf } from './timeline'
 
 const story = (feedback: DartStory['feedback'], chain: Beat[]): DartStory => ({
   game: 'g0',
@@ -74,8 +74,74 @@ describe('the timeline of a cue', () => {
     expect(calm.sounds).toEqual(loud.sounds)
   })
 
+  it('lands one blow per life taken in Last One Standing, each with its sound', () => {
+    const { steps, sounds, moods } = timelineOf(dart('attack', knockout.slice(0, 2)), false)
+    const attack = steps.find((step) => step.scene.kind === 'attacked')!
+    const blows = blowTimes(attack, 3)
+    expect(blows).toHaveLength(3)
+    expect(blows.at(-1)!).toBeLessThan(attack.at + attack.length)
+    expect(sounds.filter((sound) => sound.effect === 'punch').map((sound) => sound.at)).toEqual(blows)
+    expect(moods.filter((span) => span.player === 'ann').map((span) => span.mood)).toEqual(['laugh'])
+  })
+
+  it('lets nobody laugh at hitting themselves', () => {
+    const own: Beat[] = [
+      { kind: 'attacked', by: 'ann', victim: 'ann', amount: 1 },
+      { kind: 'lifeLost', player: 'ann', amount: 1, left: 2 },
+    ]
+    const { steps, moods } = timelineOf(dart('bad', own), false)
+    expect(steps.map((step) => step.scene.kind)).toEqual(['impact', 'attacked', 'lifeLost'])
+    expect(moods.some((span) => span.mood === 'laugh')).toBe(false)
+  })
+
+  it('starts a bang at once and ticks faster the more fuse has burned', () => {
+    const bomb = (chain: Beat[]): Cue => ({ kind: 'dart', story: { ...story('bad', chain), gameId: 'timeBomb' }, next: null })
+    const boom = timelineOf(bomb([{ kind: 'exploded', player: 'ann' }, { kind: 'lifeLost', player: 'ann', amount: 1, left: 2 }]), false)
+    expect(boom.steps.find((step) => step.scene.kind === 'exploded')!.at).toBeLessThan(0.2)
+    expect(boom.sounds.map((sound) => sound.effect)).toEqual(['miss', 'boom', 'lifeLost'])
+    const tick = (burned: number) => timelineOf(bomb([{ kind: 'fuse', player: 'ann', burned }]), false).sounds.at(-1)!.effect
+    expect([tick(1), tick(4), tick(8)]).toEqual(['fuseSlow', 'fuseMid', 'fuseFast'])
+  })
+
+  it('drops the final duel banner when calm', () => {
+    const chain: Beat[] = [...knockout.slice(0, 3), { kind: 'finalDuel', players: ['ann', 'cy'] }]
+    expect(timelineOf(dart('great', chain), false).steps.some((step) => step.scene.kind === 'finalDuel')).toBe(true)
+    expect(timelineOf(dart('great', chain), true).steps.some((step) => step.scene.kind === 'finalDuel')).toBe(false)
+  })
+
+  it('gives the pig its own sounds', () => {
+    const pig = (chain: Beat[]): Cue => ({ kind: 'dart', story: { ...story('good', chain), gameId: 'piggyBank' }, next: null })
+    const effects = (chain: Beat[]) => timelineOf(pig(chain), false).sounds.map((sound) => sound.effect)
+    expect(effects([{ kind: 'scored', player: 'ann', amount: 20 }])).toEqual(['hit', 'clink'])
+    expect(effects([{ kind: 'scored', player: 'ann', amount: 60 }])).toEqual(['hit', 'goldCoin'])
+    expect(effects([{ kind: 'lost', player: 'ann', amount: 30 }])).toEqual(['hit', 'smash'])
+  })
+
+  it('keeps a dig secret: nothing tells what was found before the shovel is done', () => {
+    const dig = (chain: Beat[], feedback: DartStory['feedback']): Cue => ({ kind: 'dart', story: { ...story(feedback, chain), gameId: 'minefield' }, next: null })
+    const chest = timelineOf(dig([{ kind: 'dug', player: 'ann', segment: 20, found: 'chest' }, { kind: 'scored', player: 'ann', amount: 5 }], 'great'), false)
+    expect(chest.suspense).toBe(DIG_TIME)
+    expect(chest.sounds).toContainEqual({ at: 0, effect: 'dig' })
+    const telling = chest.sounds.filter((sound) => sound.effect !== 'dig')
+    expect(Math.min(...telling.map((sound) => sound.at))).toBeGreaterThanOrEqual(DIG_TIME)
+    const after = chest.steps.filter((step) => step.scene.kind !== 'impact' && step.scene.kind !== 'dug')
+    expect(Math.min(...after.map((step) => step.at))).toBeGreaterThanOrEqual(DIG_TIME)
+    expect(timelineOf(dart('good', []), false).suspense).toBe(0)
+  })
+
+  it('opens a new round with the game\'s own scene and sound', () => {
+    const turn = timelineOf({ kind: 'turn', game: 'g0', gameId: 'spotlight', player: 'ann', round: 2 }, false)
+    expect(turn.gameId).toBe('spotlight')
+    expect(turn.steps.map((step) => step.scene.kind)).toEqual(['round', 'turn'])
+    expect(turn.sounds.map((sound) => sound.effect)).toEqual(['turn', 'drumroll'])
+    const last: Cue = { kind: 'dart', story: { ...story('good', []), gameId: 'sniper' }, next: 'ann', round: 2 }
+    const timeline = timelineOf(last, false)
+    expect(timeline.steps.at(-1)!.scene).toEqual({ kind: 'round', round: 2, player: 'ann' })
+    expect(timeline.sounds.at(-1)!.effect).toBe('lock')
+  })
+
   it('makes a turn change a single short step', () => {
-    const timeline = timelineOf({ kind: 'turn', game: 'g0', player: 'bob' }, false)
+    const timeline = timelineOf({ kind: 'turn', game: 'g0', gameId: 'race', player: 'bob' }, false)
     expect(timeline.steps).toHaveLength(1)
     expect(timeline.sounds).toEqual([{ at: 0, effect: 'turn' }])
   })

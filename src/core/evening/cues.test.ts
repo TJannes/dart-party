@@ -47,15 +47,40 @@ describe('moments from the rules', () => {
     const after = addDart(before, T(1), 'board')
     const cue = cueBetween(before, after)
     expect(cue?.kind).toBe('dart')
-    expect(kinds(cue)).toEqual(['attacked', 'lifeLost', 'knockedOut'])
+    expect(kinds(cue)).toEqual(['attacked', 'lifeLost', 'knockedOut', 'finalDuel'])
     if (cue?.kind !== 'dart') return
     expect(cue.story.chain[0]).toEqual({ kind: 'attacked', by: 'ann', victim: 'bob', amount: 3 })
     expect(cue.story.chain[1]).toEqual({ kind: 'lifeLost', player: 'bob', amount: 3, left: 0 })
   })
 
-  it('reports no attack when you hit your own segment', () => {
+  it('reports hitting your own segment as an attack on yourself', () => {
     const before = playing('lastOneStanding', lastOne)
-    expect(kinds(cueBetween(before, addDart(before, S(20), 'board')))).toEqual(['lifeLost'])
+    const cue = cueBetween(before, addDart(before, S(20), 'board'))
+    expect(kinds(cue)).toEqual(['attacked', 'lifeLost'])
+    if (cue?.kind === 'dart') expect(cue.story.chain[0]).toEqual({ kind: 'attacked', by: 'ann', victim: 'ann', amount: 1 })
+  })
+
+  it('calls the final duel when a knockout leaves two, but not in a game of two', () => {
+    const before = playing('lastOneStanding', lastOne)
+    const cue = cueBetween(before, addDart(before, T(1), 'board'))
+    if (cue?.kind === 'dart') expect(cue.story.chain.at(-1)).toEqual({ kind: 'finalDuel', players: ['ann', 'cy'] })
+    const four = playing('lastOneStanding', { segments: { ...lastOne.segments, di: [4] } }, ['ann', 'bob', 'cy', 'di'])
+    expect(kinds(cueBetween(four, addDart(four, T(1), 'board')))).toEqual(['attacked', 'lifeLost', 'knockedOut'])
+  })
+
+  it('tells the story of a bomb: fuse burning, passed on, going off', () => {
+    const fresh = playing('timeBomb', { fuses: [3], targets: [20] })
+    const burning = addDart(fresh, S(7), 'board')
+    const first = cueBetween(fresh, burning)
+    expect(kinds(first)).toEqual(['fuse'])
+    if (first?.kind === 'dart') expect(first.story.chain[0]).toEqual({ kind: 'fuse', player: 'ann', burned: 1 })
+
+    const passed = cueBetween(burning, addDart(burning, S(20), 'board'))
+    expect(kinds(passed)).toEqual(['passed'])
+    if (passed?.kind === 'dart') expect(passed.story.chain[0]).toEqual({ kind: 'passed', from: 'ann', to: 'bob' })
+
+    const boom = throwAll(burning, S(7))
+    expect(kinds(cueBetween(boom, addDart(boom, S(7), 'board')))).toEqual(['exploded', 'lifeLost'])
   })
 
   it('ends the chain with the win when the dart ends the game', () => {
@@ -121,7 +146,7 @@ describe('spectacular darts', () => {
 
   it('drops a general spectacle when someone is knocked out', () => {
     const before = throwAll(playing('lastOneStanding', lastOne), S(1), S(1))
-    expect(kinds(cueBetween(before, addDart(before, S(1), 'board')))).toEqual(['attacked', 'lifeLost', 'knockedOut'])
+    expect(kinds(cueBetween(before, addDart(before, S(1), 'board')))).toEqual(['attacked', 'lifeLost', 'knockedOut', 'finalDuel'])
   })
 })
 
@@ -159,14 +184,24 @@ describe('what plays when', () => {
 
   it('announces the next player when only the turn passes', () => {
     const one = addDart(start, S(20), 'board')
-    expect(cueBetween(one, dartsRemoved(one))).toEqual({ kind: 'turn', game: 'g0', player: 'bob' })
-    expect(cueBetween(start, nextPlayer(start))).toEqual({ kind: 'turn', game: 'g0', player: 'bob' })
+    expect(cueBetween(one, dartsRemoved(one))).toEqual({ kind: 'turn', game: 'g0', gameId: 'piggyBank', player: 'bob' })
+    expect(cueBetween(start, nextPlayer(start))).toEqual({ kind: 'turn', game: 'g0', gameId: 'piggyBank', player: 'bob' })
+  })
+
+  it('says so when the next player starts a new round', () => {
+    const two = playing('spotlight', { targets: [20, 3, 6, 11, 8, 16] }, ['ann', 'bob'])
+    const bob = nextPlayer(two)
+    expect(cueBetween(two, bob)).not.toHaveProperty('round')
+    expect(cueBetween(bob, nextPlayer(bob))).toMatchObject({ kind: 'turn', player: 'ann', round: 2 })
+    // Also when the last dart of the round passes the turn.
+    const last = throwAll(bob, S(5), S(5))
+    expect(cueBetween(addDart(last, S(5), 'board'), dartsRemoved(addDart(last, S(5), 'board')))).toMatchObject({ round: 2 })
   })
 
   it('names the next player on a dart that ends the turn by rule', () => {
     const before = playing('lastOneStanding', lastOne)
     const cue = cueBetween(before, addDart(before, T(20), 'board'))
-    expect(kinds(cue)).toEqual(['lifeLost', 'knockedOut'])
+    expect(kinds(cue)).toEqual(['attacked', 'lifeLost', 'knockedOut', 'finalDuel'])
     expect(cue).toMatchObject({ next: 'bob' })
   })
 

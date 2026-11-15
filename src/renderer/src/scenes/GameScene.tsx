@@ -19,8 +19,15 @@ import type { GameState } from '../../../core/game/types'
 import { RING } from '../../../core/board/ring'
 import { dartLabel } from '../../../shared/board'
 import { strings } from '../../../shared/strings'
+import { motion } from 'motion/react'
+import { dartScore } from '../../../core/board/ring'
+import { activeRecord, evaluateRecord } from '../../../core/evening/evening'
+import { useCalm, useSuspense } from '../animation/Stage'
+import { playerOf } from '../colours'
+import { Avatar } from '../components/Avatar'
 import { colourOf } from '../colours'
 import { useSettings } from '../hooks'
+import { Bomb, CallArrow, Pig, Pot, swellOf, type PigFace } from '../theme/partyProps'
 import { Board } from '../components/Board'
 import { RaceScene } from './RaceScene'
 import { ScoreScene } from './ScoreScene'
@@ -34,17 +41,6 @@ const SPOTLIGHT = { 3: '#ffd23f', 2: '#f08a4b', 1: '#b388eb' } as Record<number,
 const MINEFIELD = { hidden: '#6d4fb3', chest: '#ffd23f', coin: '#f0c36b', bomb: '#ee4266', empty: '#8a8496' }
 const MINEFIELD_MARK = { chest: '5', coin: '2', bomb: '✹', empty: '' }
 
-/** The bar on a scale of 0 to 180, and how far the thrower has got. */
-function BarMeter({ bar, thrown }: { bar: number | null; thrown: number }): React.JSX.Element {
-  const at = (value: number): string => `${Math.min(100, (value / 180) * 100)}%`
-  return (
-    <span className="meter">
-      <span className={bar !== null && thrown > bar ? 'meter__fill meter__fill--over' : 'meter__fill'} style={{ width: at(thrown) }} />
-      {bar !== null && <span className="meter__bar" style={{ left: at(bar) }} />}
-    </span>
-  )
-}
-
 /** Lives as hearts, or the word for being out. */
 function hearts(view: KnockoutView, player: string): string {
   const lives = view.lives[player]!
@@ -55,16 +51,43 @@ function hearts(view: KnockoutView, player: string): string {
 const lastLife = (view: KnockoutView, state: GameState<unknown>) => (player: string): boolean =>
   view.lives[player] === 1 && state.current?.player === player
 
-/** The scene of whichever game is being played. A new game adds a case. */
-export function GameScene(props: {
+/** How a player's pig feels: about the last dart that player threw. */
+function pigFace(record: GameRecord, state: GameState<unknown>, player: string): PigFace {
+  const turn = state.throwers.findLastIndex((thrower, n) => thrower === player && record.turns[n]!.darts.length > 0)
+  const dart = turn < 0 ? undefined : record.turns[turn]!.darts.at(-1)?.dart
+  if (!dart) return 'plain'
+  return dart.miss ? 'grumpy' : dartScore(dart) >= 40 ? 'grin' : 'plain'
+}
+
+/** How high something worth `value` sits in the high-jump set, from the ground. */
+const jumpHeight = (value: number): string => `${8 + (Math.min(180, value) / 180) * 70}%`
+
+interface SceneProps {
   evening: Evening
   record: GameRecord
   state: GameState<any>
   /** The darts of the turn in progress. */
   darts: Dart[]
-}): React.JSX.Element | null {
+}
+
+/**
+ * The scene of whichever game is being played. While an animation keeps
+ * the outcome of a dart a secret, the game is shown as it was before it.
+ */
+export function GameScene(props: SceneProps): React.JSX.Element | null {
+  const before = useSuspense()
+  const held = before ? activeRecord(before) : null
+  if (before && held && held.gameId === props.record.gameId) {
+    return <Scene {...props} evening={before} record={held} state={evaluateRecord(held)} />
+  }
+  return <Scene {...props} />
+}
+
+/** A new game adds a case. */
+function Scene(props: SceneProps): React.JSX.Element | null {
   const { evening, record, state, darts } = props
   const settings = useSettings()
+  const calm = useCalm()
   const common = { evening, record, state }
 
   switch (record.gameId) {
@@ -96,11 +119,34 @@ export function GameScene(props: {
 
     case 'piggyBank': {
       const view = state.view as PiggyBankView
+      // One big pig: of whoever is at the board, or of the winner at the end.
+      const shown = state.current?.player ?? state.ranking[0]?.[0]
       return (
         <ScoreScene
           {...common}
           score={(id) => view.scores[id]}
           detail={(id) => g.piggyBank.breaks(view.breaks[id]!)}
+          feature={
+            shown && (
+              <div className="pig">
+                <motion.div
+                  key={shown}
+                  className="pig__body"
+                  data-anim-prop="pig"
+                  initial={{ x: '60%', opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+                >
+                  <Pig
+                    colour={colourOf(evening, shown)}
+                    total={view.scores[shown]!}
+                    breaks={view.breaks[shown]!}
+                    face={pigFace(record, state, shown)}
+                  />
+                </motion.div>
+              </div>
+            )
+          }
           board={<Board darts={darts} />}
         />
       )
@@ -109,19 +155,19 @@ export function GameScene(props: {
     case 'landGrab': {
       const view = state.view as LandGrabView
       const owners: Record<number, string> = {}
-      const marks: Record<number, string> = {}
+      const castles: Record<number, { colour: string; fortified: boolean; damage: number }> = {}
       for (const [segment, plot] of Object.entries(view.plots)) {
         if (plot.owner === null) continue
-        owners[Number(segment)] = colourOf(evening, plot.owner)
-        // Walls standing, then the hits taken.
-        marks[Number(segment)] = (plot.fortified ? '▮▮' : '▮') + '✕'.repeat(plot.damage)
+        const colour = colourOf(evening, plot.owner)
+        owners[Number(segment)] = colour
+        castles[Number(segment)] = { colour, fortified: plot.fortified, damage: plot.damage }
       }
       return (
         <ScoreScene
           {...common}
           score={(id) => view.scores[id]}
           detail={(id) => g.landGrab.fortified(view.fortified[id]!)}
-          board={<Board owners={owners} marks={marks} darts={darts} />}
+          board={<Board owners={owners} castles={castles} darts={darts} />}
         />
       )
     }
@@ -158,6 +204,8 @@ export function GameScene(props: {
         <ScoreScene
           {...common}
           heading={g.minefield.left(view.left.chest, view.left.coin, view.left.bomb)}
+          // Teasing, so not when calm.
+          scorched={(id) => !calm && view.scorched.includes(id)}
           score={(id) => view.scores[id]}
           board={<Board owners={owners} marks={marks} darts={darts} />}
         />
@@ -175,6 +223,7 @@ export function GameScene(props: {
         <ScoreScene
           {...common}
           out={view.out}
+          duel={record.order.length > 2 && record.order.length - view.out.length === 2 && !state.finished}
           nervous={lastLife(view, state)}
           score={(id) => hearts(view, id)}
           detail={(id) => view.segments[id]![0]}
@@ -194,7 +243,24 @@ export function GameScene(props: {
           {...common}
           out={view.out}
           nervous={lastLife(view, state)}
-          heading={<span className="scene__call">{call}</span>}
+          heading={
+            <motion.span
+              // A new call flips in like a card being turned.
+              key={`${view.call}${view.bar}`}
+              className="call"
+              data-anim-prop="call"
+              initial={{ rotateX: 90 }}
+              animate={{ rotateX: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 16 }}
+            >
+              {view.call !== null && (
+                <span className="call__arrow">
+                  <CallArrow call={view.call} />
+                </span>
+              )}
+              <span className="scene__call">{call}</span>
+            </motion.span>
+          }
           score={(id) => hearts(view, id)}
           board={<Board darts={darts} />}
         />
@@ -205,11 +271,28 @@ export function GameScene(props: {
       const view = state.view as TimeBombView
       const owners: Record<number, string> = {}
       for (const segment of view.target) owners[segment] = '#ff2d55'
+      const holder = state.current?.player
       return (
         <ScoreScene
           {...common}
           out={view.out}
-          nervous={lastLife(view, state)}
+          // Holding a bomb that has burned a while is reason to sweat too.
+          nervous={(id) => id === holder && (view.lives[id] === 1 || view.burned >= 3)}
+          // Teasing, so not when calm.
+          scorched={(id) => !calm && view.scorched.includes(id)}
+          held={(id) =>
+            id === holder && (
+              <motion.div
+                className="lane__held"
+                data-anim-prop="bomb"
+                initial={false}
+                animate={{ scale: swellOf(view.burned) }}
+                transition={{ type: 'spring', stiffness: 380, damping: 11 }}
+              >
+                <Bomb burned={view.burned} />
+              </motion.div>
+            )
+          }
           heading={
             <>
               {g.timeBomb.target(view.target)}
@@ -234,9 +317,33 @@ export function GameScene(props: {
           heading={
             <>
               <span className="scene__call">{call}</span>
-              <BarMeter bar={view.bar} thrown={view.thrown} />
-              <span className="scene__fuse">{t.pot(view.pot)}</span>
             </>
+          }
+          feature={
+            <div className="jump" data-anim-prop="jump">
+              <i className="jump__post" />
+              <i className="jump__post jump__post--far" />
+              {view.bar !== null && (
+                <motion.div className="jump__bar" data-anim-prop="bar" initial={false} animate={{ bottom: jumpHeight(view.bar) }}>
+                  <b>{view.bar}</b>
+                </motion.div>
+              )}
+              {state.current && (
+                <motion.div
+                  key={state.current.player}
+                  className="jump__jumper"
+                  initial={false}
+                  animate={{ bottom: jumpHeight(view.thrown) }}
+                  transition={{ type: 'spring', stiffness: 200, damping: 16 }}
+                >
+                  <Avatar avatar={playerOf(evening, state.current.player).avatar} mood={view.bar !== null && view.thrown > view.bar ? 'cheer' : 'idle'} />
+                  <b>{view.thrown}</b>
+                </motion.div>
+              )}
+              <div className="jump__pot" data-anim-prop="pot">
+                <Pot coins={view.pot} />
+              </div>
+            </div>
           }
           score={(id) => view.scores[id]}
           detail={(id) => (view.holder === id && view.bar !== null ? t.holds(view.bar) : '')}

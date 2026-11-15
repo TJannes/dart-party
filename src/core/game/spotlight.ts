@@ -41,15 +41,20 @@ export const spotlight: GameRules<SpotlightSetup, SpotlightView> = {
     const scores: Record<PlayerId, number> = {}
     for (const player of players) scores[player] = 0
     const targetOf = (round: number): number => setup.targets[round % setup.targets.length]!
+    /** What each turn has brought so far. */
+    const earned: number[] = []
 
-    const progress = playTurns(spotlight, players, turns, (dart, thrower, turnIndex, _index, emit) => {
-      if (dart.miss || dart.number === null) return 'bad'
-      // Doubles and triples count no extra; the bull scores nothing.
-      if (dart.number === BULL) return 'neutral'
+    const progress = playTurns(spotlight, players, turns, (dart, thrower, turnIndex, dartIndex, emit) => {
       const round = Math.floor(turnIndex / players.length)
-      const points = spotlightWorth(targetOf(round))[dart.number] ?? 0
+      // Doubles and triples count no extra; the bull scores nothing.
+      const onRing = !dart.miss && dart.number !== null && dart.number !== BULL
+      const points = onRing ? (spotlightWorth(targetOf(round))[dart.number!] ?? 0) : 0
       scores[thrower]! += points
+      earned[turnIndex] = (earned[turnIndex] ?? 0) + points
       if (points > 0) emit({ kind: 'scored', player: thrower, amount: points })
+      // Three darts and nothing to show for it.
+      if (dartIndex === spotlight.dartsPerTurn - 1 && earned[turnIndex] === 0) emit({ kind: 'blank', player: thrower })
+      if (dart.miss || dart.number === null) return 'bad'
       return points === 3 ? 'great' : points > 0 ? 'good' : 'neutral'
     })
 

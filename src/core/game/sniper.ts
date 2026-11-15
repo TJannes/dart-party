@@ -69,16 +69,29 @@ export const sniper: GameRules<SniperSetup, SniperView> = {
     /** Per round, each player's closest distance and where that dart is. */
     const rounds: Map<PlayerId, { at: Point; mm: number }>[] = []
 
-    const progress = playTurns(sniper, players, turns, (dart, thrower, turnIndex): DartFeedback => {
+    const progress = playTurns(sniper, players, turns, (dart, thrower, turnIndex, dartIndex, emit): DartFeedback => {
       const round = Math.floor(turnIndex / players.length)
       const closest = (rounds[round] ??= new Map())
-      const mm = distanceMm(dart, targetOf(round))
-      if (mm === null) return 'bad'
-      const leader = Math.min(...[...closest.values()].map((c) => c.mm))
-      const own = closest.get(thrower)
-      if (own && own.mm <= mm) return 'neutral'
-      closest.set(thrower, { at: dart.position!, mm })
-      return mm < leader ? 'great' : 'good'
+      const target = targetOf(round)
+      const mm = distanceMm(dart, target)
+      let feedback: DartFeedback = 'bad'
+      if (mm !== null) {
+        emit({ kind: 'measured', player: thrower, mm, target })
+        const leader = Math.min(...[...closest.values()].map((c) => c.mm))
+        const own = closest.get(thrower)
+        if (own && own.mm <= mm) feedback = 'neutral'
+        else {
+          closest.set(thrower, { at: dart.position!, mm })
+          feedback = mm < leader ? 'great' : 'good'
+        }
+      }
+      // The last dart of the last player closes the round.
+      const last = turnIndex % players.length === players.length - 1 && dartIndex === sniper.dartsPerTurn - 1
+      if (last && closest.size > 0) {
+        const places = [...closest].sort((a, b) => a[1].mm - b[1].mm).slice(0, PLACE_POINTS.length)
+        emit({ kind: 'roundResult', places: places.map(([player, c]) => ({ player, at: c.at })) })
+      }
+      return feedback
     })
 
     const scores: Record<PlayerId, number> = {}

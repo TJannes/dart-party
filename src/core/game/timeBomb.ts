@@ -26,6 +26,8 @@ export interface TimeBombView extends KnockoutView {
   burned: number
   /** How many bombs have gone off. */
   explosions: number
+  /** Whose bomb went off and who has not been back at the board since. */
+  scorched: PlayerId[]
 }
 
 /** The three segments that count as the target around `middle`. */
@@ -52,6 +54,16 @@ export const timeBomb: GameRules<TimeBombSetup, TimeBombView> = {
     const out: PlayerId[] = []
     let explosions = 0
     let burned = 0
+    const scorched = new Set<PlayerId>()
+    /** Who gets the bomb after `player`: the next one still in the game. */
+    const after = (player: PlayerId): PlayerId | null => {
+      const at = players.indexOf(player)
+      for (let step = 1; step < players.length; step++) {
+        const next = players[(at + step) % players.length]!
+        if (lives[next]! > 0) return next
+      }
+      return null
+    }
     const fuse = (): number => setup.fuses[explosions % setup.fuses.length]!
     const zone = (turnIndex: number): number[] =>
       targetZone(setup.targets[turnIndex % setup.targets.length]!)
@@ -62,14 +74,22 @@ export const timeBomb: GameRules<TimeBombSetup, TimeBombView> = {
       turns,
       (player) => lives[player]! <= 0,
       (dart, thrower, turnIndex, _index, emit) => {
+        scorched.delete(thrower)
         if (!dart.miss && dart.number !== null && zone(turnIndex).includes(dart.number)) {
+          const to = after(thrower)
+          if (to !== null) emit({ kind: 'passed', from: thrower, to })
           return { feedback: 'great', endTurn: true }
         }
         burned++
-        if (burned < fuse()) return 'neutral'
+        if (burned < fuse()) {
+          emit({ kind: 'fuse', player: thrower, burned })
+          return 'neutral'
+        }
         // Boom. A new bomb starts with the next player.
         explosions++
         burned = 0
+        scorched.add(thrower)
+        emit({ kind: 'exploded', player: thrower })
         lives[thrower]! -= 1
         emit({ kind: 'lifeLost', player: thrower, amount: 1, left: lives[thrower]! })
         if (lives[thrower] === 0) {
@@ -89,6 +109,7 @@ export const timeBomb: GameRules<TimeBombSetup, TimeBombView> = {
         target: zone(progress.current?.turn ?? Math.max(0, turns.length - 1)),
         burned,
         explosions,
+        scorched: [...scorched].filter((player) => player !== progress.current?.player),
       },
     }
   },

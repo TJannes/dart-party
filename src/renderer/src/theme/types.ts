@@ -39,6 +39,56 @@ export type EffectName =
   | 'crown'
   /** Someone lands on their podium step. */
   | 'climb'
+  /** Time Bomb: a dart burned fuse; faster the more has burned. */
+  | 'fuseSlow'
+  | 'fuseMid'
+  | 'fuseFast'
+  /** Time Bomb: the bomb is thrown to the next player. */
+  | 'toss'
+  | 'boom'
+  /** Last One Standing: the glove lands. */
+  | 'punch'
+  /** Last One Standing: counted out. */
+  | 'bell'
+  /** Two players left. */
+  | 'duel'
+  /** Piggy Bank: coins drop into the pig. */
+  | 'clink'
+  | 'goldCoin'
+  /** Piggy Bank: the hammer breaks the pig. */
+  | 'smash'
+  /** Race: forward, forward on a triple, a banana peel, an oil slick. */
+  | 'vroom'
+  | 'nitro'
+  | 'slip'
+  | 'skid'
+  /** Robin Hood: an arrow lands, a bird flies up, an arrow is split. */
+  | 'arrow'
+  | 'bird'
+  | 'split'
+  /** Spotlight: the beam looks for its target, roses, a cough. */
+  | 'drumroll'
+  | 'applause'
+  | 'cough'
+  /** Land Grab: a wall goes up, a stone flies, a wall comes down. */
+  | 'build'
+  | 'catapult'
+  | 'crumble'
+  /** Sniper: the scope locks on, the tape measure, the three rings. */
+  | 'lock'
+  | 'measure'
+  | 'medals'
+  /** Minefield: the shovel, a chest, a coin, a crab. */
+  | 'dig'
+  | 'chest'
+  | 'flip'
+  | 'crab'
+  /** Higher or Lower: the call was met, or not. */
+  | 'whoosh'
+  | 'buzzer'
+  /** Raise the Bar: over the bar, or into it. */
+  | 'jump'
+  | 'clatter'
 
 export type MusicScene = 'menu' | 'game' | 'podium'
 

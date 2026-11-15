@@ -56,11 +56,14 @@ export const lastOneStanding: GameRules<LastOneStandingSetup, LastOneStandingVie
         if (hit === undefined || lives[hit]! <= 0) return 'neutral'
         const taken = Math.min(lives[hit]!, dart.multiplier)
         lives[hit]! -= taken
-        if (hit !== thrower) emit({ kind: 'attacked', by: thrower, victim: hit, amount: taken })
+        // Your own segment too: the glove turns round.
+        emit({ kind: 'attacked', by: thrower, victim: hit, amount: taken })
         emit({ kind: 'lifeLost', player: hit, amount: taken, left: lives[hit]! })
         if (lives[hit] === 0) {
           out.push(hit)
           emit({ kind: 'knockedOut', player: hit })
+          const standing = players.filter((player) => lives[player]! > 0)
+          if (standing.length === 2) emit({ kind: 'finalDuel', players: [standing[0]!, standing[1]!] })
         }
         if (hit === thrower) return 'bad'
         return lives[hit] === 0 ? 'great' : 'attack'

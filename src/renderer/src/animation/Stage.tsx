@@ -15,7 +15,8 @@ import { timelineOf, type MoodSpan, type Timeline } from './timeline'
 type Moods = Record<PlayerId, Mood>
 
 const MoodContext = createContext<Moods>({})
-const PlayContext = createContext<(cue: Cue, evening: Evening) => void>(() => {})
+const PlayContext = createContext<(cue: Cue, evening: Evening, before?: Evening) => void>(() => {})
+const SuspenseContext = createContext<Evening | null>(null)
 const CalmContext = createContext(false)
 const BusyContext = createContext(false)
 
@@ -23,7 +24,13 @@ const BusyContext = createContext(false)
 export const useMoods = (): Moods => useContext(MoodContext)
 
 /** Plays a cue by hand, for the Animations screen. */
-export const usePlayCue = (): ((cue: Cue, evening: Evening) => void) => useContext(PlayContext)
+export const usePlayCue = (): ((cue: Cue, evening: Evening, before?: Evening) => void) => useContext(PlayContext)
+
+/**
+ * The evening as it was before the dart being played, for as long as the
+ * animation keeps its outcome a secret (digging in Minefield). Else null.
+ */
+export const useSuspense = (): Evening | null => useContext(SuspenseContext)
 
 export const useCalm = (): boolean => useContext(CalmContext)
 
@@ -50,6 +57,7 @@ export function Stage(props: { evening: Evening | null | undefined; calm: boolea
   const { evening, calm } = props
   const [running, setRunning] = useState<Running | null>(null)
   const [moods, setMoods] = useState<Moods>({})
+  const [suspense, setSuspense] = useState<Evening | null>(null)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
   const serial = useRef(0)
   const calmNow = useRef(calm)
@@ -61,7 +69,7 @@ export function Stage(props: { evening: Evening | null | undefined; calm: boolea
   }, [])
 
   const play = useCallback(
-    (cue: Cue, during: Evening) => {
+    (cue: Cue, during: Evening, before?: Evening) => {
       stop()
       const timeline = timelineOf(cue, calmNow.current, activeRecord(during)?.order ?? [])
       const later = (seconds: number, run: () => void): void => {
@@ -69,6 +77,8 @@ export function Stage(props: { evening: Evening | null | undefined; calm: boolea
         else timers.current.push(setTimeout(run, seconds * 1000))
       }
       setRunning({ id: ++serial.current, timeline, evening: during, cue })
+      setSuspense(timeline.suspense > 0 && before ? before : null)
+      if (timeline.suspense > 0) later(timeline.suspense, () => setSuspense(null))
       for (const { at, effect } of timeline.sounds) later(at, () => sound.play(effect))
       // The moods change at the start and the end of every span.
       const moments = new Set([0, ...timeline.moods.flatMap((span) => [span.from, span.until])])
@@ -88,13 +98,14 @@ export function Stage(props: { evening: Evening | null | undefined; calm: boolea
     const before = seen.current
     seen.current = evening
     const cue = cueBetween(before, evening)
-    if (cue && evening) play(cue, evening)
+    if (cue && evening) play(cue, evening, before ?? undefined)
+    else setSuspense(null)
   }, [evening, play])
 
   useEffect(() => stop, [stop])
 
   const info = useMemo(
-    () => (running ? stageInfo(running.evening, calm, running.cue.kind === 'dart' ? running.cue.story.dart : null) : null),
+    () => (running ? stageInfo(running.evening, calm, running.cue.kind === 'dart' ? running.cue.story : null) : null),
     [running, calm],
   )
 
@@ -103,7 +114,7 @@ export function Stage(props: { evening: Evening | null | undefined; calm: boolea
       <BusyContext.Provider value={running !== null}>
       <PlayContext.Provider value={play}>
         <MoodContext.Provider value={moods}>
-          {props.children}
+          <SuspenseContext.Provider value={suspense}>{props.children}</SuspenseContext.Provider>
           {running && info && (
             <div className="stage-layer" key={running.id} aria-hidden>
               {running.timeline.steps.map((step) => {

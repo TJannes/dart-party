@@ -96,6 +96,7 @@ export const raiseTheBar: GameRules<null, RaiseTheBarView> = {
         bar = total
         seat = (seat + 1) % players.length
       } else if (total > bar!) {
+        played.at(-1)!.moments.push({ kind: 'jump', player: thrower, holder, cleared: true })
         holder = thrower
         bar = total
         pot += 1
@@ -104,6 +105,7 @@ export const raiseTheBar: GameRules<null, RaiseTheBarView> = {
         // Not over: the holder takes the pot and the attempt is void.
         if (darts.length > 0) {
           feedback[feedback.length - 1] = 'bad'
+          played.at(-1)!.moments.push({ kind: 'jump', player: thrower, holder, cleared: false })
           played.at(-1)!.moments.push({ kind: 'scored', player: holder, amount: pot })
         }
         scores[holder]! += pot

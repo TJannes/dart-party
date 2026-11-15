@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { manualDart, manualMiss } from '../../../core/board/ring'
+import { manualDart, manualMiss, placedDart, RING } from '../../../core/board/ring'
 import type { Dart } from '../../../core/board/state'
 import { cueBetween } from '../../../core/evening/cues'
 import {
@@ -58,6 +58,10 @@ const duel = game('lastOneStanding', segments([20], [1]), IDS.slice(0, 2))
 const race = game('race', segments([20, 1], [18, 4], [13, 6], [10, 15]))
 /** The second racer is three steps ahead and the first is at the board. */
 const raceUnderway = nextPlayer(nextPlayer(dartsRemoved(thrown(nextPlayer(race), T(18)))))
+const trio = game('lastOneStanding', segments([20], [1], [18]), IDS.slice(0, 3))
+/** A bomb that goes off on its third dart, with the target around the 20. */
+const bomb = game('timeBomb', { fuses: [3], targets: [20] })
+const hotBomb = game('timeBomb', { fuses: [10], targets: [20] })
 const tieBreak: Evening = {
   ...game('decider', null),
   stage: 'decider',
@@ -84,6 +88,106 @@ const MOMENTS: Demo[] = [
   demo(t.knockedOut, standing, T(1)),
   { label: t.turn, before: thrown(spotlight, S(5)), after: dartsRemoved(thrown(spotlight, S(5))) },
   demo(t.won, duel, T(1)),
+]
+
+const TIME_BOMB: Demo[] = [
+  demo(t.fuse, bomb, S(7)),
+  demo(t.fuseHot, thrown(dartsRemoved(thrown(hotBomb, S(7), S(7), S(7))), S(7), S(7)), S(7)),
+  demo(t.passed, thrown(bomb, S(7)), S(20)),
+  demo(t.exploded, thrown(bomb, S(7), S(7)), S(7)),
+]
+
+const LAST_ONE: Demo[] = [
+  demo(t.punch, standing, S(1)),
+  demo(t.punchOut, standing, T(1)),
+  demo(t.ownPunch, standing, S(20)),
+  demo(t.finalDuel, trio, T(1)),
+]
+
+const PIGGY: Demo[] = [
+  demo(t.coins, piggy, S(20)),
+  demo(t.goldCoin, piggy, T(20)),
+  demo(t.hammer, thrown(piggy, T(20), S(20)), miss),
+  demo(t.hammerEmpty, piggy, miss),
+]
+
+const pair = IDS.slice(0, 2)
+/** The first racer is one step from the finish and at the board. */
+const raceNearFinish = nextPlayer(nextPlayer(nextPlayer(dartsRemoved(thrown(race, T(20), T(20), T(20))))))
+const RACE: Demo[] = [
+  demo(t.forward, raceUnderway, S(20)),
+  demo(t.nitro, raceUnderway, T(20)),
+  demo(t.banana, raceUnderway, S(18)),
+  demo(t.oil, raceUnderway, T(18)),
+  demo(t.finish, raceNearFinish, S(20)),
+]
+
+const archery = game('robinHood', null)
+const ROBIN_HOOD: Demo[] = [
+  demo(t.arrow, archery, manualDart(20, 1, true)),
+  demo(t.splitArrow, archery, manualDart(25, 2)),
+  demo(t.tree, archery, miss),
+]
+
+const spotlightPair = nextPlayer(game('spotlight', { targets: [20, 3, 6, 11, 8, 16] }, pair))
+const SPOTLIGHT: Demo[] = [
+  { label: t.newRound, before: spotlightPair, after: nextPlayer(spotlightPair) },
+  demo(t.bow, spotlight, S(20)),
+  demo(t.blank, thrown(spotlight, S(7), S(8)), S(9)),
+]
+
+const land = game('landGrab', null)
+/** The first player owns the 20 and the second is at the board. */
+const landTaken = dartsRemoved(thrown(land, S(20)))
+const LAND_GRAB: Demo[] = [
+  demo(t.claim, land, S(20)),
+  demo(t.fortify, thrown(land, S(20)), S(20)),
+  demo(t.siege, landTaken, S(20)),
+  demo(t.capture, landTaken, manualDart(20, 2)),
+  demo(t.tripleCapture, landTaken, T(20)),
+]
+
+const cross = { x: 0.3, y: 0.4 }
+const scope = game('sniper', { targets: [cross, { x: -0.5, y: -0.2 }, cross, cross, cross] }, pair)
+const lastShot = thrown(dartsRemoved(thrown(scope, placedDart(-0.2, 0.1), placedDart(0.5, 0.6), placedDart(0.1, 0.3))), placedDart(0.6, -0.3), placedDart(0.35, 0.5))
+const SNIPER: Demo[] = [
+  demo(t.measure, scope, placedDart(-0.3, -0.2)),
+  demo(t.medals, lastShot, placedDart(0, 0.2)),
+  { label: t.newRound, before: thrown(lastShot, placedDart(0, 0.2)), after: dartsRemoved(thrown(lastShot, placedDart(0, 0.2))) },
+]
+
+const mines = game('minefield', {
+  under: { ...Object.fromEntries(RING.map((segment) => [segment, 'empty'])), 20: 'chest', 1: 'coin', 4: 'coin', 18: 'bomb' },
+})
+const MINEFIELD: Demo[] = [
+  demo(t.digChest, mines, S(20)),
+  demo(t.digCoin, mines, S(1)),
+  demo(t.digEmpty, mines, S(5)),
+  demo(t.digBomb, thrown(mines, S(20)), S(18)),
+]
+
+const calls = thrown(game('higherOrLower', { flips: [true] }), S(10))
+const HIGHER_OR_LOWER: Demo[] = [demo(t.callRight, calls, S(15)), demo(t.callWrong, calls, S(5))]
+
+/** The first player holds the bar at 60 and the second has thrown two darts. */
+const barAt60 = dartsRemoved(thrown(game('raiseTheBar', null, IDS.slice(0, 3)), S(20), S(20), S(20)))
+const RAISE_THE_BAR: Demo[] = [
+  demo(t.jumpOver, thrown(barAt60, S(20), S(20)), T(20)),
+  demo(t.jumpFail, thrown(barAt60, S(1), S(1)), S(1)),
+]
+
+const PER_GAME: { id: keyof typeof strings.games; demos: Demo[] }[] = [
+  { id: 'race', demos: RACE },
+  { id: 'robinHood', demos: ROBIN_HOOD },
+  { id: 'spotlight', demos: SPOTLIGHT },
+  { id: 'piggyBank', demos: PIGGY },
+  { id: 'landGrab', demos: LAND_GRAB },
+  { id: 'sniper', demos: SNIPER },
+  { id: 'minefield', demos: MINEFIELD },
+  { id: 'lastOneStanding', demos: LAST_ONE },
+  { id: 'higherOrLower', demos: HIGHER_OR_LOWER },
+  { id: 'timeBomb', demos: TIME_BOMB },
+  { id: 'raiseTheBar', demos: RAISE_THE_BAR },
 ]
 
 const s = strings.animations.spectacle
@@ -144,7 +248,7 @@ export function AnimationsScreen({ onBack }: { onBack: () => void }): React.JSX.
   useEffect(() => {
     if (shown.run === 0) return
     const cue = cueBetween(shown.demo.before, shown.demo.after)
-    if (cue) play(cue, shown.demo.after)
+    if (cue) play(cue, shown.demo.after, shown.demo.before)
   }, [shown, play])
 
   if (extra?.what === 'podium') {
@@ -190,6 +294,15 @@ export function AnimationsScreen({ onBack }: { onBack: () => void }): React.JSX.
             {buttons(MOMENTS)}
             {buttons(SPECTACLES)}
             <p className="hint hint--left">{t.themed}</p>
+          </section>
+          <section>
+            <h3>{t.perGame}</h3>
+            {PER_GAME.map((group) => (
+              <div key={group.id}>
+                <p className="hint hint--left">{strings.games[group.id].name}</p>
+                {buttons(group.demos)}
+              </div>
+            ))}
           </section>
           <section>
             <h3>{t.between}</h3>

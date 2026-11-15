@@ -84,6 +84,15 @@ describe('Higher or Lower', () => {
   const setup = { flips: Array.from({ length: 240 }, (_, i) => i % 2 === 0) }
   const play = (...turns: Turn[]) => higherOrLower.evaluate(setup, three, turns)
 
+  it('reports whether a call was met, but not for the free first dart', () => {
+    const state = play(open(S(10), S(12), S(15)))
+    expect(state.played.map((p) => p.moments[0])).toEqual([
+      undefined,
+      { kind: 'call', player: 'ann', call: 'lower', right: false },
+      { kind: 'call', player: 'ann', call: 'higher', right: true },
+    ])
+  })
+
   it('never makes an impossible or near-impossible call', () => {
     expect(callFor(null, true)).toBeNull()
     expect(callFor(60, true)).toBe('lower')
@@ -167,6 +176,20 @@ describe('Time Bomb', () => {
     const state = play(turn(miss, miss, miss), turn(miss), turn(miss, miss, miss), open(miss, miss))
     expect(state.view.explosions).toBe(2)
     expect(state.view.lives).toEqual({ ann: 2, bob: 2, cy: 3 })
+  })
+
+  it('leaves a player scorched until they are back at the board', () => {
+    const quick = { fuses: [1], targets: [20, 20, 20, 20] }
+    const play3 = (...turns: Turn[]) => timeBomb.evaluate(quick, three, turns)
+    // Ann's bomb goes off; Bob and Cy pass theirs on.
+    expect(play3(open(miss)).view.scorched).toEqual(['ann'])
+    expect(play3(turn(miss), turn(S(20)), open(S(20))).view.scorched).toEqual([])
+    expect(play3(turn(miss), open(S(20))).view.scorched).toEqual(['ann'])
+  })
+
+  it('passes the bomb to the next player still in the game', () => {
+    const state = timeBomb.evaluate({ fuses: [9], targets: [20] }, three, [open(S(20))])
+    expect(state.played[0]!.moments).toEqual([{ kind: 'passed', from: 'ann', to: 'bob' }])
   })
 
   it('lets the last player standing win', () => {

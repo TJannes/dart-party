@@ -1,7 +1,8 @@
 import type { FC } from 'react'
 import { RING } from '../../../core/board/ring'
 import type { Dart } from '../../../core/board/state'
-import type { Evening } from '../../../core/evening/evening'
+import type { DartStory } from '../../../core/evening/cues'
+import { activeRecord, evaluateRecord, type Evening } from '../../../core/evening/evening'
 import type { PlayerId } from '../../../core/game/types'
 import { colourOf, playerOf } from '../colours'
 import type { Scene, SceneKind, Step } from './timeline'
@@ -20,6 +21,10 @@ export interface Spot {
 export interface StageInfo {
   /** True when flashes, shaking and teasing are switched off. */
   calm: boolean
+  /** What the scene of the game shows right now: the view its rules gave. */
+  view: unknown
+  /** The dart this is all about, with everything it caused. Null for a turn change. */
+  story: DartStory | null
   colourOf(player: PlayerId): string
   nameOf(player: PlayerId): string
   avatarOf(player: PlayerId): string
@@ -30,8 +35,20 @@ export interface StageInfo {
   scoreElement(player: PlayerId): Element | null
   board(): Spot | null
   boardElement(): Element | null
+  /**
+   * Where something a scene puts on screen for its game is (the bomb, the
+   * pig), by the name in its `data-anim-prop`. Null when it is not there.
+   */
+  prop(name: string): Spot | null
+  propElement(name: string): Element | null
   /** Where a dart sits on the board on screen. Null without a board. */
   boardPoint(dart: Dart): { x: number; y: number } | null
+  /** Where a spot given in board units is on screen. Null without a board. */
+  boardXY(at: { x: number; y: number }): { x: number; y: number } | null
+  /** The middle of a segment's outer single on screen. Null without a board. */
+  segmentPoint(segment: number): { x: number; y: number } | null
+  /** How many pixels the board's radius (to the outside of the doubles) is. */
+  boardScale(): number
   /** Where the dart of this cue landed; the middle of the board without one. */
   dartPoint(): { x: number; y: number } | null
 }
@@ -79,21 +96,31 @@ export function boardPosition(dart: Dart): { x: number; y: number } {
   return { x: radius * Math.sin(angle), y: radius * Math.cos(angle) }
 }
 
-export function stageInfo(evening: Evening, calm: boolean, dart: Dart | null): StageInfo {
+export function stageInfo(evening: Evening, calm: boolean, story: DartStory | null): StageInfo {
+  const dart = story?.dart ?? null
   const find = (selector: string): Element | null => document.querySelector(selector)
   const avatar = (player: PlayerId): Spot | null => spotOf(find(`[data-anim-avatar="${CSS.escape(player)}"]`))
   const scoreElement = (player: PlayerId): Element | null => find(`[data-anim-score="${CSS.escape(player)}"]`)
   const boardElement = (): Element | null => find('[data-anim-board] svg, svg[data-anim-board]')
+  const propElement = (name: string): Element | null => find(`[data-anim-prop="${CSS.escape(name)}"]`)
   const board = (): Spot | null => spotOf(boardElement())
-  const boardPoint = (thrown: Dart): { x: number; y: number } | null => {
+  const boardScale = (): number => (board()?.size ?? 0) / (2 * BOARD_VIEW)
+  const boardXY = (at: { x: number; y: number }): { x: number; y: number } | null => {
     const spot = board()
-    if (!spot) return null
-    const scale = spot.size / (2 * BOARD_VIEW)
-    const at = boardPosition(thrown)
-    return { x: spot.x + at.x * scale, y: spot.y - at.y * scale }
+    return spot && { x: spot.x + at.x * boardScale(), y: spot.y - at.y * boardScale() }
   }
+  const boardPoint = (thrown: Dart): { x: number; y: number } | null => boardXY(boardPosition(thrown))
+  const record = activeRecord(evening)
   return {
     calm,
+    view: record ? evaluateRecord(record).view : null,
+    story,
+    boardXY,
+    boardScale,
+    segmentPoint: (segment) => {
+      const angle = (RING.indexOf(segment) * 18 * Math.PI) / 180
+      return boardXY({ x: 0.79 * Math.sin(angle), y: 0.79 * Math.cos(angle) })
+    },
     colourOf: (player) => colourOf(evening, player),
     nameOf: (player) => playerOf(evening, player)?.name ?? '',
     avatarOf: (player) => playerOf(evening, player)?.avatar ?? 'fox',
@@ -102,6 +129,8 @@ export function stageInfo(evening: Evening, calm: boolean, dart: Dart | null): S
     scoreElement,
     board,
     boardElement,
+    prop: (name) => spotOf(propElement(name)),
+    propElement,
     boardPoint,
     dartPoint: () => (dart ? boardPoint(dart) : board()),
   }

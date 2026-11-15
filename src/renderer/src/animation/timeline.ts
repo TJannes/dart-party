@@ -17,6 +17,8 @@ export type Scene =
   | { kind: 'bad'; player: PlayerId }
   | Beat
   | { kind: 'turn'; player: PlayerId }
+  /** A new round starts, with `player` first. */
+  | { kind: 'round'; round: number; player: PlayerId }
 
 export type SceneKind = Scene['kind']
 
@@ -41,6 +43,11 @@ export interface Timeline {
   steps: Step[]
   sounds: { at: number; effect: EffectName }[]
   moods: MoodSpan[]
+  /**
+   * How long the scene keeps showing the game as it was before the dart,
+   * so that digging can keep its secret for a moment.
+   */
+  suspense: number
   /** When everything is over. */
   length: number
 }
@@ -51,12 +58,34 @@ export const MAX_CHAIN = 3
 const LENGTH: Record<Beat['kind'], number> = {
   scored: 0.8,
   lost: 0.9,
+  fuse: 0.6,
+  passed: 0.8,
+  exploded: 1,
   attacked: 0.7,
   lifeLost: 0.7,
   knockedOut: 0.9,
+  finalDuel: 1.3,
+  blank: 1.1,
+  fortified: 0.7,
+  measured: 0.8,
+  roundResult: 1.3,
+  dug: 1.3,
+  call: 0.7,
+  jump: 1,
   spectacle: 1.4,
   won: 1.8,
 }
+
+/** These play while the dart lands; the rest plays one after the other. */
+const ALONGSIDE: Beat['kind'][] = ['scored', 'lost', 'fuse', 'measured', 'call', 'dug']
+
+/** How long the shovel digs before the segment shows what was under it. */
+export const DIG_TIME = 0.5
+const ROUND_LENGTH = 1.2
+
+/** When the chain starts: at once after a bang, else once the dart has landed. */
+const CHAIN_START = 0.35
+const BANG_START = 0.1
 
 const TURN_LENGTH = 1.1
 
@@ -70,22 +99,92 @@ const FEEDBACK_SOUND: Record<DartFeedback, EffectName> = {
 
 /** Full-screen or teasing: left out when the owner asked for calm. */
 function loud(scene: Scene): boolean {
-  return scene.kind === 'spectacle' || scene.kind === 'won' || scene.kind === 'bad'
+  return (
+    scene.kind === 'spectacle' ||
+    scene.kind === 'won' ||
+    scene.kind === 'bad' ||
+    scene.kind === 'finalDuel' ||
+    scene.kind === 'blank'
+  )
 }
 
-function soundOf(beat: Beat): EffectName | null {
+/**
+ * When the blows of an attack land: one per life taken in Last One
+ * Standing, where the glove jabs again for a double or a triple.
+ */
+export function blowTimes(step: Pick<Step, 'at' | 'length'>, amount: number): number[] {
+  const blows = Math.min(3, Math.max(1, amount))
+  return Array.from({ length: blows }, (_, n) => step.at + step.length * (0.5 + n * 0.2))
+}
+
+type Sound = { at: number; effect: EffectName }
+
+/** The sounds of one step: the game's own where it has them. */
+function soundsOf(beat: Beat, story: DartStory, step: Step): Sound[] {
+  const { gameId } = story
+  const one = (effect: EffectName, after = 0): Sound[] => [{ at: step.at + after * step.length, effect }]
+  // In Land Grab a plot changes hands when the catapult stone has landed.
+  const stone = gameId === 'landGrab' && story.chain.some((other) => other.kind === 'attacked') ? 0.6 : 0
   switch (beat.kind) {
+    case 'scored':
+      if (gameId === 'piggyBank') return one(beat.amount >= 40 ? 'goldCoin' : 'clink', 0.6)
+      if (gameId === 'race') return one(beat.amount >= 3 ? 'nitro' : 'vroom')
+      if (gameId === 'spotlight') return beat.amount === 3 ? one('applause', 0.3) : []
+      if (gameId === 'landGrab') return one('build', stone)
+      if (gameId === 'raiseTheBar') return one('coin', 0.6)
+      return []
+    case 'lost':
+      if (gameId === 'piggyBank') return one('smash', 0.3)
+      if (gameId === 'landGrab') return one('crumble', stone)
+      return []
+    case 'dug': {
+      const found = { chest: 'chest', coin: 'flip', empty: 'crab', bomb: null } as const
+      const effect = found[beat.found]
+      return [...one('dig'), ...(effect ? [{ at: step.at + DIG_TIME, effect }] : [])]
+    }
+    case 'measured':
+      return one('measure')
+    case 'call':
+      return one(beat.right ? 'whoosh' : 'buzzer')
+    case 'fortified':
+      return one('build')
+    case 'jump':
+      return one(beat.cleared ? 'jump' : 'clatter', beat.cleared ? 0 : 0.45)
+    case 'roundResult':
+      return one('medals')
+    case 'blank':
+      return one('cough', 0.4)
+    case 'fuse':
+      // The ticking speeds up with what has burned, never with what is left.
+      return one(beat.burned <= 2 ? 'fuseSlow' : beat.burned <= 5 ? 'fuseMid' : 'fuseFast')
+    case 'passed':
+      return one('toss')
+    case 'exploded':
+      return one('boom')
+    case 'attacked':
+      if (gameId === 'lastOneStanding') return blowTimes(step, beat.amount).map((at) => ({ at, effect: 'punch' as const }))
+      if (gameId === 'race') return one(beat.amount >= 2 ? 'skid' : 'slip', 0.5)
+      if (gameId === 'landGrab') return one('catapult')
+      return []
     case 'lifeLost':
-      return 'lifeLost'
+      return one('lifeLost')
     case 'knockedOut':
-      return 'knockedOut'
+      return one(gameId === 'lastOneStanding' ? 'bell' : 'knockedOut')
+    case 'finalDuel':
+      return one('duel')
     case 'spectacle':
-      return beat.what === 'threeMisses' ? 'trombone' : 'sparkle'
+      if (gameId === 'robinHood' && beat.what === 'bullseye') return one('split')
+      return one(beat.what === 'threeMisses' ? 'trombone' : 'sparkle')
     case 'won':
-      return 'win'
-    default:
-      return null
+      return one('win')
   }
+}
+
+/** A new round, announced together with the player who starts it. */
+function roundSteps(gameId: string, round: number, player: PlayerId, at: number): { step: Step; sounds: Sound[] } {
+  const step: Step = { key: 'round', at, length: ROUND_LENGTH, scene: { kind: 'round', round, player } }
+  const effect: EffectName | null = gameId === 'spotlight' ? 'drumroll' : gameId === 'sniper' ? 'lock' : null
+  return { step, sounds: effect ? [{ at, effect }] : [] }
 }
 
 /**
@@ -94,19 +193,27 @@ function soundOf(beat: Beat): EffectName | null {
  */
 export function timelineOf(cue: Cue, calm: boolean, others: readonly PlayerId[] = []): Timeline {
   if (cue.kind === 'turn') {
+    const round = cue.round === undefined ? null : roundSteps(cue.gameId, cue.round, cue.player, 0)
     return {
-      gameId: null,
-      steps: [{ key: 'turn', at: 0, length: TURN_LENGTH, scene: { kind: 'turn', player: cue.player } }],
-      sounds: [{ at: 0, effect: 'turn' }],
+      gameId: cue.gameId,
+      steps: [
+        ...(round ? [round.step] : []),
+        { key: 'turn', at: 0, length: TURN_LENGTH, scene: { kind: 'turn', player: cue.player } },
+      ],
+      sounds: [{ at: 0, effect: 'turn' }, ...(round?.sounds ?? [])],
       moods: [],
-      length: TURN_LENGTH,
+      suspense: 0,
+      length: round ? Math.max(TURN_LENGTH, ROUND_LENGTH) : TURN_LENGTH,
     }
   }
 
   const { story } = cue
   const steps: Step[] = []
-  const sounds: Timeline['sounds'] = [{ at: 0, effect: FEEDBACK_SOUND[story.feedback] }]
   const moods: MoodSpan[] = []
+  // Digging takes a moment: nothing gives away what is under the segment before it is up.
+  const lead = story.chain.some((beat) => beat.kind === 'dug') ? DIG_TIME : 0
+  const sounds: Timeline['sounds'] = [{ at: lead, effect: FEEDBACK_SOUND[story.feedback] }]
+  if (story.gameId === 'robinHood') sounds.push(story.dart.miss ? { at: 0.3, effect: 'bird' } : { at: 0, effect: 'arrow' })
 
   steps.push({ key: 'impact', at: 0, length: 0.5, scene: { kind: 'impact', story } })
   // The thrower's own reaction, unless the chain already shows how they fare.
@@ -114,17 +221,22 @@ export function timelineOf(cue: Cue, calm: boolean, others: readonly PlayerId[] 
     (beat) => (beat.kind === 'lifeLost' || beat.kind === 'lost') && beat.player === story.thrower,
   )
   if (!hurt && (story.feedback === 'good' || story.feedback === 'great' || story.feedback === 'bad')) {
-    steps.push({ key: 'reaction', at: 0, length: 1, scene: { kind: story.feedback, player: story.thrower } })
+    steps.push({ key: 'reaction', at: lead, length: 1, scene: { kind: story.feedback, player: story.thrower } })
   }
 
   // Points fly while the dart lands; the rest plays one after the other.
-  let cursor = 0.35
+  const start = lead + (story.chain.some((beat) => beat.kind === 'exploded') ? BANG_START : CHAIN_START)
+  let cursor = start
   const chained: Step[] = []
   story.chain.forEach((beat, n) => {
     const key = `${beat.kind}${n}`
-    if (beat.kind === 'scored' || beat.kind === 'lost') {
-      steps.push({ key, at: 0.15, length: LENGTH[beat.kind], scene: beat })
-      if (beat.kind === 'lost') moods.push({ player: beat.player, mood: 'shocked', from: 0.15, until: 1.2 })
+    if (ALONGSIDE.includes(beat.kind)) {
+      // The dig itself starts with the dart; what it turns up waits for it.
+      const at = beat.kind === 'dug' ? 0 : lead + 0.15
+      const step: Step = { key, at, length: LENGTH[beat.kind], scene: beat }
+      steps.push(step)
+      sounds.push(...soundsOf(beat, story, step))
+      if (beat.kind === 'lost') moods.push({ player: beat.player, mood: 'shocked', from: at, until: at + 1.05 })
       return
     }
     chained.push({ key, at: cursor, length: LENGTH[beat.kind], scene: beat })
@@ -132,20 +244,30 @@ export function timelineOf(cue: Cue, calm: boolean, others: readonly PlayerId[] 
   })
 
   // Squeeze a long chain into the time it may take.
-  const squeeze = cursor > MAX_CHAIN ? (MAX_CHAIN - 0.35) / (cursor - 0.35) : 1
+  const squeeze = cursor > MAX_CHAIN ? (MAX_CHAIN - start) / (cursor - start) : 1
   for (const step of chained) {
-    step.at = 0.35 + (step.at - 0.35) * squeeze
+    step.at = start + (step.at - start) * squeeze
     step.length *= squeeze
     const beat = step.scene as Beat
-    const effect = soundOf(beat)
-    if (effect) sounds.push({ at: step.at, effect })
+    sounds.push(...soundsOf(beat, story, step))
     const until = step.at + step.length
     if (beat.kind === 'attacked') {
-      moods.push({ player: beat.by, mood: 'laugh', from: step.at, until })
+      // Nobody laughs at hitting themselves.
+      if (beat.by !== beat.victim) moods.push({ player: beat.by, mood: 'laugh', from: step.at, until })
       // The victim flinches when the hit arrives.
-      moods.push({ player: beat.victim, mood: 'hit', from: step.at + step.length * 0.6, until: until + 0.4 })
+      moods.push({ player: beat.victim, mood: 'hit', from: step.at + step.length * 0.5, until: until + 0.4 })
+    } else if (beat.kind === 'exploded') {
+      moods.push({ player: beat.player, mood: 'shocked', from: step.at, until })
+    } else if (beat.kind === 'passed') {
+      moods.push({ player: beat.from, mood: 'cheer', from: step.at, until })
+      // The next player catches it.
+      moods.push({ player: beat.to, mood: 'shocked', from: step.at + step.length * 0.6, until: until + 0.3 })
     } else if (beat.kind === 'lifeLost') {
       moods.push({ player: beat.player, mood: 'hit', from: step.at, until })
+    } else if (beat.kind === 'jump') {
+      moods.push({ player: beat.player, mood: beat.cleared ? 'cheer' : 'hit', from: step.at + step.length * 0.5, until: until + 0.4 })
+    } else if (beat.kind === 'blank' && !calm) {
+      moods.push({ player: beat.player, mood: 'sulk', from: step.at, until })
     } else if (beat.kind === 'spectacle' && beat.what === 'threeMisses' && !calm) {
       for (const player of others) {
         if (player !== beat.player) moods.push({ player, mood: 'laugh', from: step.at, until })
@@ -153,13 +275,18 @@ export function timelineOf(cue: Cue, calm: boolean, others: readonly PlayerId[] 
     }
     steps.push(step)
   }
-  cursor = 0.35 + (cursor - 0.35) * squeeze
+  cursor = start + (cursor - start) * squeeze
 
   const won = story.chain.some((beat) => beat.kind === 'won')
   if (cue.next && !won) {
-    const at = Math.max(cursor, 0.9)
+    const at = Math.max(cursor, lead + 0.9)
     steps.push({ key: 'turn', at, length: TURN_LENGTH, scene: { kind: 'turn', player: cue.next } })
     sounds.push({ at, effect: 'turn' })
+    if (cue.round !== undefined) {
+      const round = roundSteps(story.gameId, cue.round, cue.next, at)
+      steps.push(round.step)
+      sounds.push(...round.sounds)
+    }
   }
 
   const shown = calm ? steps.filter((step) => !loud(step.scene)) : steps
@@ -168,6 +295,7 @@ export function timelineOf(cue: Cue, calm: boolean, others: readonly PlayerId[] 
     steps: shown,
     sounds,
     moods,
+    suspense: lead,
     length: Math.max(0, ...shown.map((step) => step.at + step.length), ...moods.map((span) => span.until)),
   }
 }

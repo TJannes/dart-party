@@ -229,7 +229,11 @@ function Eyes({ mood, frog, onDark }: { mood: Mood; frog: boolean; onDark: boole
   )
 }
 
-function Mouth({ mood, y }: { mood: Mood; y: number }): React.JSX.Element {
+function Mouth({ mood, y, ink }: { mood: Mood; y: number; ink?: string }): React.JSX.Element {
+  return <MouthShape mood={mood} y={y} INK={ink ?? INK} />
+}
+
+function MouthShape({ mood, y, INK }: { mood: Mood; y: number; INK: string }): React.JSX.Element {
   if (mood === 'cheer') return <path d={`M42 ${y - 2} Q50 ${y + 13} 58 ${y - 2} Z`} fill="#8c1c3a" />
   if (mood === 'laugh') {
     return (
@@ -315,12 +319,39 @@ function MoodMarks({ mood }: { mood: Mood }): React.JSX.Element | null {
   return null
 }
 
-export function Avatar(props: { avatar: string; mood?: Mood; size?: number | string }): React.JSX.Element {
+/** Soot after a bomb: hair on end and a wisp of smoke. */
+function Soot(): React.JSX.Element {
+  return (
+    <g fill="none" strokeLinecap="round">
+      <path d="M30 24 L24 8 M40 19 L38 2 M50 17 L52 0 M60 19 L65 3 M70 24 L78 10" stroke="#17131f" strokeWidth="4" />
+      {[36, 62].map((x, n) => (
+        <motion.path
+          key={x}
+          d="M0 0 q-5 -6 0 -12 q5 -6 0 -12"
+          stroke="#cfcbd8"
+          strokeWidth="3"
+          initial={{ x, y: 8, opacity: 0 }}
+          animate={{ y: [8, -6], opacity: [0, 0.8, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, delay: n * 0.9, ease: 'easeOut' }}
+        />
+      ))}
+    </g>
+  )
+}
+
+export function Avatar(props: {
+  avatar: string
+  mood?: Mood
+  size?: number | string
+  /** Blackened by a bomb. */
+  scorched?: boolean
+}): React.JSX.Element {
   const id: AvatarId = isAvatar(props.avatar) ? props.avatar : 'fox'
   const spec = SPECS[id]
   const mood = props.mood ?? 'idle'
   const frog = spec.ears === 'bumps'
-  const dark = id === 'panda'
+  const scorched = props.scorched === true
+  const dark = id === 'panda' || scorched
   const mouthY = spec.nose === 'pig' ? 80 : 72
 
   return (
@@ -332,12 +363,14 @@ export function Avatar(props: { avatar: string; mood?: Mood; size?: number | str
       style={{ overflow: 'visible', display: 'block', flex: 'none' }}
       aria-hidden
     >
+      <g style={scorched ? { filter: 'brightness(0.24) saturate(0.35)' } : undefined}>
       {Extras(spec, true)}
       {EarShapes(spec)}
       <circle cx="50" cy="54" r="35" fill={spec.fur} stroke="rgb(0 0 0 / 12%)" strokeWidth="1.5" />
       {spec.face === 'mask' && <ellipse cx="50" cy="60" rx="25" ry="24" fill={spec.light} />}
       {spec.face === 'muzzle' && <ellipse cx="50" cy="69" rx="17" ry="13" fill={spec.light} />}
       {Extras(spec, false)}
+      </g>
       <Eyes mood={mood} frog={frog} onDark={dark} />
       {spec.nose === 'nose' && <ellipse cx="50" cy="63" rx="5" ry="3.6" fill={INK} />}
       {spec.nose === 'pig' && (
@@ -351,7 +384,8 @@ export function Avatar(props: { avatar: string; mood?: Mood; size?: number | str
       {spec.nose === 'trunk' && (
         <path d="M43 58 Q42 84 50 92 Q58 84 57 58 Z" fill={spec.fur} stroke="rgb(0 0 0 / 18%)" strokeWidth="1.5" />
       )}
-      {spec.nose !== 'beak' && spec.nose !== 'trunk' && <Mouth mood={mood} y={frog ? 66 : mouthY} />}
+      {spec.nose !== 'beak' && spec.nose !== 'trunk' && <Mouth mood={mood} y={frog ? 66 : mouthY} ink={scorched ? '#ffffff' : undefined} />}
+      {scorched && <Soot />}
       <MoodMarks mood={mood} />
     </motion.svg>
   )

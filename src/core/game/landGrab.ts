@@ -53,6 +53,7 @@ export const landGrab: GameRules<null, LandGrabView> = {
         } else if (plot.owner === thrower) {
           if (!plot.fortified) {
             plot.fortified = true
+            emit({ kind: 'fortified', player: thrower })
             if (feedback === 'neutral') feedback = 'good'
           }
         } else {

@@ -133,6 +133,74 @@ describe('Spotlight', () => {
   })
 })
 
+describe('moments of the themed games', () => {
+  const moments = (state: { played: { moments: unknown[] }[] }) => state.played.map((p) => p.moments)
+
+  it('Spotlight: reports a turn of three darts that brought nothing', () => {
+    const setup = { targets: [20, 3, 6, 11, 8, 16] }
+    const blank = spotlight.evaluate(setup, players, [turn(S(7), miss, S(8))])
+    expect(moments(blank)).toEqual([[], [], [{ kind: 'blank', player: 'ann' }]])
+    expect(moments(spotlight.evaluate(setup, players, [turn(S(7), S(20), S(8))])).at(-1)).toEqual([])
+    // Two darts and a takeout is not a blank turn.
+    expect(moments(spotlight.evaluate(setup, players, [turn(S(7), S(8))])).flat()).toEqual([])
+  })
+
+  it('Land Grab: reports the second wall', () => {
+    expect(moments(landGrab.evaluate(null, players, [turn(D(20))]))).toEqual([
+      [{ kind: 'scored', player: 'ann', amount: 1 }, { kind: 'fortified', player: 'ann' }],
+    ])
+  })
+
+  it('Sniper: measures every placed dart and names the closest three at the end of a round', () => {
+    const setup = { targets: [{ x: 0, y: 0 }] }
+    const at = (x: number) => placedDart(x, 0)
+    const state = sniper.evaluate(setup, players, [turn(at(0.5), miss, at(0.2)), turn(at(0.1), at(0.3), at(0.4))])
+    expect(state.played[0]!.moments).toEqual([{ kind: 'measured', player: 'ann', mm: 85, target: { x: 0, y: 0 } }])
+    expect(state.played[1]!.moments).toEqual([])
+    expect(state.played.at(-1)!.moments.at(-1)).toEqual({
+      kind: 'roundResult',
+      places: [
+        { player: 'bob', at: { x: 0.1, y: 0 } },
+        { player: 'ann', at: { x: 0.2, y: 0 } },
+      ],
+    })
+    expect(state.played.slice(0, -1).flatMap((p) => p.moments).some((m) => m.kind === 'roundResult')).toBe(false)
+  })
+
+  it('Minefield: reports what was dug up, and leaves the digger of a bomb scorched for the turn', () => {
+    const under: Record<number, Hidden> = {}
+    RING.forEach((segment) => (under[segment] = 'empty'))
+    Object.assign(under, { 20: 'chest', 18: 'bomb', 4: 'coin' })
+    const play = (...turns: Turn[]) => minefield.evaluate({ under }, players, turns)
+    const open = (...darts: Dart[]): Turn => ({ ...turn(...darts), done: false })
+    const state = play(open(S(20), S(18), S(18)))
+    expect(moments(state)).toEqual([
+      [{ kind: 'dug', player: 'ann', segment: 20, found: 'chest' }, { kind: 'scored', player: 'ann', amount: 5 }],
+      [
+        { kind: 'dug', player: 'ann', segment: 18, found: 'bomb' },
+        { kind: 'exploded', player: 'ann' },
+        { kind: 'lost', player: 'ann', amount: 2 },
+      ],
+      [],
+    ])
+    expect(state.view.scorched).toEqual(['ann'])
+    expect(play(turn(S(18)), open(S(7))).view.scorched).toEqual(['ann'])
+    expect(play(turn(S(18)), turn(S(7))).view.scorched).toEqual([])
+    expect(play(turn(S(18)), turn(S(7)), open(S(7))).view.scorched).toEqual([])
+  })
+
+  it('Raise the Bar: reports the jump, over the bar or not', () => {
+    const three = ['ann', 'bob', 'cy']
+    const over = raiseTheBar.evaluate(null, three, [turn(S(20)), turn(S(10), S(5), S(10))])
+    expect(over.played.at(-1)!.moments).toEqual([{ kind: 'jump', player: 'bob', holder: 'ann', cleared: true }])
+    const under = raiseTheBar.evaluate(null, three, [turn(S(20)), turn(S(10), S(5), S(5))])
+    expect(under.played.at(-1)!.moments).toEqual([
+      { kind: 'jump', player: 'bob', holder: 'ann', cleared: false },
+      { kind: 'scored', player: 'ann', amount: 1 },
+    ])
+  })
+})
+
 describe('Piggy Bank', () => {
   it('adds the ordinary value of every dart', () => {
     const state = piggyBank.evaluate(null, players, [turn(T(20), D(5), manualDart(25, 2))])

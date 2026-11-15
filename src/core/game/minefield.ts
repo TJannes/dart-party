@@ -23,6 +23,8 @@ export interface MinefieldView {
   revealed: Record<number, Hidden>
   /** How much is still hidden, of each kind. */
   left: Record<Hidden, number>
+  /** Who dug up a bomb and has not started a new turn since. */
+  scorched: PlayerId[]
 }
 
 export const minefield: GameRules<MinefieldSetup, MinefieldView> = {
@@ -48,15 +50,22 @@ export const minefield: GameRules<MinefieldSetup, MinefieldView> = {
     const left: Record<Hidden, number> = { chest: 0, coin: 0, bomb: 0, empty: 0 }
     for (const hidden of Object.values(setup.under)) left[hidden] += 1
 
-    const progress = playTurns(minefield, players, turns, (dart, thrower, _turn, _index, emit) => {
+    /** The turn in which each player last dug up a bomb. */
+    const bombTurn = new Map<PlayerId, number>()
+
+    const progress = playTurns(minefield, players, turns, (dart, thrower, turnIndex, _index, emit) => {
+      if (bombTurn.get(thrower) !== turnIndex) bombTurn.delete(thrower)
       if (dart.miss || dart.number === null) return 'bad'
       const hidden = setup.under[dart.number]
       // The bull, or a segment that was already dug up.
       if (hidden === undefined || revealed[dart.number] !== undefined) return 'neutral'
       revealed[dart.number] = hidden
       left[hidden] -= 1
+      emit({ kind: 'dug', player: thrower, segment: dart.number, found: hidden })
       if (hidden === 'empty') return 'neutral'
       if (hidden === 'bomb') {
+        bombTurn.set(thrower, turnIndex)
+        emit({ kind: 'exploded', player: thrower })
         const half = Math.floor(scores[thrower]! / 2)
         scores[thrower]! -= half
         if (half > 0) emit({ kind: 'lost', player: thrower, amount: half })
@@ -72,7 +81,15 @@ export const minefield: GameRules<MinefieldSetup, MinefieldView> = {
     return {
       ...progress,
       ranking: rankByScore(players, (player) => scores[player]!),
-      view: { scores, revealed, left },
+      view: {
+        scores,
+        revealed,
+        left,
+        // Back at the board for a new turn: the soot is gone.
+        scorched: [...bombTurn]
+          .filter(([player, turn]) => !(progress.current?.player === player && progress.current.turn !== turn))
+          .map(([player]) => player),
+      },
     }
   },
 }

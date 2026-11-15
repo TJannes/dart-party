@@ -26,6 +26,8 @@ export interface BoardProps {
   darts?: Dart[]
   /** A short label to draw on a segment. */
   marks?: Record<number, string>
+  /** A castle to draw on a segment: its walls and the hits they have taken. */
+  castles?: Record<number, { colour: string; fortified: boolean; damage: number }>
   /** 'target' draws the board as an archery target, by distance only. */
   variant?: 'board' | 'target'
   /** A cross to aim at, in board coordinates. */
@@ -80,10 +82,28 @@ function Target({ darts }: { darts: Dart[] }): React.JSX.Element {
   )
 }
 
+/** A small castle with a flag; a second wall when fortified, cracks for hits. */
+function Castle({ colour, fortified, damage }: { colour: string; fortified: boolean; damage: number }): React.JSX.Element {
+  const stone = { fill: '#f3ead7', stroke: '#1b0a38', strokeWidth: 0.012, strokeLinejoin: 'round' as const }
+  return (
+    <g>
+      {fortified && <path d="M-0.125 0.09 V-0.01 H-0.095 V0.02 H-0.065 V-0.01 H0.065 V0.02 H0.095 V-0.01 H0.125 V0.09 Z" {...stone} fill="#cfc4ad" />}
+      <path d="M-0.07 0.09 V-0.06 H-0.045 V-0.035 H-0.015 V-0.06 H0.015 V-0.035 H0.045 V-0.06 H0.07 V0.09 Z" {...stone} />
+      <path d="M-0.018 0.09 V0.04 A0.018 0.018 0 0 1 0.018 0.04 V0.09 Z" fill="#1b0a38" />
+      <path d="M0 -0.06 V-0.15" stroke="#1b0a38" strokeWidth="0.012" strokeLinecap="round" />
+      <path d="M0 -0.15 L0.07 -0.125 L0 -0.1 Z" fill={colour} stroke="#ffffff" strokeWidth="0.01" strokeLinejoin="round" />
+      {['M-0.05 -0.02 l0.02 0.03 l-0.015 0.03', 'M0.045 -0.01 l-0.02 0.03 l0.02 0.035'].slice(0, damage).map((crack) => (
+        <path key={crack} d={crack} fill="none" stroke="#ee4266" strokeWidth="0.014" strokeLinecap="round" strokeLinejoin="round" />
+      ))}
+    </g>
+  )
+}
+
 export function Board({
   owners = {},
   darts = [],
   marks = {},
+  castles = {},
   variant = 'board',
   cross,
   dots = [],
@@ -157,6 +177,16 @@ export function Board({
           </text>
         ) : null,
       )}
+      {RING.map((segment, index) => {
+        const castle = castles[segment]
+        if (!castle) return null
+        const angle = (index * 18 * Math.PI) / 180
+        return (
+          <g key={segment} transform={`translate(${0.79 * Math.sin(angle)} ${-0.79 * Math.cos(angle)})`}>
+            <Castle {...castle} />
+          </g>
+        )
+      })}
       {dots.map((dot, index) => (
         <circle key={index} cx={dot.x} cy={-dot.y} r="0.045" fill={dot.colour} stroke="#1b0a38" strokeWidth="0.015" />
       ))}
