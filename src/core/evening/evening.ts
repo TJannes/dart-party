@@ -21,6 +21,8 @@ import { pointsForRanking } from './points'
 // command returns a new Evening and leaves the old one untouched.
 
 export const MIN_PLAYERS = 2
+/** Free play can be played alone, handy for trying the board. */
+export const MIN_FREE_PLAYERS = 1
 export const MAX_PLAYERS = 8
 export const DEFAULT_GAMES = 5
 
@@ -59,6 +61,11 @@ export interface Evening {
   stage: Stage
   games: GameRecord[]
   deciders: GameRecord[]
+  /**
+   * True for free play: one game on its own, straight at the board, with
+   * no draw, no points and no podium. `games` holds just that game.
+   */
+  freePlay?: boolean
 }
 
 export interface StandingsRow {
@@ -167,6 +174,36 @@ export function startEvening(
   return drawNextGame(evening, random)
 }
 
+/** A single game outside an evening. `setup` must suit the game. */
+export function startFreePlay(players: readonly Player[], gameId: string, setup: unknown): Evening {
+  if (players.length < MIN_FREE_PLAYERS || players.length > MAX_PLAYERS) {
+    throw new Error(`Free play needs ${MIN_FREE_PLAYERS} to ${MAX_PLAYERS} players`)
+  }
+  if (new Set(players.map((p) => p.id)).size !== players.length) {
+    throw new Error('A player can only join once')
+  }
+  const order = players.map((p) => p.id)
+  // Fails here, not at the first dart, if the setup does not suit the game.
+  rulesFor(gameId).evaluate(setup, order, [])
+  return {
+    players: [...players],
+    gamesPlanned: 1,
+    enabledGames: [gameId],
+    stage: 'playing',
+    games: [{ gameId, order, setup, turns: [] }],
+    deciders: [],
+    freePlay: true,
+  }
+}
+
+/** The same free-play game again; whoever started now throws last. */
+export function playAgain(evening: Evening): Evening {
+  const last = evening.games.at(-1)
+  if (!evening.freePlay || !last) return evening
+  const order = [...last.order.slice(1), ...last.order.slice(0, 1)]
+  return { ...evening, games: [{ gameId: last.gameId, order, setup: last.setup, turns: [] }] }
+}
+
 /** The first game's order is drawn; after that the last in the standings starts. */
 function throwingOrder(evening: Evening, random: Random): PlayerId[] {
   const previous = evening.games.at(-1)
@@ -218,7 +255,8 @@ export function canAdvance(evening: Evening): boolean {
 
 /** Moves on to the next step of the evening. Does nothing mid-game. */
 export function advance(evening: Evening, random: Random): Evening {
-  if (!canAdvance(evening)) return evening
+  // Free play has nowhere to go on to: it is played again or left.
+  if (evening.freePlay || !canAdvance(evening)) return evening
   if (evening.stage === 'draw') return { ...evening, stage: 'rules' }
   if (evening.stage === 'rules') return { ...evening, stage: 'playing' }
   if (evening.stage === 'playing' && finishedGames(evening) < evening.gamesPlanned) {

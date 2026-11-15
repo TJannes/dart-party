@@ -5,6 +5,7 @@ import { UpdateBar } from '../components/UpdateBar'
 
 export function Home(props: {
   onNewEvening: () => void
+  onFreePlay: () => void
   onBoardCheck: () => void
   onSettings: () => void
 }): React.JSX.Element {
@@ -24,6 +25,9 @@ export function Home(props: {
             {strings.home.newEvening}
           </button>
           <div className="row">
+            <button type="button" className="button button--quiet" onClick={props.onFreePlay}>
+              {strings.home.freePlay}
+            </button>
             <button type="button" className="button button--quiet" onClick={props.onBoardCheck}>
               {strings.home.boardCheck}
             </button>

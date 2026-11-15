@@ -25,7 +25,7 @@ export function App(): React.JSX.Element | null {
 }
 
 function Screen({ evening }: { evening: ReturnType<typeof useEvening> }): React.JSX.Element | null {
-  const [menu, setMenu] = useState<'home' | 'setup' | 'check' | 'settings' | 'animations'>('home')
+  const [menu, setMenu] = useState<'home' | 'setup' | 'freePlay' | 'check' | 'settings' | 'animations'>('home')
   const settings = useSettings()
   const screens = useScreens()
 
@@ -53,6 +53,7 @@ function Screen({ evening }: { evening: ReturnType<typeof useEvening> }): React.
     if (menu === 'settings') return <SettingsScreen onBack={() => setMenu('home')} onPreview={() => setMenu('animations')} />
     if (menu === 'animations') return <AnimationsScreen onBack={() => setMenu('settings')} />
     if (menu === 'setup') return <Setup onBack={() => setMenu('home')} />
+    if (menu === 'freePlay') return <Setup freePlay onBack={() => setMenu('home')} />
     if (menu === 'check') {
       return (
         <main className="screen">
@@ -63,6 +64,7 @@ function Screen({ evening }: { evening: ReturnType<typeof useEvening> }): React.
     return (
       <Home
         onNewEvening={() => setMenu('setup')}
+        onFreePlay={() => setMenu('freePlay')}
         onBoardCheck={() => setMenu('check')}
         onSettings={() => setMenu('settings')}
       />

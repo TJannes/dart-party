@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { cleanAddress, cleanSettings, DEFAULT_SETTINGS, enabledGames } from './settings'
 
 describe('settings', () => {
+  it('shows the X01 finish suggestions unless they were switched off', () => {
+    expect(cleanSettings({}).checkoutHints).toBe(true)
+    expect(cleanSettings({ checkoutHints: false }).checkoutHints).toBe(false)
+    expect(cleanSettings({ checkoutHints: 'no' }).checkoutHints).toBe(true)
+  })
+
   it('falls back to the defaults for anything unreadable', () => {
     expect(cleanSettings(null)).toEqual(DEFAULT_SETTINGS)
     expect(cleanSettings('x')).toEqual(DEFAULT_SETTINGS)

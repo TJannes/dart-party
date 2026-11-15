@@ -1285,3 +1285,9 @@ h1 {
 .result--modal {
   pointer-events: auto;
 }
+
+/* A bar with more in it than fits on one line: free-play setup. */
+.bar--wrap {
+  flex-wrap: wrap;
+  justify-content: center;
+}

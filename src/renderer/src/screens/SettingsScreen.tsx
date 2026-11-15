@@ -83,6 +83,27 @@ export function SettingsScreen({ onBack, onPreview }: { onBack: () => void; onPr
         </section>
 
         <section>
+          <h3>{s.checkout}</h3>
+          <div className="row row--left">
+            <button
+              type="button"
+              className={settings.checkoutHints ? 'chip chip--on' : 'chip'}
+              onClick={() => window.dartParty.updateSettings({ checkoutHints: true })}
+            >
+              {s.checkoutOn}
+            </button>
+            <button
+              type="button"
+              className={settings.checkoutHints ? 'chip' : 'chip chip--on'}
+              onClick={() => window.dartParty.updateSettings({ checkoutHints: false })}
+            >
+              {s.checkoutOff}
+            </button>
+          </div>
+          <p className="hint hint--left">{s.checkoutHint}</p>
+        </section>
+
+        <section>
           <h3>{s.screens}</h3>
           {screens.displays < 2 && !screens.twoWindows ? (
             <p className="hint hint--left">{s.oneDisplay}</p>

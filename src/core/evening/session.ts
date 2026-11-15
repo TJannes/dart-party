@@ -1,7 +1,8 @@
 import type { BoardEvent } from '../board/events'
 import { BULL, manualDart, manualMiss, placedDart, RING } from '../board/ring'
 import type { Dart } from '../board/state'
-import { drawableGames } from '../game/registry'
+import { drawableGames, freePlayGames } from '../game/registry'
+import { cleanX01Setup } from '../game/x01'
 import type { PlayerId, Ranking } from '../game/types'
 import type { Random } from '../random'
 import {
@@ -12,9 +13,11 @@ import {
   evaluateRecord,
   finalRanking,
   nextPlayer,
+  playAgain,
   removeLastDart,
   standings,
   startEvening,
+  startFreePlay,
   type Evening,
   type Player,
 } from './evening'
@@ -32,6 +35,10 @@ export type DartInput =
 
 export type EveningCommand =
   | { type: 'start'; players: Player[]; games: number }
+  /** One game on its own. `options` are the game's own, such as X01's start score. */
+  | { type: 'startFreePlay'; players: Player[]; game: string; options?: unknown }
+  /** The same free-play game once more. */
+  | { type: 'playAgain' }
   /** Continue: past the draw, the rules card, a finished game. */
   | { type: 'advance' }
   | { type: 'addDart'; dart: DartInput }
@@ -130,9 +137,23 @@ export class EveningSession {
       return
     }
 
+    if (command.type === 'startFreePlay') {
+      if (this.evening) return
+      try {
+        if (!freePlayGames.some((game) => game.id === command.game)) return
+        const setup = command.game === 'x01' ? cleanX01Setup(command.options) : null
+        this.set(startFreePlay(command.players, command.game, setup))
+      } catch {
+        // Not a valid game: nothing starts.
+      }
+      return
+    }
+
     const evening = this.evening
     if (!evening) return
     switch (command.type) {
+      case 'playAgain':
+        return this.set(playAgain(evening))
       case 'advance':
         return this.set(advance(evening, this.random))
       case 'addDart': {
@@ -150,6 +171,8 @@ export class EveningSession {
       case 'abort':
         return this.set(null)
       case 'finish':
+        // Free play just ends: its result is kept nowhere.
+        if (evening.freePlay) return this.set(null)
         if (evening.stage !== 'podium') return
         this.store.save(HISTORY, [...this.history, this.result(evening)])
         return this.set(null)

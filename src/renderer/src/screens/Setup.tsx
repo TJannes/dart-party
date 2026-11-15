@@ -1,12 +1,16 @@
 import { useState } from 'react'
-import { DEFAULT_GAMES, MAX_PLAYERS, MIN_PLAYERS, type Player } from '../../../core/evening/evening'
+import { DEFAULT_GAMES, MAX_PLAYERS, MIN_FREE_PLAYERS, MIN_PLAYERS, type Player } from '../../../core/evening/evening'
+import { freePlayGames } from '../../../core/game/registry'
+import { X01_STARTS } from '../../../core/game/x01'
 import { AVATARS, cleanName, MAX_NAME_LENGTH, MAX_PROFILES } from '../../../core/players'
 import { strings } from '../../../shared/strings'
 import { Avatar } from '../components/Avatar'
 import { Modal } from '../components/Modal'
 import { send, useProfiles } from '../hooks'
+import { gameName } from './Draw'
 
 const s = strings.setup
+const f = strings.freePlay
 const MAX_GAMES = 15
 
 function newId(): string {
@@ -68,16 +72,22 @@ function PlayerEditor(props: {
   )
 }
 
-/** Picking tonight's players and the number of games. */
-export function Setup({ onBack }: { onBack: () => void }): React.JSX.Element {
+/**
+ * Picking tonight's players and the number of games; or, for free play,
+ * the players and the one game to play.
+ */
+export function Setup({ onBack, freePlay = false }: { onBack: () => void; freePlay?: boolean }): React.JSX.Element {
   const [profiles, saveProfiles] = useProfiles()
   const [chosen, setChosen] = useState<string[]>([])
   const [games, setGames] = useState(DEFAULT_GAMES)
+  const [game, setGame] = useState(freePlayGames[0]!.id)
+  const [startScore, setStartScore] = useState<number>(501)
+  const [doubleOut, setDoubleOut] = useState(true)
   const [editing, setEditing] = useState<Player | 'new' | null>(null)
   const [editMode, setEditMode] = useState(false)
 
   const picked = profiles.filter((p) => chosen.includes(p.id))
-  const ready = picked.length >= MIN_PLAYERS && picked.length <= MAX_PLAYERS
+  const ready = picked.length >= (freePlay ? MIN_FREE_PLAYERS : MIN_PLAYERS) && picked.length <= MAX_PLAYERS
 
   const toggle = (id: string): void =>
     setChosen((now) =>
@@ -90,7 +100,7 @@ export function Setup({ onBack }: { onBack: () => void }): React.JSX.Element {
         <button type="button" className="button button--quiet" onClick={onBack}>
           {strings.common.back}
         </button>
-        <h2>{s.title}</h2>
+        <h2>{freePlay ? f.title : s.title}</h2>
         <button
           type="button"
           className={editMode ? 'button' : 'button button--quiet'}
@@ -99,7 +109,7 @@ export function Setup({ onBack }: { onBack: () => void }): React.JSX.Element {
           {s.edit}
         </button>
       </header>
-      <p className="hint">{profiles.length === 0 ? s.noPlayers : s.hint}</p>
+      <p className="hint">{profiles.length === 0 ? s.noPlayers : freePlay ? f.hint : s.hint}</p>
 
       <div className="profiles">
         {profiles.map((player) => {
@@ -124,26 +134,61 @@ export function Setup({ onBack }: { onBack: () => void }): React.JSX.Element {
         )}
       </div>
 
-      <footer className="bar">
-        <div className="stepper">
-          <span>{s.games}</span>
-          <button type="button" className="key" disabled={games <= 1} onClick={() => setGames(games - 1)}>
-            −
+      {freePlay ? (
+        <footer className="bar bar--wrap">
+          <div className="row row--left">
+            {freePlayGames.map((rules) => (
+              <button key={rules.id} type="button" className={game === rules.id ? 'chip chip--on' : 'chip'} onClick={() => setGame(rules.id)}>
+                {gameName(rules.id)}
+              </button>
+            ))}
+          </div>
+          {game === 'x01' && (
+            <div className="row row--left">
+              {X01_STARTS.map((score) => (
+                <button key={score} type="button" className={startScore === score ? 'chip chip--on' : 'chip'} onClick={() => setStartScore(score)}>
+                  {score}
+                </button>
+              ))}
+              <button type="button" className={doubleOut ? 'chip chip--on' : 'chip'} onClick={() => setDoubleOut(true)}>
+                {f.doubleOut}
+              </button>
+              <button type="button" className={doubleOut ? 'chip' : 'chip chip--on'} onClick={() => setDoubleOut(false)}>
+                {f.straightOut}
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            className="button button--big"
+            disabled={!ready}
+            onClick={() => send({ type: 'startFreePlay', players: picked, game, options: { start: startScore, doubleOut } })}
+          >
+            {f.start}
           </button>
-          <strong>{games}</strong>
-          <button type="button" className="key" disabled={games >= MAX_GAMES} onClick={() => setGames(games + 1)}>
-            +
+        </footer>
+      ) : (
+        <footer className="bar">
+          <div className="stepper">
+            <span>{s.games}</span>
+            <button type="button" className="key" disabled={games <= 1} onClick={() => setGames(games - 1)}>
+              −
+            </button>
+            <strong>{games}</strong>
+            <button type="button" className="key" disabled={games >= MAX_GAMES} onClick={() => setGames(games + 1)}>
+              +
+            </button>
+          </div>
+          <button
+            type="button"
+            className="button button--big"
+            disabled={!ready}
+            onClick={() => send({ type: 'start', players: picked, games })}
+          >
+            {s.start}
           </button>
-        </div>
-        <button
-          type="button"
-          className="button button--big"
-          disabled={!ready}
-          onClick={() => send({ type: 'start', players: picked, games })}
-        >
-          {s.start}
-        </button>
-      </footer>
+        </footer>
+      )}
 
       {editing && (
         <PlayerEditor

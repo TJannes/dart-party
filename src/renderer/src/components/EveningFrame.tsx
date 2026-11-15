@@ -18,14 +18,16 @@ export function EveningFrame(props: { evening: Evening; title: string; detail?: 
       <header className="bar">
         <h2>{props.title}</h2>
         <span className="bar__detail">
-          {evening.stage !== 'decider' && evening.stage !== 'podium' && s.gameOf(evening.games.length, evening.gamesPlanned)}
+          {evening.freePlay
+            ? strings.freePlay.label
+            : evening.stage !== 'decider' && evening.stage !== 'podium' && s.gameOf(evening.games.length, evening.gamesPlanned)}
           {props.detail ? ` · ${props.detail}` : ''}
         </span>
         <button type="button" className="button button--quiet" onClick={() => setVolume(true)}>
           {strings.settings.volume}
         </button>
         <button type="button" className="button button--quiet" onClick={() => setStopping(true)}>
-          {s.stop}
+          {evening.freePlay ? strings.freePlay.stop : s.stop}
         </button>
       </header>
       <BoardStatus />
@@ -39,10 +41,10 @@ export function EveningFrame(props: { evening: Evening; title: string; detail?: 
         </Modal>
       )}
       {stopping && (
-        <Modal title={s.stopQuestion} onClose={() => setStopping(false)}>
+        <Modal title={evening.freePlay ? strings.freePlay.stopQuestion : s.stopQuestion} onClose={() => setStopping(false)}>
           <div className="row">
             <button type="button" className="button button--miss" onClick={() => send({ type: 'abort' })}>
-              {s.stopYes}
+              {evening.freePlay ? strings.freePlay.stopYes : s.stopYes}
             </button>
             <button type="button" className="button" onClick={() => setStopping(false)}>
               {s.stopNo}

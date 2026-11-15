@@ -34,6 +34,10 @@ export const strings = {
     calm: 'Calm',
     calmHint: 'Calm leaves out flashes, shaking, full-screen moments and teasing.',
     preview: 'Try the animations',
+    checkout: 'X01 finish suggestions',
+    checkoutOn: 'Show',
+    checkoutOff: 'Hide',
+    checkoutHint: 'Shows the route to finish when the player at the board can go out.',
   },
 
   animations: {
@@ -90,6 +94,7 @@ export const strings = {
     newEvening: 'New evening',
     boardCheck: 'Board check',
     boardCheckHint: 'Throw a few darts to see whether they arrive.',
+    freePlay: 'Free play',
   },
 
   setup: {
@@ -104,6 +109,22 @@ export const strings = {
     editPlayerTitle: 'Edit player',
     name: 'Name',
     namePlaceholder: 'Name',
+  },
+
+  freePlay: {
+    title: 'Free play',
+    hint: 'Tap who is playing, 1 to 8. One game, no points for an evening.',
+    game: 'Game',
+    startScore: 'Start at',
+    doubleOut: 'Double out',
+    straightOut: 'Straight out',
+    start: 'Start',
+    label: 'Free play',
+    again: 'Play again',
+    done: 'Done',
+    stop: 'Stop game',
+    stopQuestion: 'Stop this game?',
+    stopYes: 'Stop the game',
   },
 
   avatars: {
@@ -253,6 +274,30 @@ export const strings = {
       pot: (pot: number) => `Pot: ${pot}`,
       opening: (opening: number, openings: number) => `Bar ${opening} of ${openings}`,
     },
+    x01: {
+      name: 'X01',
+      rules: [
+        'Count down from the start score to exactly zero.',
+        'Below zero is a bust: your turn ends and your score goes back.',
+        'With double out, your last dart must be a double or the bullseye.',
+      ],
+      title: (start: number) => String(start),
+      doubleOut: 'Finish on a double',
+      straightOut: 'Any dart finishes',
+      bust: (score: number) => `Bust! Back to ${score}`,
+      checkout: (route: string[]) => `Finish: ${route.join(' · ')}`,
+      toGo: 'to go',
+    },
+    aroundTheClock: {
+      name: 'Around the Clock',
+      rules: [
+        'Hit 1 to 20 in order. Any ring of your number counts.',
+        'The first to hit the 20 wins.',
+      ],
+      heading: 'Hit your number, 1 to 20 in order',
+      next: (target: number) => `Next: ${target}`,
+      done: 'Done',
+    },
     decider: {
       name: 'Deciding round',
       rules: ['Three darts each.', 'The highest score wins the evening.'],
@@ -262,6 +307,7 @@ export const strings = {
   evening: {
     gameOf: (game: number, total: number) => `Game ${game} of ${total}`,
     round: (round: number, max: number) => `Round ${round} of ${max}`,
+    roundOnly: (round: number) => `Round ${round}`,
     drawTitle: 'The next game is…',
     order: 'Throwing order',
     startGame: 'Let\'s play',

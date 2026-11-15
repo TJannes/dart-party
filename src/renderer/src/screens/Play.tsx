@@ -24,6 +24,7 @@ function roundText(gameId: string, state: GameState<any>, maxRounds: number): st
     const { opening, openings } = state.view as WithOpenings
     return strings.games.raiseTheBar.opening(opening, openings)
   }
+  if (!Number.isFinite(maxRounds)) return s.roundOnly(state.current.round)
   return maxRounds > 1 ? s.round(state.current.round, maxRounds) : undefined
 }
 
@@ -32,7 +33,8 @@ function Result({ evening, animate }: { evening: Evening; animate: boolean }): R
   const record = activeRecord(evening)!
   const state = evaluateRecord(record)
   const places = placesOf(state.ranking)
-  const isGame = evening.stage === 'playing'
+  // Only a game of an evening earns points; free play and a deciding round show their own result.
+  const isGame = evening.stage === 'playing' && !evening.freePlay
   const earned = isGame ? pointsForRanking(state.ranking) : {}
   const totals = new Map(standings(evening).map((row) => [row.player, row.points]))
 
@@ -67,9 +69,20 @@ function Result({ evening, animate }: { evening: Evening; animate: boolean }): R
             })}
           </ol>
         )}
-        <button type="button" className="button button--big" onClick={() => send({ type: 'advance' })}>
-          {strings.common.continue}
-        </button>
+        {evening.freePlay ? (
+          <div className="row">
+            <button type="button" className="button button--big" onClick={() => send({ type: 'playAgain' })}>
+              {strings.freePlay.again}
+            </button>
+            <button type="button" className="button button--quiet" onClick={() => send({ type: 'finish' })}>
+              {strings.freePlay.done}
+            </button>
+          </div>
+        ) : (
+          <button type="button" className="button button--big" onClick={() => send({ type: 'advance' })}>
+            {strings.common.continue}
+          </button>
+        )}
       </div>
     </div>
   )

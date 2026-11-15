@@ -88,6 +88,7 @@ export interface WithOpenings {
 export interface GameRules<Setup = unknown, View = unknown> {
   id: string
   dartsPerTurn: number
+  /** Infinity for a free-play game that lasts until someone finishes. */
   maxRounds: number
   /**
    * Which ordinary darts feats are something special in this game. Three
@@ -117,7 +118,8 @@ export function rankByScore(players: readonly PlayerId[], score: (p: PlayerId) =
 
 /**
  * Walks the turns in order for a game where players simply take turns.
- * `onDart` says what the dart did, and may end the game at once. Darts
+ * `onDart` says what the dart did, and may end the game at once, or end
+ * the turn while its darts are still in the board (a bust). Darts
  * beyond the allowed number in a turn, and turns beyond the last round, are
  * ignored. The game is over as soon as the last dart of the last turn is
  * thrown.
@@ -132,7 +134,7 @@ export function playTurns(
     turnIndex: number,
     dartIndex: number,
     emit: Emit,
-  ) => DartFeedback | { feedback: DartFeedback; finish: true },
+  ) => DartFeedback | { feedback: DartFeedback; finish: true } | { feedback: DartFeedback; endTurn: true },
 ): Progress {
   const maxTurns = rules.maxRounds * players.length
   const feedback: DartFeedback[] = []
@@ -144,12 +146,16 @@ export function playTurns(
     const thrower = players[index % players.length]!
     throwers.push(thrower)
     const darts = turn.darts.slice(0, rules.dartsPerTurn)
-    for (let d = 0; d < darts.length; d++) {
+    let ended = false
+    for (let d = 0; d < darts.length && !ended; d++) {
       const moments: Moment[] = []
       const result = onDart(darts[d]!.dart, thrower, index, d, (moment) => moments.push(moment))
       played.push({ turn: index, index: d, thrower, moments })
       if (typeof result === 'string') {
         feedback.push(result)
+      } else if ('endTurn' in result) {
+        feedback.push(result.feedback)
+        ended = true
       } else {
         feedback.push(result.feedback)
         return { finished: true, current: null, feedback, throwers, played }
@@ -157,7 +163,7 @@ export function playTurns(
     }
     // The last turn of the game needs no takeout to count as over.
     const lastDart = index === maxTurns - 1 && darts.length >= rules.dartsPerTurn
-    if (!turn.done && !lastDart) {
+    if (!ended && !turn.done && !lastDart) {
       return {
         finished: false,
         current: {

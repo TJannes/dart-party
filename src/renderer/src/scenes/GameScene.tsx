@@ -12,10 +12,15 @@ import type { RobinHoodView } from '../../../core/game/robinHood'
 import type { SniperView } from '../../../core/game/sniper'
 import type { SpotlightView } from '../../../core/game/spotlight'
 import type { TimeBombView } from '../../../core/game/timeBomb'
+import type { AroundTheClockView } from '../../../core/game/aroundTheClock'
+import { LAST_TARGET } from '../../../core/game/aroundTheClock'
+import type { X01View } from '../../../core/game/x01'
 import type { GameState } from '../../../core/game/types'
 import { RING } from '../../../core/board/ring'
+import { dartLabel } from '../../../shared/board'
 import { strings } from '../../../shared/strings'
 import { colourOf } from '../colours'
+import { useSettings } from '../hooks'
 import { Board } from '../components/Board'
 import { RaceScene } from './RaceScene'
 import { ScoreScene } from './ScoreScene'
@@ -59,6 +64,7 @@ export function GameScene(props: {
   darts: Dart[]
 }): React.JSX.Element | null {
   const { evening, record, state, darts } = props
+  const settings = useSettings()
   const common = { evening, record, state }
 
   switch (record.gameId) {
@@ -235,6 +241,49 @@ export function GameScene(props: {
           score={(id) => view.scores[id]}
           detail={(id) => (view.holder === id && view.bar !== null ? t.holds(view.bar) : '')}
           board={<Board darts={darts} />}
+        />
+      )
+    }
+
+    case 'x01': {
+      const view = state.view as X01View
+      const t = g.x01
+      // How the player at the board can finish, when they can.
+      const route = settings.checkoutHints ? (view.checkout?.map(dartLabel) ?? null) : null
+      const bust = view.bust ? t.bust(view.remaining[view.bust]!) : null
+      return (
+        <ScoreScene
+          {...common}
+          heading={
+            <>
+              <span className="scene__call">
+                {route ? t.checkout(route) : bust ?? t.title(view.start)}
+              </span>
+              <br />
+              <span className="scene__fuse">{route && bust ? bust : view.doubleOut ? t.doubleOut : t.straightOut}</span>
+            </>
+          }
+          score={(id) => view.remaining[id]}
+          detail={() => t.toGo}
+          board={<Board darts={darts} />}
+        />
+      )
+    }
+
+    case 'aroundTheClock': {
+      const view = state.view as AroundTheClockView
+      const t = g.aroundTheClock
+      const owners: Record<number, string> = {}
+      // The number the player at the board is after lights up in their colour.
+      const thrower = state.current?.player
+      if (thrower && view.targets[thrower]! <= LAST_TARGET) owners[view.targets[thrower]!] = colourOf(evening, thrower)
+      return (
+        <ScoreScene
+          {...common}
+          heading={t.heading}
+          score={(id) => (view.targets[id]! > LAST_TARGET ? t.done : view.targets[id]! - 1)}
+          detail={(id) => (view.targets[id]! > LAST_TARGET ? '' : t.next(view.targets[id]!))}
+          board={<Board owners={owners} darts={darts} />}
         />
       )
     }

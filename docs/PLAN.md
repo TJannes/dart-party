@@ -8,7 +8,8 @@ Surface and do the same on Windows. Everything from step 3 on has only been
 played through by hand on Ubuntu with one display: not with real darts, not
 with a real second screen, not on Windows, and nobody has listened to the
 sound yet. The owner still has to judge step 6 (animations in every game) on the
-Surface, under Settings, "Try the animations". The next thing to build is step 7 (free play). See
+Surface, under Settings, "Try the animations". Step 7 (free play) is built but not released. The next thing to build is
+step 8 (themed animations per game); agree the ideas per game first. See
 [Build steps](#build-steps).
 
 ## Goal
@@ -451,9 +452,45 @@ What is agreed about animations is under [Animations](#animations).
 
 ### Free play
 
-X01 and Around the Clock return as free play outside an evening. They are not
-in the draw. They exist in the Python prototype and are handy for testing
-detection.
+X01 and Around the Clock are played on their own, outside an evening, from
+"Free play" on the home screen. They are never in the draw. Agreed with the
+owner on 2026-11-15:
+
+- 1 to 8 players, so also alone: handy for testing detection.
+- No round limit. A game lasts until someone finishes; it can always be
+  stopped. The others are ranked by how far they got.
+- The game in progress is saved after every dart and resumed after a crash
+  or restart, like an evening. Its result is kept nowhere.
+- No draw, no rules card, no points, no podium. After a game: "Play again"
+  (the same game and players) or "Done".
+
+**X01**
+
+- Chosen at the start: 301, 501 or 701, and double out or straight out.
+  Default 501 with double out.
+- Count down to exactly zero. A dart that goes below zero is a bust: the
+  turn ends and the score goes back to what it was when the turn began.
+- With double out the last dart must be a double (the bullseye counts), so
+  leaving 1, or reaching zero without a double, is a bust too.
+- When the player at the board can finish with the darts they have left,
+  the scene shows the route ("Finish: T20 · S10 · D20"), also when playing
+  straight out. Asked for by the owner. The route avoids the bullseye where
+  another exists, then takes the fewest darts, then the easiest ones
+  (singles before triples), then the handiest double to end on (20, 16, 8,
+  18, 12, ...). These preferences were filled in while building. It can be
+  hidden under Settings, "X01 finish suggestions"; it shows by default.
+- A bust ends the turn like a bomb passed on: the next dart counts for the
+  next player, also before the darts are pulled.
+
+**Around the Clock**
+
+- Hit 1 to 20 in order. Any single, double or triple of your number counts
+  once. The first to hit the 20 wins.
+
+Filled in while building, not put to the owner: "Play again" lets the
+player after the last starter throw first; a triple 20 or bullseye that
+goes bust is not celebrated; in Around the Clock the big number is the last
+number hit, with the next one under the name.
 
 ## Build steps
 
@@ -529,7 +566,15 @@ detection.
   the dart that ends the game; Sniper reports no points per dart because a
   round only pays out at its end; the podium animation also plays after a
   restart on the podium screen.*
-- [ ] **7. Free play**: X01 and Around the Clock.
+- [x] **7. Free play**: X01 and Around the Clock.
+  *Rules in `src/core/game/x01.ts` and `aroundTheClock.ts`; free play is an
+  evening with `freePlay` set, holding one game (`startFreePlay` and
+  `playAgain` in `src/core/evening/evening.ts`), so the play screen, the
+  controls, corrections, saving and the animations are the same. Played by
+  hand on Ubuntu: a bust, resuming after a restart, a few darts of Around
+  the Clock, finishing a 301 straight out, playing again, stopping. Not with
+  real darts, not on Windows, and no game of 501 with double out was played
+  to the end by hand (the tests do).*
 - [ ] **8. Themed animations per game.** First Time Bomb, Last One Standing
   and Piggy Bank; then the other eight in the order of this plan. Agree the
   ideas per game first.

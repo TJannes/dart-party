@@ -1,3 +1,4 @@
+import { aroundTheClock } from './aroundTheClock'
 import { decider } from './decider'
 import { higherOrLower } from './higherOrLower'
 import { landGrab } from './landGrab'
@@ -11,6 +12,7 @@ import { sniper } from './sniper'
 import { spotlight } from './spotlight'
 import { timeBomb } from './timeBomb'
 import type { GameRules } from './types'
+import { x01 } from './x01'
 
 /** The mini-games that can be drawn in an evening, in menu order. */
 export const drawableGames: readonly GameRules<any, any>[] = [
@@ -27,7 +29,10 @@ export const drawableGames: readonly GameRules<any, any>[] = [
   raiseTheBar,
 ]
 
-const all: readonly GameRules<any, any>[] = [...drawableGames, decider]
+/** Played on their own, outside an evening. Never in the draw. */
+export const freePlayGames: readonly GameRules<any, any>[] = [x01, aroundTheClock]
+
+const all: readonly GameRules<any, any>[] = [...drawableGames, decider, ...freePlayGames]
 
 export function rulesFor(gameId: string): GameRules<any, any> {
   const rules = all.find((game) => game.id === gameId)

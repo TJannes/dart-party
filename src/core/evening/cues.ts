@@ -85,7 +85,9 @@ export function storiesOf(record: GameRecord, game: string): DartStory[] {
     const darts = record.turns[played.turn]!.darts.map((thrown) => thrown.dart)
     const dart = darts[played.index]!
     const chain: Beat[] = [...played.moments]
-    const feat = featOf(rules, darts.slice(0, played.index + 1))
+    // A dart that hurt its thrower (a bust on a triple 20) is no feat; three misses still are.
+    const found = featOf(rules, darts.slice(0, played.index + 1))
+    const feat = found !== 'threeMisses' && state.feedback[n] === 'bad' ? null : found
     if (feat) chain.push({ kind: 'spectacle', what: feat, player: played.thrower })
 
     if (state.finished && n === state.played.length - 1) {

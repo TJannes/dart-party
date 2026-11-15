@@ -20,6 +20,8 @@ export interface Settings {
    * small reactions stay.
    */
   calmAnimations: boolean
+  /** In X01, show how the player at the board can finish. */
+  checkoutHints: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -29,6 +31,7 @@ export const DEFAULT_SETTINGS: Settings = {
   musicVolume: 0.3,
   screens: 'auto',
   calmAnimations: false,
+  checkoutHints: true,
 }
 
 /** A host:port as typed, tidied. Null when it cannot be an address. */
@@ -63,6 +66,7 @@ export function cleanSettings(raw: unknown): Settings {
     musicVolume: volume(given['musicVolume'], DEFAULT_SETTINGS.musicVolume),
     screens: given['screens'] === 'single' ? 'single' : 'auto',
     calmAnimations: given['calmAnimations'] === true,
+    checkoutHints: given['checkoutHints'] !== false,
   }
 }
 
