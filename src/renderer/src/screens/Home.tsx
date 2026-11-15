@@ -4,7 +4,7 @@ import { BoardStatus } from '../components/BoardStatus'
 import { UpdateBar } from '../components/UpdateBar'
 
 export function Home(props: {
-  onNewEvening: () => void
+  onNewParty: () => void
   onFreePlay: () => void
   onBoardCheck: () => void
   onSettings: () => void
@@ -21,8 +21,8 @@ export function Home(props: {
         <h1>{strings.appName}</h1>
         <p className="tagline">{strings.tagline}</p>
         <div className="hero__buttons">
-          <button type="button" className="button button--big" onClick={props.onNewEvening}>
-            {strings.home.newEvening}
+          <button type="button" className="button button--big" onClick={props.onNewParty}>
+            {strings.home.newParty}
           </button>
           <div className="row">
             <button type="button" className="button button--quiet" onClick={props.onFreePlay}>

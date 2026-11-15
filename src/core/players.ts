@@ -1,4 +1,4 @@
-import type { Player } from './evening/evening'
+import type { Player } from './party/party'
 
 /** The fixed set of characters a player can pick. Drawn in the renderer. */
 export const AVATARS = [
@@ -27,7 +27,7 @@ export const AVATARS = [
 export type AvatarId = (typeof AVATARS)[number]
 
 export const MAX_NAME_LENGTH = 12
-/** More than fit in one evening, so a larger group can take turns. */
+/** More than fit in one party, so a larger group can take turns. */
 export const MAX_PROFILES = 24
 
 export function isAvatar(value: unknown): value is AvatarId {

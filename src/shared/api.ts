@@ -1,7 +1,7 @@
 import type { BoardEvent } from '../core/board/events'
 import type { BoardSnapshot } from '../core/board/tracker'
-import type { Evening, Player } from '../core/evening/evening'
-import type { EveningCommand } from '../core/evening/session'
+import type { Party, Player } from '../core/party/party'
+import type { PartyCommand } from '../core/party/session'
 import type { Settings } from '../core/settings'
 import type { UpdateAction, UpdateStatus } from './update'
 
@@ -25,10 +25,10 @@ export interface DartPartyApi {
   onBoardEvent(listener: (event: BoardEvent) => void): () => void
   resetBoard(): void
 
-  /** The evening being played, or null. */
-  getEvening(): Promise<Evening | null>
-  onEvening(listener: (evening: Evening | null) => void): () => void
-  eveningCommand(command: EveningCommand): void
+  /** The party being played, or null. */
+  getParty(): Promise<Party | null>
+  onParty(listener: (party: Party | null) => void): () => void
+  partyCommand(command: PartyCommand): void
 
   /** The saved player profiles. Saving answers the list as it was kept. */
   getPlayers(): Promise<Player[]>
@@ -52,9 +52,9 @@ export const ipc = {
   boardSnapshot: 'board:snapshot',
   boardEvent: 'board:event',
   resetBoard: 'board:reset',
-  getEvening: 'evening:get',
-  evening: 'evening:changed',
-  eveningCommand: 'evening:command',
+  getParty: 'party:get',
+  party: 'party:changed',
+  partyCommand: 'party:command',
   getPlayers: 'players:get',
   savePlayers: 'players:save',
   getSettings: 'settings:get',

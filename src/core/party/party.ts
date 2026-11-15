@@ -12,13 +12,13 @@ import {
 import { pick, shuffle, type Random } from '../random'
 import { pointsForRanking } from './points'
 
-// One evening: a fixed group of players, a number of drawn mini-games, a
+// One party: a fixed group of players, a number of drawn mini-games, a
 // running scoreboard and a winner.
 //
-// The Evening object is the whole truth and is plain data, so it can be
+// The Party object is the whole truth and is plain data, so it can be
 // saved after every dart. It holds only what was decided or thrown; scores,
 // standings and whose turn it is are always worked out from it. Every
-// command returns a new Evening and leaves the old one untouched.
+// command returns a new Party and leaves the old one untouched.
 
 export const MIN_PLAYERS = 2
 /** Free play can be played alone, handy for trying the board. */
@@ -53,7 +53,7 @@ export type Stage =
   | 'decider'
   | 'podium'
 
-export interface Evening {
+export interface Party {
   players: Player[]
   gamesPlanned: number
   /** The mini-games that may be drawn. */
@@ -82,23 +82,23 @@ export function evaluateRecord(record: GameRecord): GameState<any> {
 }
 
 /** The game or deciding round that darts go to right now, if any. */
-export function activeRecord(evening: Evening): GameRecord | null {
-  if (evening.stage === 'playing') return evening.games.at(-1) ?? null
-  if (evening.stage === 'decider') return evening.deciders.at(-1) ?? null
+export function activeRecord(party: Party): GameRecord | null {
+  if (party.stage === 'playing') return party.games.at(-1) ?? null
+  if (party.stage === 'decider') return party.deciders.at(-1) ?? null
   return null
 }
 
-export function activeState(evening: Evening): GameState<any> | null {
-  const record = activeRecord(evening)
+export function activeState(party: Party): GameState<any> | null {
+  const record = activeRecord(party)
   return record ? evaluateRecord(record) : null
 }
 
 /** The scoreboard over all finished games, best first. */
-export function standings(evening: Evening): StandingsRow[] {
+export function standings(party: Party): StandingsRow[] {
   const rows = new Map<PlayerId, StandingsRow>(
-    evening.players.map((p) => [p.id, { player: p.id, points: 0, perGame: [] }]),
+    party.players.map((p) => [p.id, { player: p.id, points: 0, perGame: [] }]),
   )
-  for (const record of evening.games) {
+  for (const record of party.games) {
     const state = evaluateRecord(record)
     if (!state.finished) continue
     const points = pointsForRanking(state.ranking)
@@ -112,23 +112,23 @@ export function standings(evening: Evening): StandingsRow[] {
   return [...rows.values()].sort((a, b) => b.points - a.points)
 }
 
-function finishedGames(evening: Evening): number {
-  return evening.games.filter((record) => evaluateRecord(record).finished).length
+function finishedGames(party: Party): number {
+  return party.games.filter((record) => evaluateRecord(record).finished).length
 }
 
 /**
- * The final ranking of the evening. Only a tie for first place is played
+ * The final ranking of the party. Only a tie for first place is played
  * off; each deciding round orders the players who were still level.
  */
-export function finalRanking(evening: Evening): Ranking {
-  const rows = standings(evening)
+export function finalRanking(party: Party): Ranking {
+  const rows = standings(party)
   const byPoints = rankByScore(
     rows.map((row) => row.player),
     (player) => rows.find((row) => row.player === player)!.points,
   )
   let level = byPoints[0] ?? []
   let settled: Ranking = []
-  for (const record of evening.deciders) {
+  for (const record of party.deciders) {
     const state = evaluateRecord(record)
     if (!state.finished) break
     // The round was played by exactly the players who were still level.
@@ -139,31 +139,31 @@ export function finalRanking(evening: Evening): Ranking {
 }
 
 /** The players still level for first place, or none when it is settled. */
-function tiedForFirst(evening: Evening): PlayerId[] {
-  const leaders = finalRanking(evening)[0] ?? []
+function tiedForFirst(party: Party): PlayerId[] {
+  const leaders = finalRanking(party)[0] ?? []
   return leaders.length > 1 ? leaders : []
 }
 
 // ------------------------------------------------------------- commands
 
-export function startEvening(
+export function startParty(
   players: readonly Player[],
   gamesPlanned: number,
   enabledGames: readonly string[],
   random: Random,
-): Evening {
+): Party {
   if (players.length < MIN_PLAYERS || players.length > MAX_PLAYERS) {
-    throw new Error(`An evening needs ${MIN_PLAYERS} to ${MAX_PLAYERS} players`)
+    throw new Error(`A party needs ${MIN_PLAYERS} to ${MAX_PLAYERS} players`)
   }
   if (new Set(players.map((p) => p.id)).size !== players.length) {
     throw new Error('A player can only join once')
   }
   if (!Number.isInteger(gamesPlanned) || gamesPlanned < 1) {
-    throw new Error('An evening needs at least one game')
+    throw new Error('A party needs at least one game')
   }
   if (enabledGames.length === 0) throw new Error('No mini-games are switched on')
 
-  const evening: Evening = {
+  const party: Party = {
     players: [...players],
     gamesPlanned,
     enabledGames: [...enabledGames],
@@ -171,11 +171,11 @@ export function startEvening(
     games: [],
     deciders: [],
   }
-  return drawNextGame(evening, random)
+  return drawNextGame(party, random)
 }
 
-/** A single game outside an evening. `setup` must suit the game. */
-export function startFreePlay(players: readonly Player[], gameId: string, setup: unknown): Evening {
+/** A single game outside a party. `setup` must suit the game. */
+export function startFreePlay(players: readonly Player[], gameId: string, setup: unknown): Party {
   if (players.length < MIN_FREE_PLAYERS || players.length > MAX_PLAYERS) {
     throw new Error(`Free play needs ${MIN_FREE_PLAYERS} to ${MAX_PLAYERS} players`)
   }
@@ -197,85 +197,85 @@ export function startFreePlay(players: readonly Player[], gameId: string, setup:
 }
 
 /** The same free-play game again; whoever started now throws last. */
-export function playAgain(evening: Evening): Evening {
-  const last = evening.games.at(-1)
-  if (!evening.freePlay || !last) return evening
+export function playAgain(party: Party): Party {
+  const last = party.games.at(-1)
+  if (!party.freePlay || !last) return party
   const order = [...last.order.slice(1), ...last.order.slice(0, 1)]
-  return { ...evening, games: [{ gameId: last.gameId, order, setup: last.setup, turns: [] }] }
+  return { ...party, games: [{ gameId: last.gameId, order, setup: last.setup, turns: [] }] }
 }
 
 /** The first game's order is drawn; after that the last in the standings starts. */
-function throwingOrder(evening: Evening, random: Random): PlayerId[] {
-  const previous = evening.games.at(-1)
-  if (!previous) return shuffle(random, evening.players.map((p) => p.id))
-  const points = new Map(standings(evening).map((row) => [row.player, row.points]))
+function throwingOrder(party: Party, random: Random): PlayerId[] {
+  const previous = party.games.at(-1)
+  if (!previous) return shuffle(random, party.players.map((p) => p.id))
+  const points = new Map(standings(party).map((row) => [row.player, row.points]))
   // Fewest points first. Level players keep their order from the last game.
   return [...previous.order].sort((a, b) => points.get(a)! - points.get(b)!)
 }
 
-function drawNextGame(evening: Evening, random: Random): Evening {
-  const played = new Set(evening.games.map((record) => record.gameId))
-  const fresh = evening.enabledGames.filter((id) => !played.has(id))
-  // No game twice, unless there are fewer games than the evening is long.
+function drawNextGame(party: Party, random: Random): Party {
+  const played = new Set(party.games.map((record) => record.gameId))
+  const fresh = party.enabledGames.filter((id) => !played.has(id))
+  // No game twice, unless there are fewer games than the party is long.
   // Then at least not the same one twice in a row, if there is a choice.
-  const last = evening.games.at(-1)?.gameId
-  const notLast = evening.enabledGames.filter((id) => id !== last)
-  const candidates = fresh.length > 0 ? fresh : notLast.length > 0 ? notLast : evening.enabledGames
+  const last = party.games.at(-1)?.gameId
+  const notLast = party.enabledGames.filter((id) => id !== last)
+  const candidates = fresh.length > 0 ? fresh : notLast.length > 0 ? notLast : party.enabledGames
   const gameId = pick(random, candidates)
-  const order = throwingOrder(evening, random)
+  const order = throwingOrder(party, random)
   const setup = rulesFor(gameId).setup(order, random)
   return {
-    ...evening,
+    ...party,
     stage: 'draw',
-    games: [...evening.games, { gameId, order, setup, turns: [] }],
+    games: [...party.games, { gameId, order, setup, turns: [] }],
   }
 }
 
-function startDecider(evening: Evening, players: PlayerId[]): Evening {
+function startDecider(party: Party, players: PlayerId[]): Party {
   // Same idea as between games: the order follows the last game played.
-  const lastOrder = evening.deciders.at(-1)?.order ?? evening.games.at(-1)?.order ?? players
+  const lastOrder = party.deciders.at(-1)?.order ?? party.games.at(-1)?.order ?? players
   const order = lastOrder.filter((player) => players.includes(player))
   const record: GameRecord = { gameId: 'decider', order, setup: null, turns: [] }
-  return { ...evening, stage: 'decider', deciders: [...evening.deciders, record] }
+  return { ...party, stage: 'decider', deciders: [...party.deciders, record] }
 }
 
 /** True when "continue" would do something: the step on screen is over. */
-export function canAdvance(evening: Evening): boolean {
-  switch (evening.stage) {
+export function canAdvance(party: Party): boolean {
+  switch (party.stage) {
     case 'draw':
     case 'rules':
       return true
     case 'playing':
     case 'decider':
-      return activeState(evening)?.finished === true
+      return activeState(party)?.finished === true
     case 'podium':
       return false
   }
 }
 
-/** Moves on to the next step of the evening. Does nothing mid-game. */
-export function advance(evening: Evening, random: Random): Evening {
+/** Moves on to the next step of the party. Does nothing mid-game. */
+export function advance(party: Party, random: Random): Party {
   // Free play has nowhere to go on to: it is played again or left.
-  if (evening.freePlay || !canAdvance(evening)) return evening
-  if (evening.stage === 'draw') return { ...evening, stage: 'rules' }
-  if (evening.stage === 'rules') return { ...evening, stage: 'playing' }
-  if (evening.stage === 'playing' && finishedGames(evening) < evening.gamesPlanned) {
-    return drawNextGame(evening, random)
+  if (party.freePlay || !canAdvance(party)) return party
+  if (party.stage === 'draw') return { ...party, stage: 'rules' }
+  if (party.stage === 'rules') return { ...party, stage: 'playing' }
+  if (party.stage === 'playing' && finishedGames(party) < party.gamesPlanned) {
+    return drawNextGame(party, random)
   }
   // The last game or a deciding round is over: is there one winner?
-  const tied = tiedForFirst(evening)
-  return tied.length > 0 ? startDecider(evening, tied) : { ...evening, stage: 'podium' }
+  const tied = tiedForFirst(party)
+  return tied.length > 0 ? startDecider(party, tied) : { ...party, stage: 'podium' }
 }
 
-function withActiveTurns(evening: Evening, change: (turns: Turn[], record: GameRecord) => Turn[]): Evening {
-  const record = activeRecord(evening)
-  if (!record) return evening
+function withActiveTurns(party: Party, change: (turns: Turn[], record: GameRecord) => Turn[]): Party {
+  const record = activeRecord(party)
+  if (!record) return party
   const turns = change(record.turns, record)
-  if (turns === record.turns) return evening
+  if (turns === record.turns) return party
   const updated = { ...record, turns }
-  return evening.stage === 'playing'
-    ? { ...evening, games: [...evening.games.slice(0, -1), updated] }
-    : { ...evening, deciders: [...evening.deciders.slice(0, -1), updated] }
+  return party.stage === 'playing'
+    ? { ...party, games: [...party.games.slice(0, -1), updated] }
+    : { ...party, deciders: [...party.deciders.slice(0, -1), updated] }
 }
 
 /** A turn that a rule ended while its darts are still in the board. */
@@ -285,8 +285,8 @@ function closeStale(turns: Turn[]): Turn[] {
 }
 
 /** A dart for whoever is at the board. Ignored when nobody can throw. */
-export function addDart(evening: Evening, dart: Dart, by: ThrownDart['by']): Evening {
-  return withActiveTurns(evening, (turns, record) => {
+export function addDart(party: Party, dart: Dart, by: ThrownDart['by']): Party {
+  return withActiveTurns(party, (turns, record) => {
     const current = evaluateRecord(record).current
     if (!current || current.dartsLeft <= 0) return turns
     const open = turns[current.turn]
@@ -303,8 +303,8 @@ export function addDart(evening: Evening, dart: Dart, by: ThrownDart['by']): Eve
  * The darts were pulled out. Ends the turn if darts were thrown in it; a
  * takeout at an empty board is not a turn.
  */
-export function dartsRemoved(evening: Evening): Evening {
-  return withActiveTurns(evening, (turns) => {
+export function dartsRemoved(party: Party): Party {
+  return withActiveTurns(party, (turns) => {
     const open = turns.at(-1)
     if (!open || open.done || open.darts.length === 0) return turns
     return [...turns.slice(0, -1), { ...open, done: true }]
@@ -312,8 +312,8 @@ export function dartsRemoved(evening: Evening): Evening {
 }
 
 /** "Next player" on the control panel: ends the turn, thrown or not. */
-export function nextPlayer(evening: Evening): Evening {
-  return withActiveTurns(evening, (turns, record) => {
+export function nextPlayer(party: Party): Party {
+  return withActiveTurns(party, (turns, record) => {
     const current = evaluateRecord(record).current
     if (!current) return turns
     if (turns[current.turn]) {
@@ -325,12 +325,12 @@ export function nextPlayer(evening: Evening): Evening {
 
 /** Replaces one dart of the current game. Everything after is recounted. */
 export function correctDart(
-  evening: Evening,
+  party: Party,
   turnIndex: number,
   dartIndex: number,
   dart: Dart,
-): Evening {
-  return withActiveTurns(evening, (turns) => {
+): Party {
+  return withActiveTurns(party, (turns) => {
     const turn = turns[turnIndex]
     if (!turn || !turn.darts[dartIndex]) return turns
     const darts = turn.darts.map((old, i) => (i === dartIndex ? { dart, by: 'hand' as const } : old))
@@ -339,8 +339,8 @@ export function correctDart(
 }
 
 /** Takes back the last dart of the turn in progress. */
-export function removeLastDart(evening: Evening): Evening {
-  return withActiveTurns(evening, (turns) => {
+export function removeLastDart(party: Party): Party {
+  return withActiveTurns(party, (turns) => {
     const open = turns.at(-1)
     if (!open || open.done || open.darts.length === 0) return turns
     return [...turns.slice(0, -1), { ...open, darts: open.darts.slice(0, -1) }]
@@ -351,8 +351,8 @@ export function removeLastDart(evening: Evening): Evening {
  * The darts of this turn were edited inside Autodarts. The board's darts
  * are replaced by the new list; darts entered by hand stay, after them.
  */
-function throwsCorrected(evening: Evening, throws: readonly Dart[]): Evening {
-  return withActiveTurns(evening, (turns, record) => {
+function throwsCorrected(party: Party, throws: readonly Dart[]): Party {
+  return withActiveTurns(party, (turns, record) => {
     const open = turns.at(-1)
     const byHand = open && !open.done ? open.darts.filter((d) => d.by === 'hand') : []
     const darts: ThrownDart[] = [
@@ -365,17 +365,17 @@ function throwsCorrected(evening: Evening, throws: readonly Dart[]): Evening {
   })
 }
 
-/** What an event from the board means for the evening. */
-export function applyBoardEvent(evening: Evening, event: BoardEvent): Evening {
+/** What an event from the board means for the party. */
+export function applyBoardEvent(party: Party, event: BoardEvent): Party {
   switch (event.type) {
     case 'dartThrown':
-      return addDart(evening, event.dart, 'board')
+      return addDart(party, event.dart, 'board')
     case 'dartsRemoved':
-      return dartsRemoved(evening)
+      return dartsRemoved(party)
     case 'throwsCorrected':
-      return throwsCorrected(evening, event.throws)
+      return throwsCorrected(party, event.throws)
     default:
       // A reset, a stuck board or a lost connection changes no score.
-      return evening
+      return party
   }
 }

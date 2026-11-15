@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { activeRecord, evaluateRecord, type Evening } from '../../../core/evening/evening'
+import { activeRecord, evaluateRecord, type Party } from '../../../core/party/party'
 import type { SniperView } from '../../../core/game/sniper'
 import { dartText } from '../dartText'
 import { strings } from '../../../shared/strings'
@@ -16,8 +16,8 @@ interface Target {
 }
 
 /** The last darts of the game, newest first, to pick one to correct. */
-function recentDarts(evening: Evening): (Target & { label: string })[] {
-  const record = activeRecord(evening)
+function recentDarts(party: Party): (Target & { label: string })[] {
+  const record = activeRecord(party)
   if (!record) return []
   const list: (Target & { label: string })[] = []
   const throwers = evaluateRecord(record).throwers
@@ -25,7 +25,7 @@ function recentDarts(evening: Evening): (Target & { label: string })[] {
     // Darts in a turn the rules never reached (after the game ended) are not shown.
     const id = throwers[turnIndex]
     if (id === undefined) return
-    const thrower = playerOf(evening, id)
+    const thrower = playerOf(party, id)
     turn.darts.forEach((thrown, index) =>
       list.push({ turn: turnIndex, index, label: `${thrower.name}: ${dartText(record, thrown.dart, turnIndex)}` }),
     )
@@ -37,12 +37,12 @@ function recentDarts(evening: Evening): (Target & { label: string })[] {
  * What the control panel always offers during a game: add a miss, add or
  * correct a dart, move on by hand, reset the board.
  */
-export function Controls({ evening, canThrow }: { evening: Evening; canThrow: boolean }): React.JSX.Element {
+export function Controls({ party, canThrow }: { party: Party; canThrow: boolean }): React.JSX.Element {
   const [adding, setAdding] = useState(false)
   const [choosing, setChoosing] = useState(false)
   const [correcting, setCorrecting] = useState<Target | null>(null)
-  const recent = recentDarts(evening)
-  const record = activeRecord(evening)
+  const recent = recentDarts(party)
+  const record = activeRecord(party)
   // Some games ask for a dart in their own way.
   const picker = {
     zones: record?.gameId === 'robinHood',

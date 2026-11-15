@@ -1,5 +1,5 @@
 import type { Dart } from '../../../core/board/state'
-import type { Evening, GameRecord } from '../../../core/evening/evening'
+import type { Party, GameRecord } from '../../../core/party/party'
 import type { DeciderView } from '../../../core/game/decider'
 import type { HigherOrLowerView } from '../../../core/game/higherOrLower'
 import type { LandGrabView } from '../../../core/game/landGrab'
@@ -21,13 +21,13 @@ import { dartLabel } from '../../../shared/board'
 import { strings } from '../../../shared/strings'
 import { motion } from 'motion/react'
 import { dartScore } from '../../../core/board/ring'
-import { activeRecord, evaluateRecord } from '../../../core/evening/evening'
+import { activeRecord, evaluateRecord } from '../../../core/party/party'
 import { useCalm, useSuspense } from '../animation/Stage'
 import { playerOf } from '../colours'
 import { Avatar } from '../components/Avatar'
 import { colourOf } from '../colours'
 import { useSettings } from '../hooks'
-import { Bomb, CallArrow, Pig, Pot, swellOf, type PigFace } from '../theme/partyProps'
+import { Bomb, CallArrow, Pig, Pot, swellOf, type PigFace } from '../theme/gameShowProps'
 import { Board } from '../components/Board'
 import { RaceScene } from './RaceScene'
 import { ScoreScene } from './ScoreScene'
@@ -44,7 +44,7 @@ const MINEFIELD_MARK = { chest: '5', coin: '2', bomb: '✹', empty: '' }
 /** Lives as hearts, or the word for being out. */
 function hearts(view: KnockoutView, player: string): string {
   const lives = view.lives[player]!
-  return lives > 0 ? '♥'.repeat(lives) : strings.evening.out
+  return lives > 0 ? '♥'.repeat(lives) : strings.party.out
 }
 
 /** On your last life and at the board: reason to sweat. */
@@ -63,7 +63,7 @@ function pigFace(record: GameRecord, state: GameState<unknown>, player: string):
 const jumpHeight = (value: number): string => `${8 + (Math.min(180, value) / 180) * 70}%`
 
 interface SceneProps {
-  evening: Evening
+  party: Party
   record: GameRecord
   state: GameState<any>
   /** The darts of the turn in progress. */
@@ -78,17 +78,17 @@ export function GameScene(props: SceneProps): React.JSX.Element | null {
   const before = useSuspense()
   const held = before ? activeRecord(before) : null
   if (before && held && held.gameId === props.record.gameId) {
-    return <Scene {...props} evening={before} record={held} state={evaluateRecord(held)} />
+    return <Scene {...props} party={before} record={held} state={evaluateRecord(held)} />
   }
   return <Scene {...props} />
 }
 
 /** A new game adds a case. */
 function Scene(props: SceneProps): React.JSX.Element | null {
-  const { evening, record, state, darts } = props
+  const { party, record, state, darts } = props
   const settings = useSettings()
   const calm = useCalm()
-  const common = { evening, record, state }
+  const common = { party, record, state }
 
   switch (record.gameId) {
     case 'race':
@@ -138,7 +138,7 @@ function Scene(props: SceneProps): React.JSX.Element | null {
                   transition={{ type: 'spring', stiffness: 260, damping: 22 }}
                 >
                   <Pig
-                    colour={colourOf(evening, shown)}
+                    colour={colourOf(party, shown)}
                     total={view.scores[shown]!}
                     breaks={view.breaks[shown]!}
                     face={pigFace(record, state, shown)}
@@ -158,7 +158,7 @@ function Scene(props: SceneProps): React.JSX.Element | null {
       const castles: Record<number, { colour: string; fortified: boolean; damage: number }> = {}
       for (const [segment, plot] of Object.entries(view.plots)) {
         if (plot.owner === null) continue
-        const colour = colourOf(evening, plot.owner)
+        const colour = colourOf(party, plot.owner)
         owners[Number(segment)] = colour
         castles[Number(segment)] = { colour, fortified: plot.fortified, damage: plot.damage }
       }
@@ -177,7 +177,7 @@ function Scene(props: SceneProps): React.JSX.Element | null {
       // Everyone's closest dart of the round stays on the board as a dot.
       const dots = Object.entries(view.closest).map(([id, closest]) => ({
         ...closest.at,
-        colour: colourOf(evening, id),
+        colour: colourOf(party, id),
       }))
       return (
         <ScoreScene
@@ -217,7 +217,7 @@ function Scene(props: SceneProps): React.JSX.Element | null {
       const owners: Record<number, string> = {}
       for (const id of record.order) {
         // A segment whose owner is out is nobody's any more.
-        if (view.lives[id]! > 0) owners[view.segments[id]![0]] = colourOf(evening, id)
+        if (view.lives[id]! > 0) owners[view.segments[id]![0]] = colourOf(party, id)
       }
       return (
         <ScoreScene
@@ -336,7 +336,7 @@ function Scene(props: SceneProps): React.JSX.Element | null {
                   animate={{ bottom: jumpHeight(view.thrown) }}
                   transition={{ type: 'spring', stiffness: 200, damping: 16 }}
                 >
-                  <Avatar avatar={playerOf(evening, state.current.player).avatar} mood={view.bar !== null && view.thrown > view.bar ? 'cheer' : 'idle'} />
+                  <Avatar avatar={playerOf(party, state.current.player).avatar} mood={view.bar !== null && view.thrown > view.bar ? 'cheer' : 'idle'} />
                   <b>{view.thrown}</b>
                 </motion.div>
               )}
@@ -383,7 +383,7 @@ function Scene(props: SceneProps): React.JSX.Element | null {
       const owners: Record<number, string> = {}
       // The number the player at the board is after lights up in their colour.
       const thrower = state.current?.player
-      if (thrower && view.targets[thrower]! <= LAST_TARGET) owners[view.targets[thrower]!] = colourOf(evening, thrower)
+      if (thrower && view.targets[thrower]! <= LAST_TARGET) owners[view.targets[thrower]!] = colourOf(party, thrower)
       return (
         <ScoreScene
           {...common}
@@ -400,7 +400,7 @@ function Scene(props: SceneProps): React.JSX.Element | null {
       return (
         <ScoreScene
           {...common}
-          heading={strings.evening.tie}
+          heading={strings.party.tie}
           score={(id) => view.scores[id]}
           board={<Board darts={darts} />}
         />

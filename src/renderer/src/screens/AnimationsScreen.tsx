@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react'
 import { manualDart, manualMiss, placedDart, RING } from '../../../core/board/ring'
 import type { Dart } from '../../../core/board/state'
-import { cueBetween } from '../../../core/evening/cues'
+import { cueBetween } from '../../../core/party/cues'
 import {
   activeRecord,
   addDart,
   dartsRemoved,
   evaluateRecord,
   nextPlayer,
-  type Evening,
-} from '../../../core/evening/evening'
+  type Party,
+} from '../../../core/party/party'
 import { AVATARS } from '../../../core/players'
 import { strings } from '../../../shared/strings'
 import { useCalm, usePlayCue } from '../animation/Stage'
@@ -20,8 +20,8 @@ import { Standings } from '../components/Standings'
 import { GameScene } from '../scenes/GameScene'
 
 // Every moment at one tap, without a dart. Each demo is a real little game
-// played through the real rules, so what plays here is what plays in an
-// evening.
+// played through the real rules, so what plays here is what plays in a
+// party.
 
 const t = strings.animations.gallery
 
@@ -33,7 +33,7 @@ const S = (n: number): Dart => manualDart(n, 1)
 const T = (n: number): Dart => manualDart(n, 3)
 const miss = manualMiss()
 
-function game(gameId: string, setup: unknown, order = IDS): Evening {
+function game(gameId: string, setup: unknown, order = IDS): Party {
   return {
     players: PLAYERS,
     gamesPlanned: 1,
@@ -44,8 +44,8 @@ function game(gameId: string, setup: unknown, order = IDS): Evening {
   }
 }
 
-const thrown = (evening: Evening, ...darts: Dart[]): Evening =>
-  darts.reduce((e, dart) => addDart(e, dart, 'board'), evening)
+const thrown = (party: Party, ...darts: Dart[]): Party =>
+  darts.reduce((e, dart) => addDart(e, dart, 'board'), party)
 
 const segments = (...own: number[][]): { segments: Record<string, number[]> } => ({
   segments: Object.fromEntries(own.map((list, n) => [IDS[n]!, list])),
@@ -62,7 +62,7 @@ const trio = game('lastOneStanding', segments([20], [1], [18]), IDS.slice(0, 3))
 /** A bomb that goes off on its third dart, with the target around the 20. */
 const bomb = game('timeBomb', { fuses: [3], targets: [20] })
 const hotBomb = game('timeBomb', { fuses: [10], targets: [20] })
-const tieBreak: Evening = {
+const tieBreak: Party = {
   ...game('decider', null),
   stage: 'decider',
   games: [],
@@ -71,11 +71,11 @@ const tieBreak: Evening = {
 
 interface Demo {
   label: string
-  before: Evening
-  after: Evening
+  before: Party
+  after: Party
 }
 
-const demo = (label: string, before: Evening, ...darts: Dart[]): Demo => ({ label, before, after: thrown(before, ...darts) })
+const demo = (label: string, before: Party, ...darts: Dart[]): Demo => ({ label, before, after: thrown(before, ...darts) })
 
 const MOMENTS: Demo[] = [
   demo(t.good, game('robinHood', null), manualDart(20, 1, true)),
@@ -255,8 +255,8 @@ export function AnimationsScreen({ onBack }: { onBack: () => void }): React.JSX.
     return <PodiumView key={extra.run} entries={[...PODIUM].sort((a, b) => a.place - b.place)} calm={calm} buttonLabel={strings.common.back} onButton={() => setExtra(null)} />
   }
 
-  const evening = shown.demo.after
-  const record = activeRecord(evening)!
+  const party = shown.demo.after
+  const record = activeRecord(party)!
   const state = evaluateRecord(record)
   const turn = state.current ? record.turns[state.current.turn] : record.turns.at(-1)
   const darts = (turn?.darts ?? []).map((d) => d.dart)
@@ -333,14 +333,14 @@ export function AnimationsScreen({ onBack }: { onBack: () => void }): React.JSX.
         </div>
 
         <div className="gallery__scene">
-          <GameScene evening={evening} record={record} state={state} darts={darts} />
+          <GameScene party={party} record={record} state={state} darts={darts} />
         </div>
       </div>
 
       {extra?.what === 'standings' && (
         <div className="result result--modal">
           <div className="result__card">
-            <h2>{strings.evening.standings}</h2>
+            <h2>{strings.party.standings}</h2>
             <Standings key={extra.run} rows={STANDINGS} animate />
             <button type="button" className="button button--big" onClick={() => setExtra(null)}>
               {strings.common.back}

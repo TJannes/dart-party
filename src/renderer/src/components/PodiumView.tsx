@@ -4,10 +4,10 @@ import type { PlayerId } from '../../../core/game/types'
 import { strings } from '../../../shared/strings'
 import { PLAYER_COLOURS } from '../colours'
 import { sound } from '../sound'
-import { Burst } from '../theme/partyAnimations'
+import { Burst } from '../theme/gameShowAnimations'
 import { Avatar } from './Avatar'
 
-const s = strings.evening
+const s = strings.party
 
 export interface PodiumEntry {
   id: PlayerId
@@ -61,7 +61,7 @@ function Fireworks({ start }: { start: number }): React.JSX.Element {
 }
 
 /**
- * The end of the evening: the top three climb onto the blocks one place at
+ * The end of the party: the top three climb onto the blocks one place at
  * a time, third first, and the winner gets the fireworks.
  */
 export function PodiumView(props: {

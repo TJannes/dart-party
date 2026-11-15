@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { manualDart, manualMiss } from '../board/ring'
 import type { Dart } from '../board/state'
-import { cueBetween } from '../evening/cues'
+import { cueBetween } from '../party/cues'
 import {
   activeState,
   addDart,
@@ -9,10 +9,10 @@ import {
   dartsRemoved,
   playAgain,
   startFreePlay,
-  type Evening,
+  type Party,
   type Player,
-} from '../evening/evening'
-import { EveningSession, type Store } from '../evening/session'
+} from '../party/party'
+import { PartySession, type Store } from '../party/session'
 import { seededRandom } from '../random'
 import { aroundTheClock } from './aroundTheClock'
 import type { Turn } from './types'
@@ -190,7 +190,7 @@ describe('Around the Clock', () => {
 })
 
 describe('free play', () => {
-  const start = (names = ['ann', 'bob']): Evening => startFreePlay(people(...names), 'x01', { start: 301, doubleOut: true })
+  const start = (names = ['ann', 'bob']): Party => startFreePlay(people(...names), 'x01', { start: 301, doubleOut: true })
 
   it('starts straight at the board, also alone', () => {
     const solo = start(['ann'])
@@ -207,8 +207,8 @@ describe('free play', () => {
   })
 
   it('does not move on to a draw or a podium', () => {
-    const evening = start()
-    expect(advance(evening, seededRandom(1))).toBe(evening)
+    const party = start()
+    expect(advance(party, seededRandom(1))).toBe(party)
   })
 
   it('plays again with the next player starting', () => {
@@ -238,7 +238,7 @@ describe('free play in the session', () => {
     }
     return { store, files }
   }
-  const begin = (store: Store) => new EveningSession(store, seededRandom(1))
+  const begin = (store: Store) => new PartySession(store, seededRandom(1))
 
   it('starts with cleaned options and resumes after a restart', () => {
     const { store } = memory()
@@ -251,7 +251,7 @@ describe('free play in the session', () => {
     expect(activeState(resumed.current!)!.view.remaining).toEqual({ ann: 641 })
   })
 
-  it('only starts free-play games, and not during an evening', () => {
+  it('only starts free-play games, and not during a party', () => {
     const { store } = memory()
     const s = begin(store)
     s.command({ type: 'startFreePlay', players: people('ann'), game: 'race' })
@@ -268,6 +268,6 @@ describe('free play in the session', () => {
     s.command({ type: 'finish' })
     expect(s.current).toBeNull()
     expect(s.history).toEqual([])
-    expect(files.has('evening')).toBe(false)
+    expect(files.has('party')).toBe(false)
   })
 })

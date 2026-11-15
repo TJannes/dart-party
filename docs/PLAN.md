@@ -18,7 +18,7 @@ explained by animation). See
 
 ## Goal
 
-A group of friends plays an evening of darts mini-games on one board. The app
+A group of friends plays a party of darts mini-games on one board. The app
 draws the mini-games at random, hands out points after each one, keeps a
 running scoreboard and crowns a winner after the chosen number of games.
 
@@ -63,7 +63,7 @@ All of these were agreed with the owner. Do not reopen them unprompted.
 - Electron with TypeScript, React for the UI, SVG plus an animation library
   for the scenes.
 - Layers:
-  - a pure TypeScript core (game rules, evening, scoring) with no Electron
+  - a pure TypeScript core (game rules, party, scoring) with no Electron
     dependency, fully tested, using `fixtures/` for the board side;
   - the main process owns the Autodarts connection and the game state;
   - the windows (show and control) only render that state and send commands.
@@ -82,7 +82,7 @@ All of these were agreed with the owner. Do not reopen them unprompted.
 - Built by GitHub Actions, published as GitHub Releases on the public repo
   `TJannes/dart-party`.
 - The app checks for a newer version at startup and shows a button. It never
-  installs on its own during an evening.
+  installs on its own during a party.
 - No code-signing certificate. Windows shows "unknown publisher" once; accepted.
 - Licence: MIT.
 - Installer and updater come first, before any game, because the owner can
@@ -128,13 +128,17 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   drawn characters. No photo upload. Avatars are vector art so they can move
   and react (cheer, sulk) inside any scene.
 - Player profiles are saved on the machine.
-- Players are fixed once an evening starts. An evening can always be aborted.
+- Players are fixed once a party starts. A party can always be aborted.
 
-### An evening
+### A party
 
+- Called a "party", in the app and in the code, since 2026-11-15; it was
+  an "evening" before, which the owner wanted to change. The theme that
+  was called "party" is now "gameShow". A party saved by 0.5.0 or earlier
+  (`evening.json`) is carried over on the first start of the new version.
 - At the start: choose players and the number of games (default 5).
 - Each game is drawn visibly (wheel or slot machine). No game twice in one
-  evening, unless fewer mini-games exist than the chosen number.
+  party, unless fewer mini-games exist than the chosen number.
 - Mini-games can be switched off in settings so they are never drawn.
 - A short rules card is shown before each game.
 - Points by finishing place, for example 4-3-2-1 with four players.
@@ -171,9 +175,9 @@ All of these were agreed with the owner. Do not reopen them unprompted.
 ### Saving
 
 - Player profiles.
-- The running evening, written after every dart, so a crash or restart resumes
+- The running party, written after every dart, so a crash or restart resumes
   where it was.
-- The result of every finished evening. Showing a hall of fame comes later.
+- The result of every finished party. Showing a hall of fame comes later.
 
 ### Style and sound
 
@@ -225,19 +229,19 @@ decided are in `ANIMATION-IDEAS.md`.
 - Teasing a bad throw is fine (tumbleweed, sulking avatar, blackened after a
   bomb), as long as it stays playful and is never bigger than the reward for
   something good.
-- A setting "calm animations", off by default, for the whole evening. It
+- A setting "calm animations", off by default, for the whole party. It
   drops screen flashes, shaking, full-screen moments and teasing, and keeps
   the small reactions (impact, flying points, moving avatars).
 - Spectacular in any game: three darts in one segment, bullseye, triple 20,
   180, three misses in one turn, deciding the game with the last dart. Each
   game decides what is spectacular for it; this list is the fallback.
 - The crown for taking the lead hops only on the standings screen between
-  games, for the evening standings. Not during a game.
+  games, for the party standings. Not during a game.
 - Animations play in both windows. Sound stays in one.
 - Every new animation gets its own sound, synthesised by the app like the
   current ones.
 - Rules card: a demo beside shortened text, a loop of two to four steps with
-  one caption each. It uses the avatars and dealt segments of that evening's
+  one caption each. It uses the avatars and dealt segments of that party's
   players and reuses the game's own scene and animations. No sound effects
   in the demo; the music plays on. The start button works at once.
 - A screen "Animations" under Settings plays every moment of every game at
@@ -514,7 +518,7 @@ What is agreed about animations is under [Animations](#animations).
 
 ### Free play
 
-X01 and Around the Clock are played on their own, outside an evening, from
+X01 and Around the Clock are played on their own, outside a party, from
 "Free play" on the home screen. They are never in the draw. Agreed with the
 owner on 2026-11-15:
 
@@ -522,7 +526,7 @@ owner on 2026-11-15:
 - No round limit. A game lasts until someone finishes; it can always be
   stopped. The others are ranked by how far they got.
 - The game in progress is saved after every dart and resumed after a crash
-  or restart, like an evening. Its result is kept nowhere.
+  or restart, like a party. Its result is kept nowhere.
 - No draw, no rules card, no points, no podium. After a game: "Play again"
   (the same game and players) or "Done".
 
@@ -572,20 +576,20 @@ number hit, with the next one under the name.
   the darts of the turn, a reset button, a short log) until the real show
   replaces it. Checked live only against an Autodarts without cameras; not
   yet with real darts, and not on Windows.*
-- [x] **3. First playable evening.** Players with avatars, starting an
-  evening, the draw, Race, standings between games, the podium, saving and
+- [x] **3. First playable party.** Players with avatars, starting a
+  party, the draw, Race, standings between games, the podium, saving and
   resuming, both screen layouts, the first theme pack with sound.
-  - [x] Rules core in `src/core/`: Race, the evening (draw, throwing order,
+  - [x] Rules core in `src/core/`: Race, the party (draw, throwing order,
     turns, corrections, points, standings), the deciding round. Tested.
-  - [x] The main process runs an evening: holds it, feeds it board events and
+  - [x] The main process runs a party: holds it, feeds it board events and
     commands from the windows, saves it after every dart, resumes it, and
     writes the result to the history. Tested without Electron
-    (`src/core/evening/session.ts`); no screen uses it yet.
+    (`src/core/party/session.ts`); no screen uses it yet.
   - [x] Player profiles and the avatar set (twenty animals, drawn from parts
     in `components/Avatar.tsx`, with idle, cheer and sulk moods).
   - [x] Screens: players and start, the draw, rules card, the Race scene,
     standings, deciding round, podium, and the controls (miss, add, undo and
-    correct a dart, next player, reset, volume, stop the evening).
+    correct a dart, next player, reset, volume, stop the party).
   - [x] Show and control windows. With a second display the show opens on it
     full screen with nothing to press; the main window keeps the controls.
     The switch is under Settings. `DART_PARTY_FORCE_SHOW=1` opens the show
@@ -613,10 +617,10 @@ number hit, with the next one under the name.
   the podium; the spectacular moments; the five new avatar moods; the "calm
   animations" setting; the "Animations" screen under Settings.
   *How it fits together: the rules report moments per dart (`Moment` in
-  `src/core/game/types.ts`); `src/core/evening/cues.ts` compares the evening
+  `src/core/game/types.ts`); `src/core/party/cues.ts` compares the party
   before and after and says what to play; `src/renderer/src/animation/`
   turns that into a timeline and plays it over any screen; the drawings are
-  in `src/renderer/src/theme/partyAnimations.tsx`, with a slot per game for
+  in `src/renderer/src/theme/gameShowAnimations.tsx`, with a slot per game for
   step 8. Checked on Ubuntu by tapping through the Animations screen and by
   playing one Piggy Bank game by hand to the standings: no errors. Not
   checked: real darts, a second screen, Windows, the Surface's speed, and
@@ -629,9 +633,9 @@ number hit, with the next one under the name.
   round only pays out at its end; the podium animation also plays after a
   restart on the podium screen.*
 - [x] **7. Free play**: X01 and Around the Clock.
-  *Rules in `src/core/game/x01.ts` and `aroundTheClock.ts`; free play is an
-  evening with `freePlay` set, holding one game (`startFreePlay` and
-  `playAgain` in `src/core/evening/evening.ts`), so the play screen, the
+  *Rules in `src/core/game/x01.ts` and `aroundTheClock.ts`; free play is a
+  party with `freePlay` set, holding one game (`startFreePlay` and
+  `playAgain` in `src/core/party/party.ts`), so the play screen, the
   controls, corrections, saving and the animations are the same. Played by
   hand on Ubuntu: a bust, resuming after a restart, a few darts of Around
   the Clock, finishing a 301 straight out, playing again, stopping. Not with
@@ -644,8 +648,8 @@ number hit, with the next one under the name.
     *New moments from the rules: `fuse`, `passed`, `exploded`, `finalDuel`,
     and hitting your own segment is now an `attacked` on yourself. The
     drawings a scene and its animations share (bomb, pig, glove) are in
-    `src/renderer/src/theme/partyProps.tsx`; the game's own animations are
-    registered under `games` in `partyAnimations.tsx`, its own sounds in
+    `src/renderer/src/theme/gameShowProps.tsx`; the game's own animations are
+    registered under `games` in `gameShowAnimations.tsx`, its own sounds in
     `soundsOf` in `animation/timeline.ts`. Eleven new synthesised sounds.
     Under Settings, "Try the animations", there is a "Per game" block.
     Looked at on Ubuntu on that screen: fuse, boom and the blackened
@@ -665,7 +669,7 @@ number hit, with the next one under the name.
     `roundResult`, `dug`, `call`, `jump`; Minefield also reports `exploded`.
     A cue now says when the next player starts a new round, which Spotlight
     and Sniper animate. Their animations are in
-    `src/renderer/src/theme/partyGames.tsx`. Digging keeps its secret: for
+    `src/renderer/src/theme/gameShowGames.tsx`. Digging keeps its secret: for
     half a second (`DIG_TIME`) the scene shows the game as it was before
     the dart (`useSuspense` in `animation/Stage.tsx`) and no sound or score
     gives the find away. The board draws castles for Land Grab; Higher or
@@ -689,7 +693,7 @@ number hit, with the next one under the name.
 - [ ] **9. Rules explained by animation** on the rules card.
 - [ ] **Later**: streaks (a flame after three good turns), a comeback
   animation, a polished version of one game to compare, seasonal and holiday theme packs, hall of fame, teams,
-  players joining or leaving mid-evening, phones as remotes, starting
+  players joining or leaving mid-party, phones as remotes, starting
   Autodarts from the app.
 
 ## Open items for the owner

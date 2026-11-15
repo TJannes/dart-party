@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { cueBetween, type Cue } from '../../../core/evening/cues'
-import { activeRecord, type Evening } from '../../../core/evening/evening'
+import { cueBetween, type Cue } from '../../../core/party/cues'
+import { activeRecord, type Party } from '../../../core/party/party'
 import type { PlayerId } from '../../../core/game/types'
 import type { Mood } from '../components/Avatar'
 import { sound } from '../sound'
@@ -9,14 +9,14 @@ import { animationFor, stageInfo } from './pack'
 import { timelineOf, type MoodSpan, type Timeline } from './timeline'
 
 // Plays the animations and their sounds on top of whatever screen is up.
-// It only watches the evening change; it never sends a command, so nothing
+// It only watches the party change; it never sends a command, so nothing
 // here can touch a score. A new cue cuts the running one short.
 
 type Moods = Record<PlayerId, Mood>
 
 const MoodContext = createContext<Moods>({})
-const PlayContext = createContext<(cue: Cue, evening: Evening, before?: Evening) => void>(() => {})
-const SuspenseContext = createContext<Evening | null>(null)
+const PlayContext = createContext<(cue: Cue, party: Party, before?: Party) => void>(() => {})
+const SuspenseContext = createContext<Party | null>(null)
 const CalmContext = createContext(false)
 const BusyContext = createContext(false)
 
@@ -24,13 +24,13 @@ const BusyContext = createContext(false)
 export const useMoods = (): Moods => useContext(MoodContext)
 
 /** Plays a cue by hand, for the Animations screen. */
-export const usePlayCue = (): ((cue: Cue, evening: Evening, before?: Evening) => void) => useContext(PlayContext)
+export const usePlayCue = (): ((cue: Cue, party: Party, before?: Party) => void) => useContext(PlayContext)
 
 /**
- * The evening as it was before the dart being played, for as long as the
+ * The party as it was before the dart being played, for as long as the
  * animation keeps its outcome a secret (digging in Minefield). Else null.
  */
-export const useSuspense = (): Evening | null => useContext(SuspenseContext)
+export const useSuspense = (): Party | null => useContext(SuspenseContext)
 
 export const useCalm = (): boolean => useContext(CalmContext)
 
@@ -49,15 +49,15 @@ function moodsAt(spans: readonly MoodSpan[], time: number): Moods {
 interface Running {
   id: number
   timeline: Timeline
-  evening: Evening
+  party: Party
   cue: Cue
 }
 
-export function Stage(props: { evening: Evening | null | undefined; calm: boolean; children: ReactNode }): React.JSX.Element {
-  const { evening, calm } = props
+export function Stage(props: { party: Party | null | undefined; calm: boolean; children: ReactNode }): React.JSX.Element {
+  const { party, calm } = props
   const [running, setRunning] = useState<Running | null>(null)
   const [moods, setMoods] = useState<Moods>({})
-  const [suspense, setSuspense] = useState<Evening | null>(null)
+  const [suspense, setSuspense] = useState<Party | null>(null)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
   const serial = useRef(0)
   const calmNow = useRef(calm)
@@ -69,14 +69,14 @@ export function Stage(props: { evening: Evening | null | undefined; calm: boolea
   }, [])
 
   const play = useCallback(
-    (cue: Cue, during: Evening, before?: Evening) => {
+    (cue: Cue, during: Party, before?: Party) => {
       stop()
       const timeline = timelineOf(cue, calmNow.current, activeRecord(during)?.order ?? [])
       const later = (seconds: number, run: () => void): void => {
         if (seconds <= 0) run()
         else timers.current.push(setTimeout(run, seconds * 1000))
       }
-      setRunning({ id: ++serial.current, timeline, evening: during, cue })
+      setRunning({ id: ++serial.current, timeline, party: during, cue })
       setSuspense(timeline.suspense > 0 && before ? before : null)
       if (timeline.suspense > 0) later(timeline.suspense, () => setSuspense(null))
       for (const { at, effect } of timeline.sounds) later(at, () => sound.play(effect))
@@ -91,21 +91,21 @@ export function Stage(props: { evening: Evening | null | undefined; calm: boolea
     [stop],
   )
 
-  // Compare each evening with the one before it. The first look, a resume
+  // Compare each party with the one before it. The first look, a resume
   // and a dart taken back give no cue.
-  const seen = useRef<Evening | null | undefined>(undefined)
+  const seen = useRef<Party | null | undefined>(undefined)
   useEffect(() => {
     const before = seen.current
-    seen.current = evening
-    const cue = cueBetween(before, evening)
-    if (cue && evening) play(cue, evening, before ?? undefined)
+    seen.current = party
+    const cue = cueBetween(before, party)
+    if (cue && party) play(cue, party, before ?? undefined)
     else setSuspense(null)
-  }, [evening, play])
+  }, [party, play])
 
   useEffect(() => stop, [stop])
 
   const info = useMemo(
-    () => (running ? stageInfo(running.evening, calm, running.cue.kind === 'dart' ? running.cue.story : null) : null),
+    () => (running ? stageInfo(running.party, calm, running.cue.kind === 'dart' ? running.cue.story : null) : null),
     [running, calm],
   )
 

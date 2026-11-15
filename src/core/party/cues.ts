@@ -2,10 +2,10 @@ import { dartScore } from '../board/ring'
 import type { Dart } from '../board/state'
 import { rulesFor } from '../game/registry'
 import type { DartFeedback, GameRules, Moment, PlayerId } from '../game/types'
-import { activeRecord, evaluateRecord, type Evening, type GameRecord } from './evening'
+import { activeRecord, evaluateRecord, type Party, type GameRecord } from './party'
 
-// What the windows should show and play when the evening changes. Worked
-// out by comparing the evening before and after, so nothing plays on resume
+// What the windows should show and play when the party changes. Worked
+// out by comparing the party before and after, so nothing plays on resume
 // or on undo, and a bug here can never touch a score.
 
 export type Spectacle =
@@ -26,7 +26,7 @@ export type Beat =
 
 /** One dart and everything it caused, from cause to effect. */
 export interface DartStory {
-  /** Which game of the evening: 'g0', 'g1', ... or 'd0' for a deciding round. */
+  /** Which game of the party: 'g0', 'g1', ... or 'd0' for a deciding round. */
   game: string
   gameId: string
   turn: number
@@ -147,9 +147,9 @@ export function storiesOf(record: GameRecord, game: string): DartStory[] {
 }
 
 /** A name for the game darts go to right now, or null between games. */
-export function activeGameKey(evening: Evening): string | null {
-  if (evening.stage === 'playing') return `g${evening.games.length - 1}`
-  if (evening.stage === 'decider') return `d${evening.deciders.length - 1}`
+export function activeGameKey(party: Party): string | null {
+  if (party.stage === 'playing') return `g${party.games.length - 1}`
+  if (party.stage === 'decider') return `d${party.deciders.length - 1}`
   return null
 }
 
@@ -157,10 +157,10 @@ const signature = (story: DartStory): string =>
   JSON.stringify([story.turn, story.index, story.dart.name, story.dart.position, story.feedback, story.chain])
 
 /**
- * What to show for the step from one evening to the next. Null when nothing
+ * What to show for the step from one party to the next. Null when nothing
  * should play: the first look, another game or stage, a dart taken back.
  */
-export function cueBetween(before: Evening | null | undefined, after: Evening | null | undefined): Cue | null {
+export function cueBetween(before: Party | null | undefined, after: Party | null | undefined): Cue | null {
   if (!before || !after) return null
   const game = activeGameKey(after)
   if (game === null || game !== activeGameKey(before)) return null

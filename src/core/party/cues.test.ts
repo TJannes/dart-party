@@ -12,17 +12,17 @@ import {
   dartsRemoved,
   nextPlayer,
   removeLastDart,
-  type Evening,
+  type Party,
   type Player,
-} from './evening'
+} from './party'
 
 const people = (...names: string[]): Player[] => names.map((name) => ({ id: name, name, avatar: 'fox' }))
 const S = (n: number) => manualDart(n, 1)
 const T = (n: number) => manualDart(n, 3)
 const miss = manualMiss()
 
-/** An evening in the middle of one game, with a hand-made setup. */
-function playing(gameId: string, setup: unknown, names = ['ann', 'bob', 'cy']): Evening {
+/** A party in the middle of one game, with a hand-made setup. */
+function playing(gameId: string, setup: unknown, names = ['ann', 'bob', 'cy']): Party {
   return {
     players: people(...names),
     gamesPlanned: 1,
@@ -33,8 +33,8 @@ function playing(gameId: string, setup: unknown, names = ['ann', 'bob', 'cy']): 
   }
 }
 
-const throwAll = (evening: Evening, ...darts: Dart[]): Evening =>
-  darts.reduce((e, dart) => addDart(e, dart, 'board'), evening)
+const throwAll = (party: Party, ...darts: Dart[]): Party =>
+  darts.reduce((e, dart) => addDart(e, dart, 'board'), party)
 
 const kinds = (cue: Cue | null): string[] =>
   cue?.kind === 'dart' ? cue.story.chain.map((beat) => beat.kind) : []
@@ -127,20 +127,20 @@ describe('spectacular darts', () => {
 
   it('calls a win taken on the last dart a photo finish', () => {
     // A deciding round: ann sets 20, bob needs more with his last dart.
-    let evening: Evening = {
+    let party: Party = {
       ...playing('decider', null, ['ann', 'bob']),
       stage: 'decider',
       games: [],
       deciders: [{ gameId: 'decider', order: ['ann', 'bob'], setup: null, turns: [] }],
     }
-    evening = dartsRemoved(throwAll(evening, S(20), miss, miss))
-    const before = throwAll(evening, S(1), S(1))
+    party = dartsRemoved(throwAll(party, S(20), miss, miss))
+    const before = throwAll(party, S(1), S(1))
     const cue = cueBetween(before, addDart(before, S(19), 'board'))
     expect(kinds(cue)).toEqual(['scored', 'spectacle', 'won'])
     if (cue?.kind === 'dart') expect(cue.story.chain[1]).toMatchObject({ what: 'lastDart', player: 'bob' })
 
     // Already ahead before the last dart: no photo finish.
-    const ahead = throwAll(evening, S(20), S(5))
+    const ahead = throwAll(party, S(20), S(5))
     expect(kinds(cueBetween(ahead, addDart(ahead, S(1), 'board')))).toEqual(['scored', 'won'])
   })
 
@@ -153,7 +153,7 @@ describe('spectacular darts', () => {
 describe('what plays when', () => {
   const start = playing('piggyBank', null)
 
-  it('plays nothing on the first look or without an evening', () => {
+  it('plays nothing on the first look or without a party', () => {
     expect(cueBetween(undefined, start)).toBeNull()
     expect(cueBetween(null, start)).toBeNull()
     expect(cueBetween(start, null)).toBeNull()
@@ -168,7 +168,7 @@ describe('what plays when', () => {
   it('plays nothing across games or stages', () => {
     const one = addDart(start, S(20), 'board')
     expect(cueBetween({ ...start, stage: 'rules' }, one)).toBeNull()
-    const nextGame: Evening = { ...one, games: [...one.games, { gameId: 'piggyBank', order: ['ann', 'bob', 'cy'], setup: null, turns: [] }] }
+    const nextGame: Party = { ...one, games: [...one.games, { gameId: 'piggyBank', order: ['ann', 'bob', 'cy'], setup: null, turns: [] }] }
     expect(cueBetween(one, addDart(nextGame, S(20), 'board'))).toBeNull()
   })
 

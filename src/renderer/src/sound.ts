@@ -33,7 +33,7 @@ class Sound {
     for (const tone of theme.effects[name]) this.tone(tone, context.currentTime, this.effectsGain!)
   }
 
-  /** The background tune for where the evening is. Null for silence. */
+  /** The background tune for where the party is. Null for silence. */
   setScene(scene: MusicScene | null): void {
     if (scene === this.scene) return
     this.scene = scene

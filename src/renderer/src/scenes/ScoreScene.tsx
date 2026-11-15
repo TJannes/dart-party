@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { Evening, GameRecord } from '../../../core/evening/evening'
+import type { Party, GameRecord } from '../../../core/party/party'
 import type { GameState, PlayerId } from '../../../core/game/types'
 import { useMoods } from '../animation/Stage'
 import { colourOf, playerOf } from '../colours'
@@ -26,7 +26,7 @@ function moodOf(player: PlayerId, record: GameRecord, state: GameState<unknown>)
  * player with their score, and the board beside it.
  */
 export function ScoreScene(props: {
-  evening: Evening
+  party: Party
   record: GameRecord
   state: GameState<unknown>
   /** The big number of each player. */
@@ -49,7 +49,7 @@ export function ScoreScene(props: {
   duel?: boolean
   board: ReactNode
 }): React.JSX.Element {
-  const { evening, record, state } = props
+  const { party, record, state } = props
   const moods = useMoods()
   // The animation in progress goes first, then how the game stands.
   const mood = (id: PlayerId): Mood =>
@@ -59,8 +59,8 @@ export function ScoreScene(props: {
       <div className="race__track">
         {props.heading && <p className="scene__heading">{props.heading}</p>}
         {record.order.map((id) => {
-          const player = playerOf(evening, id)
-          const colour = colourOf(evening, id)
+          const player = playerOf(party, id)
+          const colour = colourOf(party, id)
           return (
             <div
               key={id}

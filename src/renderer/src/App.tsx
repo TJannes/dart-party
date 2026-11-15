@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { strings } from '../../shared/strings'
 import { Stage } from './animation/Stage'
-import { ROLE, useEvening, useScreens, useSettings } from './hooks'
+import { ROLE, useParty, useScreens, useSettings } from './hooks'
 import { AnimationsScreen } from './screens/AnimationsScreen'
 import { BoardCheck } from './screens/BoardCheck'
 import { Draw } from './screens/Draw'
@@ -15,16 +15,16 @@ import { sound } from './sound'
 import { useMusic } from './soundEvents'
 
 export function App(): React.JSX.Element | null {
-  const evening = useEvening()
+  const party = useParty()
   const settings = useSettings()
   return (
-    <Stage evening={evening} calm={settings.calmAnimations}>
-      <Screen evening={evening} />
+    <Stage party={party} calm={settings.calmAnimations}>
+      <Screen party={party} />
     </Stage>
   )
 }
 
-function Screen({ evening }: { evening: ReturnType<typeof useEvening> }): React.JSX.Element | null {
+function Screen({ party }: { party: ReturnType<typeof useParty> }): React.JSX.Element | null {
   const [menu, setMenu] = useState<'home' | 'setup' | 'freePlay' | 'check' | 'settings' | 'animations'>('home')
   const settings = useSettings()
   const screens = useScreens()
@@ -35,11 +35,11 @@ function Screen({ evening }: { evening: ReturnType<typeof useEvening> }): React.
     () => sound.setVolumes(settings.effectsVolume, settings.musicVolume),
     [settings.effectsVolume, settings.musicVolume],
   )
-  useMusic(evening)
+  useMusic(party)
 
-  if (evening === undefined) return null
-  if (evening === null) {
-    // The TV has no menus: it waits for the evening to start.
+  if (party === undefined) return null
+  if (party === null) {
+    // The TV has no menus: it waits for the party to start.
     if (ROLE === 'show') {
       return (
         <main className="screen screen--home">
@@ -63,7 +63,7 @@ function Screen({ evening }: { evening: ReturnType<typeof useEvening> }): React.
     }
     return (
       <Home
-        onNewEvening={() => setMenu('setup')}
+        onNewParty={() => setMenu('setup')}
         onFreePlay={() => setMenu('freePlay')}
         onBoardCheck={() => setMenu('check')}
         onSettings={() => setMenu('settings')}
@@ -71,18 +71,18 @@ function Screen({ evening }: { evening: ReturnType<typeof useEvening> }): React.
     )
   }
 
-  // Back to the start once this evening is over or stopped.
+  // Back to the start once this party is over or stopped.
   if (menu !== 'home') setMenu('home')
 
-  switch (evening.stage) {
+  switch (party.stage) {
     case 'draw':
-      return <Draw evening={evening} />
+      return <Draw party={party} />
     case 'rules':
-      return <Rules evening={evening} />
+      return <Rules party={party} />
     case 'playing':
     case 'decider':
-      return <Play evening={evening} />
+      return <Play party={party} />
     case 'podium':
-      return <Podium evening={evening} />
+      return <Podium party={party} />
   }
 }

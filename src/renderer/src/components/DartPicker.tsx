@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { DartInput } from '../../../core/evening/session'
+import type { DartInput } from '../../../core/party/session'
 import { strings } from '../../../shared/strings'
 import { Board } from './Board'
 import { Modal } from './Modal'

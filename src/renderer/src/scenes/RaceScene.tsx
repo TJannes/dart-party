@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import type { Dart } from '../../../core/board/state'
-import type { Evening, GameRecord } from '../../../core/evening/evening'
+import type { Party, GameRecord } from '../../../core/party/party'
 import type { RaceView } from '../../../core/game/race'
 import type { GameState, PlayerId } from '../../../core/game/types'
 import { useMoods } from '../animation/Stage'
@@ -18,25 +18,25 @@ function moodOf(player: PlayerId, state: GameState<RaceView>): Mood {
 }
 
 export function RaceScene(props: {
-  evening: Evening
+  party: Party
   record: GameRecord
   state: GameState<RaceView>
   darts: Dart[]
 }): React.JSX.Element {
-  const { evening, record, state } = props
+  const { party, record, state } = props
   const { segments, positions, trackLength } = state.view
   const moods = useMoods()
   const owners: Record<number, string> = {}
   for (const id of record.order) {
-    for (const segment of segments[id] ?? []) owners[segment] = colourOf(evening, id)
+    for (const segment of segments[id] ?? []) owners[segment] = colourOf(party, id)
   }
 
   return (
     <section className="race">
       <div className="race__track">
         {record.order.map((id) => {
-          const player = playerOf(evening, id)
-          const colour = colourOf(evening, id)
+          const player = playerOf(party, id)
+          const colour = colourOf(party, id)
           const active = state.current?.player === id
           return (
             <div key={id} className={active ? 'lane lane--active' : 'lane'} style={{ borderColor: colour }}>

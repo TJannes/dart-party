@@ -22,9 +22,9 @@ const api: DartPartyApi = {
   onBoardEvent: (listener) => subscribe(ipc.boardEvent, listener),
   resetBoard: () => ipcRenderer.send(ipc.resetBoard),
 
-  getEvening: () => ipcRenderer.invoke(ipc.getEvening),
-  onEvening: (listener) => subscribe(ipc.evening, listener),
-  eveningCommand: (command) => ipcRenderer.send(ipc.eveningCommand, command),
+  getParty: () => ipcRenderer.invoke(ipc.getParty),
+  onParty: (listener) => subscribe(ipc.party, listener),
+  partyCommand: (command) => ipcRenderer.send(ipc.partyCommand, command),
 
   getPlayers: () => ipcRenderer.invoke(ipc.getPlayers),
   savePlayers: (players) => ipcRenderer.invoke(ipc.savePlayers, players),

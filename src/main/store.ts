@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { Store } from '../core/evening/session'
+import type { Store } from '../core/party/session'
 
 /**
  * Keeps each document as a JSON file in the given folder. A save writes a

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { manualDart, manualMiss } from '../board/ring'
 import type { Dart } from '../board/state'
-import { addDart, advance, dartsRemoved, nextPlayer, startEvening, type Evening } from '../evening/evening'
-import { activeState } from '../evening/evening'
+import { addDart, advance, dartsRemoved, nextPlayer, startParty, type Party } from '../party/party'
+import { activeState } from '../party/party'
 import { seededRandom } from '../random'
 import { callFor, higherOrLower } from './higherOrLower'
 import { lastOneStanding } from './lastOneStanding'
@@ -202,38 +202,38 @@ describe('Time Bomb', () => {
   })
 })
 
-describe('an evening with a knockout game', () => {
+describe('a party with a knockout game', () => {
   const people = three.map((id) => ({ id, name: id, avatar: 'fox' }))
-  function begin(game: string): Evening {
+  function begin(game: string): Party {
     const random = seededRandom(3)
-    return advance(advance(startEvening(people, 1, [game], random), random), random)
+    return advance(advance(startParty(people, 1, [game], random), random), random)
   }
-  const thrower = (e: Evening) => activeState(e)!.current!.player
+  const thrower = (e: Party) => activeState(e)!.current!.player
 
   it('starts the next turn when a rule ended one with darts still in the board', () => {
-    let evening = begin('timeBomb')
-    const first = thrower(evening)
-    const [middle] = [activeState(evening)!.view.target[1]]
-    evening = addDart(evening, manualDart(middle, 1), 'board')
+    let party = begin('timeBomb')
+    const first = thrower(party)
+    const [middle] = [activeState(party)!.view.target[1]]
+    party = addDart(party, manualDart(middle, 1), 'board')
     // The bomb was passed on: the turn is over though the dart is not pulled.
-    expect(thrower(evening)).not.toBe(first)
-    const second = thrower(evening)
-    evening = addDart(evening, manualMiss(), 'board')
-    const turns = evening.games[0]!.turns
+    expect(thrower(party)).not.toBe(first)
+    const second = thrower(party)
+    party = addDart(party, manualMiss(), 'board')
+    const turns = party.games[0]!.turns
     expect(turns).toHaveLength(2)
     expect(turns[0]).toMatchObject({ done: true })
     expect(turns[1]!.darts).toHaveLength(1)
-    expect(thrower(evening)).toBe(second)
+    expect(thrower(party)).toBe(second)
   })
 
   it('does not skip anyone when the darts of an ended turn are pulled', () => {
-    let evening = begin('timeBomb')
-    const middle = activeState(evening)!.view.target[1]
-    evening = addDart(evening, manualDart(middle, 1), 'board')
-    const second = thrower(evening)
-    evening = dartsRemoved(evening)
-    expect(thrower(evening)).toBe(second)
-    evening = nextPlayer(evening)
-    expect(thrower(evening)).not.toBe(second)
+    let party = begin('timeBomb')
+    const middle = activeState(party)!.view.target[1]
+    party = addDart(party, manualDart(middle, 1), 'board')
+    const second = thrower(party)
+    party = dartsRemoved(party)
+    expect(thrower(party)).toBe(second)
+    party = nextPlayer(party)
+    expect(thrower(party)).not.toBe(second)
   })
 })

@@ -1,13 +1,13 @@
 import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { placesOf } from '../../../core/evening/points'
+import { placesOf } from '../../../core/party/points'
 import { rankByScore, type PlayerId } from '../../../core/game/types'
 import { strings } from '../../../shared/strings'
 import { useStageBusy } from '../animation/Stage'
 import { sound } from '../sound'
 import { Avatar, type Mood } from './Avatar'
 
-const s = strings.evening
+const s = strings.party
 
 export interface StandingsEntry {
   id: PlayerId
@@ -39,7 +39,7 @@ function Crown(): React.JSX.Element {
 }
 
 /**
- * The scoreboard of the evening after a game. When animated it starts as
+ * The scoreboard of the party after a game. When animated it starts as
  * it stood before the game: the points fly in, then the rows move to their
  * new places and the crown hops to whoever leads.
  */

@@ -1,5 +1,5 @@
-import { partyAnimations } from './partyAnimations'
-import { partyGames } from './partyGames'
+import { gameShowAnimations } from './gameShowAnimations'
+import { gameShowGames } from './gameShowGames'
 import type { Theme, Tone } from './types'
 
 // The default theme: a purple game show. All sound is synthesised here, so
@@ -33,8 +33,8 @@ const Am = chord(-15, -3, 0, 4, 9)
 const F = chord(-19, -7, -3, 0, 5)
 const G = chord(-17, -5, -1, 2, 7)
 
-export const party: Theme = {
-  id: 'party',
+export const gameShow: Theme = {
+  id: 'gameShow',
   colours: {
     'bg-centre': '#7597de',
     'bg-mid': '#4a2a8a',
@@ -209,5 +209,5 @@ export const party: Theme = {
     game: { tempo: 112, chords: [Am, F, C, G], wave: 'triangle' },
     podium: { tempo: 126, chords: [C, F, G, C], wave: 'triangle' },
   },
-  animations: { general: partyAnimations.general, games: { ...partyAnimations.games, ...partyGames } },
+  animations: { general: gameShowAnimations.general, games: { ...gameShowAnimations.games, ...gameShowGames } },
 }

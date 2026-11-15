@@ -1,8 +1,8 @@
 import type { FC } from 'react'
 import { RING } from '../../../core/board/ring'
 import type { Dart } from '../../../core/board/state'
-import type { DartStory } from '../../../core/evening/cues'
-import { activeRecord, evaluateRecord, type Evening } from '../../../core/evening/evening'
+import type { DartStory } from '../../../core/party/cues'
+import { activeRecord, evaluateRecord, type Party } from '../../../core/party/party'
 import type { PlayerId } from '../../../core/game/types'
 import { colourOf, playerOf } from '../colours'
 import type { Scene, SceneKind, Step } from './timeline'
@@ -96,7 +96,7 @@ export function boardPosition(dart: Dart): { x: number; y: number } {
   return { x: radius * Math.sin(angle), y: radius * Math.cos(angle) }
 }
 
-export function stageInfo(evening: Evening, calm: boolean, story: DartStory | null): StageInfo {
+export function stageInfo(party: Party, calm: boolean, story: DartStory | null): StageInfo {
   const dart = story?.dart ?? null
   const find = (selector: string): Element | null => document.querySelector(selector)
   const avatar = (player: PlayerId): Spot | null => spotOf(find(`[data-anim-avatar="${CSS.escape(player)}"]`))
@@ -110,7 +110,7 @@ export function stageInfo(evening: Evening, calm: boolean, story: DartStory | nu
     return spot && { x: spot.x + at.x * boardScale(), y: spot.y - at.y * boardScale() }
   }
   const boardPoint = (thrown: Dart): { x: number; y: number } | null => boardXY(boardPosition(thrown))
-  const record = activeRecord(evening)
+  const record = activeRecord(party)
   return {
     calm,
     view: record ? evaluateRecord(record).view : null,
@@ -121,9 +121,9 @@ export function stageInfo(evening: Evening, calm: boolean, story: DartStory | nu
       const angle = (RING.indexOf(segment) * 18 * Math.PI) / 180
       return boardXY({ x: 0.79 * Math.sin(angle), y: 0.79 * Math.cos(angle) })
     },
-    colourOf: (player) => colourOf(evening, player),
-    nameOf: (player) => playerOf(evening, player)?.name ?? '',
-    avatarOf: (player) => playerOf(evening, player)?.avatar ?? 'fox',
+    colourOf: (player) => colourOf(party, player),
+    nameOf: (player) => playerOf(party, player)?.name ?? '',
+    avatarOf: (player) => playerOf(party, player)?.avatar ?? 'fox',
     avatar,
     score: (player) => spotOf(scoreElement(player)) ?? avatar(player),
     scoreElement,

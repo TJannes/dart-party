@@ -22,8 +22,8 @@ import {
   unit,
   useNudge,
   Won,
-} from './partyAnimations'
-import { CallArrow } from './partyProps'
+} from './gameShowAnimations'
+import { CallArrow } from './gameShowProps'
 
 // The default theme's own animations for eight more games. Like the general
 // ones: simple shapes moved with `motion`, placed over whatever the scene
@@ -886,7 +886,7 @@ function PotWon(props: SceneProps<'scored'>): React.JSX.Element {
 }
 
 /** Which of the general animations each of these games replaces. */
-export const partyGames: Record<string, Partial<AnimationSet>> = {
+export const gameShowGames: Record<string, Partial<AnimationSet>> = {
   race: { scored: RaceForward, attacked: RacePushed, won: RaceWon },
   robinHood: { impact: ArrowLands, bad: TreeMiss, spectacle: SplitArrow },
   spotlight: { round: SpotlightSweep, scored: SpotlightBow, blank: SpotlightBlank },

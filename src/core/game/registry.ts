@@ -14,7 +14,7 @@ import { timeBomb } from './timeBomb'
 import type { GameRules } from './types'
 import { x01 } from './x01'
 
-/** The mini-games that can be drawn in an evening, in menu order. */
+/** The mini-games that can be drawn in a party, in menu order. */
 export const drawableGames: readonly GameRules<any, any>[] = [
   race,
   robinHood,
@@ -29,7 +29,7 @@ export const drawableGames: readonly GameRules<any, any>[] = [
   raiseTheBar,
 ]
 
-/** Played on their own, outside an evening. Never in the draw. */
+/** Played on their own, outside a party. Never in the draw. */
 export const freePlayGames: readonly GameRules<any, any>[] = [x01, aroundTheClock]
 
 const all: readonly GameRules<any, any>[] = [...drawableGames, decider, ...freePlayGames]

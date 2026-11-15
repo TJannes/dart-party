@@ -1,8 +1,8 @@
-import { activeRecord, canAdvance, evaluateRecord, standings, type Evening } from '../../../core/evening/evening'
-import { placesOf, pointsForRanking } from '../../../core/evening/points'
+import { activeRecord, canAdvance, evaluateRecord, standings, type Party } from '../../../core/party/party'
+import { placesOf, pointsForRanking } from '../../../core/party/points'
 import { rulesFor } from '../../../core/game/registry'
 import { useRef } from 'react'
-import { activeGameKey } from '../../../core/evening/cues'
+import { activeGameKey } from '../../../core/party/cues'
 import type { GameState, WithOpenings } from '../../../core/game/types'
 import { strings } from '../../../shared/strings'
 import { colourOf, playerOf } from '../colours'
@@ -10,12 +10,12 @@ import { Avatar } from '../components/Avatar'
 import { Controls } from '../components/Controls'
 import { Standings } from '../components/Standings'
 import { dartText } from '../dartText'
-import { EveningFrame } from '../components/EveningFrame'
+import { PartyFrame } from '../components/PartyFrame'
 import { send } from '../hooks'
 import { GameScene } from '../scenes/GameScene'
 import { gameName } from './Draw'
 
-const s = strings.evening
+const s = strings.party
 
 /** "Round 2 of 6" in the header, or the game's own way of counting. */
 function roundText(gameId: string, state: GameState<any>, maxRounds: number): string | undefined {
@@ -28,15 +28,15 @@ function roundText(gameId: string, state: GameState<any>, maxRounds: number): st
   return maxRounds > 1 ? s.round(state.current.round, maxRounds) : undefined
 }
 
-/** The result of the game just finished, and the standings of the evening. */
-function Result({ evening, animate }: { evening: Evening; animate: boolean }): React.JSX.Element {
-  const record = activeRecord(evening)!
+/** The result of the game just finished, and the standings of the party. */
+function Result({ party, animate }: { party: Party; animate: boolean }): React.JSX.Element {
+  const record = activeRecord(party)!
   const state = evaluateRecord(record)
   const places = placesOf(state.ranking)
-  // Only a game of an evening earns points; free play and a deciding round show their own result.
-  const isGame = evening.stage === 'playing' && !evening.freePlay
+  // Only a game of a party earns points; free play and a deciding round show their own result.
+  const isGame = party.stage === 'playing' && !party.freePlay
   const earned = isGame ? pointsForRanking(state.ranking) : {}
-  const totals = new Map(standings(evening).map((row) => [row.player, row.points]))
+  const totals = new Map(standings(party).map((row) => [row.player, row.points]))
 
   return (
     <div className="result">
@@ -45,11 +45,11 @@ function Result({ evening, animate }: { evening: Evening; animate: boolean }): R
         {isGame ? (
           <Standings
             animate={animate}
-            rows={evening.players.map((player) => ({
+            rows={party.players.map((player) => ({
               id: player.id,
               name: player.name,
               avatar: player.avatar,
-              colour: colourOf(evening, player.id),
+              colour: colourOf(party, player.id),
               before: (totals.get(player.id) ?? 0) - (earned[player.id] ?? 0),
               earned: earned[player.id] ?? 0,
               mood: places[player.id] === 1 ? 'cheer' : 'idle',
@@ -58,9 +58,9 @@ function Result({ evening, animate }: { evening: Evening; animate: boolean }): R
         ) : (
           <ol className="scoreboard">
             {state.ranking.flat().map((id) => {
-              const player = playerOf(evening, id)
+              const player = playerOf(party, id)
               return (
-                <li key={id} style={{ borderColor: colourOf(evening, id) }}>
+                <li key={id} style={{ borderColor: colourOf(party, id) }}>
                   <span className="scoreboard__place">{s.place(places[id]!)}</span>
                   <Avatar avatar={player.avatar} size="2em" mood={places[id] === 1 ? 'cheer' : 'idle'} />
                   <span className="scoreboard__name">{player.name}</span>
@@ -69,7 +69,7 @@ function Result({ evening, animate }: { evening: Evening; animate: boolean }): R
             })}
           </ol>
         )}
-        {evening.freePlay ? (
+        {party.freePlay ? (
           <div className="row">
             <button type="button" className="button button--big" onClick={() => send({ type: 'playAgain' })}>
               {strings.freePlay.again}
@@ -89,8 +89,8 @@ function Result({ evening, animate }: { evening: Evening; animate: boolean }): R
 }
 
 /** A game or deciding round in progress: who throws, the scene, the controls. */
-export function Play({ evening }: { evening: Evening }): React.JSX.Element {
-  const record = activeRecord(evening)!
+export function Play({ party }: { party: Party }): React.JSX.Element {
+  const record = activeRecord(party)!
   const state = evaluateRecord(record)
   const rules = rulesFor(record.gameId)
   const current = state.current
@@ -99,20 +99,20 @@ export function Play({ evening }: { evening: Evening }): React.JSX.Element {
   const darts = current ? (record.turns[current.turn]?.darts ?? []).map((d) => d.dart) : []
   const last = record.turns.at(-1)
   const uncleared = current !== null && last !== undefined && !last.done && current.turn >= record.turns.length
-  const thrower = current ? playerOf(evening, current.player) : null
+  const thrower = current ? playerOf(party, current.player) : null
   // The standings only play out when this window saw the game being won:
   // not after a restart into a game that was already over.
-  const game = activeGameKey(evening)
+  const game = activeGameKey(party)
   const live = useRef<string | null>(null)
   if (!state.finished) live.current = game
 
   return (
-    <EveningFrame
-      evening={evening}
+    <PartyFrame
+      party={party}
       title={gameName(record.gameId)}
       detail={roundText(record.gameId, state, rules.maxRounds)}
     >
-      <div className="turn" style={{ borderColor: current ? colourOf(evening, current.player) : 'transparent' }}>
+      <div className="turn" style={{ borderColor: current ? colourOf(party, current.player) : 'transparent' }}>
         {thrower && current && (
           <>
             <Avatar avatar={thrower.avatar} size="1.5em" />
@@ -133,10 +133,10 @@ export function Play({ evening }: { evening: Evening }): React.JSX.Element {
         )}
       </div>
 
-      <GameScene evening={evening} record={record} state={state} darts={darts} />
+      <GameScene party={party} record={record} state={state} darts={darts} />
 
-      <Controls evening={evening} canThrow={current !== null && current.dartsLeft > 0} />
-      {canAdvance(evening) && <Result evening={evening} animate={live.current === game} />}
-    </EveningFrame>
+      <Controls party={party} canThrow={current !== null && current.dartsLeft > 0} />
+      {canAdvance(party) && <Result party={party} animate={live.current === game} />}
+    </PartyFrame>
   )
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { seededRandom } from '../random'
-import { activeState, type Evening, type Player } from './evening'
-import { EveningSession, type Store } from './session'
+import { activeState, type Party, type Player } from './party'
+import { PartySession, type Store } from './session'
 
 const players: Player[] = ['ann', 'bob'].map((name) => ({ id: name, name, avatar: 'fox' }))
 
@@ -22,12 +22,12 @@ function memoryStore(initial: Record<string, unknown> = {}) {
 }
 
 function session(store: Store) {
-  const changes: (Evening | null)[] = []
-  const s = new EveningSession(store, seededRandom(5), (e) => changes.push(e), () => new Date(0), () => ['race'])
+  const changes: (Party | null)[] = []
+  const s = new PartySession(store, seededRandom(5), (e) => changes.push(e), () => new Date(0), () => ['race'])
   return { s, changes }
 }
 
-/** Starts a one-game evening and gets to the first dart. */
+/** Starts a one-game party and gets to the first dart. */
 function playing(store: Store) {
   const { s, changes } = session(store)
   s.command({ type: 'start', players, games: 1 })
@@ -37,7 +37,7 @@ function playing(store: Store) {
 }
 
 /** Throws the current player's own triple until the Race is won. */
-function winRace(s: EveningSession) {
+function winRace(s: PartySession) {
   for (let guard = 0; guard < 50 && !activeState(s.current!)!.finished; guard++) {
     const state = activeState(s.current!)!
     const [segment] = state.view.segments[state.current!.player]
@@ -46,8 +46,8 @@ function winRace(s: EveningSession) {
   }
 }
 
-describe('EveningSession', () => {
-  it('starts with no evening and ignores commands until one starts', () => {
+describe('PartySession', () => {
+  it('starts with no party and ignores commands until one starts', () => {
     const { s, changes } = session(memoryStore().store)
     s.command({ type: 'advance' })
     s.command({ type: 'addDart', dart: { miss: true } })
@@ -56,13 +56,13 @@ describe('EveningSession', () => {
     expect(changes).toEqual([])
   })
 
-  it('refuses an evening that is not valid', () => {
+  it('refuses a party that is not valid', () => {
     const { s } = session(memoryStore().store)
     s.command({ type: 'start', players: players.slice(0, 1), games: 5 })
     expect(s.current).toBeNull()
   })
 
-  it('does not swap players once an evening runs', () => {
+  it('does not swap players once a party runs', () => {
     const { s } = playing(memoryStore().store)
     const before = s.current
     s.command({ type: 'start', players: [...players].reverse(), games: 3 })
@@ -104,22 +104,33 @@ describe('EveningSession', () => {
     expect(s.current).toBe(before)
   })
 
-  it('starts fresh when the saved evening cannot be read', () => {
+  it('resumes a party saved by a version that called it an evening, and moves it', () => {
+    const first = memoryStore()
+    playing(first.store).s.command({ type: 'addDart', dart: { number: 20, multiplier: 1 } })
+    const saved = JSON.parse(first.files.get('party')!)
+    const old = memoryStore({ evening: { format: saved.format, evening: saved.party } })
+    const { s } = session(old.store)
+    expect(s.current).toEqual(saved.party)
+    expect(JSON.parse(old.files.get('party')!)).toEqual(saved)
+    expect(old.files.has('evening')).toBe(false)
+  })
+
+  it('starts fresh when the saved party cannot be read', () => {
     for (const broken of [
       'nonsense',
-      { format: 99, evening: {} },
-      { format: 1, evening: { players, games: [{ gameId: 'gone', order: [], setup: null, turns: [] }], deciders: [] } },
+      { format: 99, party: {} },
+      { format: 1, party: { players, games: [{ gameId: 'gone', order: [], setup: null, turns: [] }], deciders: [] } },
     ]) {
-      expect(session(memoryStore({ evening: broken }).store).s.current).toBeNull()
+      expect(session(memoryStore({ party: broken }).store).s.current).toBeNull()
     }
   })
 
-  it('forgets an aborted evening and keeps no result of it', () => {
+  it('forgets an aborted party and keeps no result of it', () => {
     const memory = memoryStore()
     const { s } = playing(memory.store)
     s.command({ type: 'abort' })
     expect(s.current).toBeNull()
-    expect(memory.files.has('evening')).toBe(false)
+    expect(memory.files.has('party')).toBe(false)
     expect(s.history).toEqual([])
   })
 
@@ -136,7 +147,7 @@ describe('EveningSession', () => {
     s.command({ type: 'finish' })
 
     expect(s.current).toBeNull()
-    expect(memory.files.has('evening')).toBe(false)
+    expect(memory.files.has('party')).toBe(false)
     expect(s.history).toHaveLength(1)
     expect(s.history[0]).toMatchObject({
       finishedAt: '1970-01-01T00:00:00.000Z',

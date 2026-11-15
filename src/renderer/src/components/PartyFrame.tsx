@@ -1,33 +1,33 @@
 import { useState, type ReactNode } from 'react'
-import type { Evening } from '../../../core/evening/evening'
+import type { Party } from '../../../core/party/party'
 import { strings } from '../../../shared/strings'
 import { send } from '../hooks'
 import { BoardStatus } from './BoardStatus'
 import { Modal } from './Modal'
 import { Volume } from './Volume'
 
-const s = strings.evening
+const s = strings.party
 
-/** The frame around every screen of an evening: where we are, and the way out. */
-export function EveningFrame(props: { evening: Evening; title: string; detail?: string; children: ReactNode }): React.JSX.Element {
+/** The frame around every screen of a party: where we are, and the way out. */
+export function PartyFrame(props: { party: Party; title: string; detail?: string; children: ReactNode }): React.JSX.Element {
   const [stopping, setStopping] = useState(false)
   const [volume, setVolume] = useState(false)
-  const { evening } = props
+  const { party } = props
   return (
     <main className="screen">
       <header className="bar">
         <h2>{props.title}</h2>
         <span className="bar__detail">
-          {evening.freePlay
+          {party.freePlay
             ? strings.freePlay.label
-            : evening.stage !== 'decider' && evening.stage !== 'podium' && s.gameOf(evening.games.length, evening.gamesPlanned)}
+            : party.stage !== 'decider' && party.stage !== 'podium' && s.gameOf(party.games.length, party.gamesPlanned)}
           {props.detail ? ` · ${props.detail}` : ''}
         </span>
         <button type="button" className="button button--quiet" onClick={() => setVolume(true)}>
           {strings.settings.volume}
         </button>
         <button type="button" className="button button--quiet" onClick={() => setStopping(true)}>
-          {evening.freePlay ? strings.freePlay.stop : s.stop}
+          {party.freePlay ? strings.freePlay.stop : s.stop}
         </button>
       </header>
       <BoardStatus />
@@ -41,10 +41,10 @@ export function EveningFrame(props: { evening: Evening; title: string; detail?: 
         </Modal>
       )}
       {stopping && (
-        <Modal title={evening.freePlay ? strings.freePlay.stopQuestion : s.stopQuestion} onClose={() => setStopping(false)}>
+        <Modal title={party.freePlay ? strings.freePlay.stopQuestion : s.stopQuestion} onClose={() => setStopping(false)}>
           <div className="row">
             <button type="button" className="button button--miss" onClick={() => send({ type: 'abort' })}>
-              {evening.freePlay ? strings.freePlay.stopYes : s.stopYes}
+              {party.freePlay ? strings.freePlay.stopYes : s.stopYes}
             </button>
             <button type="button" className="button" onClick={() => setStopping(false)}>
               {s.stopNo}

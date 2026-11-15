@@ -16,13 +16,13 @@ import {
   playAgain,
   removeLastDart,
   standings,
-  startEvening,
+  startParty,
   startFreePlay,
-  type Evening,
+  type Party,
   type Player,
-} from './evening'
+} from './party'
 
-// The evening as the app runs it: one at a time, saved after every change so
+// The party as the app runs it: one at a time, saved after every change so
 // a crash or restart picks up where it was, and written to the history when
 // it is over. Storage is passed in, so this has no Electron in it.
 
@@ -33,7 +33,7 @@ export type DartInput =
   /** Pointed at on the board, in board coordinates. */
   | { position: { x: number; y: number } }
 
-export type EveningCommand =
+export type PartyCommand =
   | { type: 'start'; players: Player[]; games: number }
   /** One game on its own. `options` are the game's own, such as X01's start score. */
   | { type: 'startFreePlay'; players: Player[]; game: string; options?: unknown }
@@ -45,13 +45,13 @@ export type EveningCommand =
   | { type: 'correctDart'; turn: number; index: number; dart: DartInput }
   | { type: 'removeLastDart' }
   | { type: 'nextPlayer' }
-  /** Stop the evening without a result. */
+  /** Stop the party without a result. */
   | { type: 'abort' }
   /** Leave the podium: the result goes to the history. */
   | { type: 'finish' }
 
-/** The result of a finished evening, as kept for the hall of fame. */
-export interface EveningResult {
+/** The result of a finished party, as kept for the hall of fame. */
+export interface PartyResult {
   finishedAt: string
   players: Player[]
   ranking: Ranking
@@ -67,7 +67,9 @@ export interface Store {
   remove(name: string): void
 }
 
-const EVENING = 'evening'
+const PARTY = 'party'
+/** Where versions before 0.6.0 kept the party, when it was called an evening. */
+const OLD_PARTY = 'evening'
 const HISTORY = 'history'
 const FORMAT = 1
 
@@ -84,61 +86,70 @@ function toDart(input: DartInput): Dart | null {
   return manualDart(number, multiplier, input.inner === true)
 }
 
-/** A saved evening is only resumed if every game in it can be recounted. */
-function readSavedEvening(saved: unknown): Evening | null {
+/** A saved party is only resumed if every game in it can be recounted. */
+function readSavedParty(saved: unknown): Party | null {
   try {
-    const { format, evening } = saved as { format?: unknown; evening?: Evening }
-    if (format !== FORMAT || !evening) return null
-    for (const record of [...evening.games, ...evening.deciders]) evaluateRecord(record)
-    standings(evening)
-    finalRanking(evening)
-    return evening
+    const { format, party = (saved as { evening?: Party }).evening } = saved as { format?: unknown; party?: Party }
+    if (format !== FORMAT || !party) return null
+    for (const record of [...party.games, ...party.deciders]) evaluateRecord(record)
+    standings(party)
+    finalRanking(party)
+    return party
   } catch {
     return null
   }
 }
 
-export class EveningSession {
-  private evening: Evening | null
+export class PartySession {
+  private party: Party | null
 
   constructor(
     private readonly store: Store,
     private readonly random: Random,
-    private readonly onChange: (evening: Evening | null) => void = () => {},
+    private readonly onChange: (party: Party | null) => void = () => {},
     private readonly now: () => Date = () => new Date(),
-    /** The mini-games that may be drawn in an evening started now. */
+    /** The mini-games that may be drawn in a party started now. */
     private readonly games: () => string[] = () => drawableGames.map((game) => game.id),
   ) {
-    this.evening = readSavedEvening(store.load(EVENING))
+    this.party = readSavedParty(store.load(PARTY))
+    // A party saved by an older version: carry it over under the new name.
+    if (!this.party) {
+      const old = readSavedParty(store.load(OLD_PARTY))
+      if (old) {
+        this.party = old
+        store.save(PARTY, { format: FORMAT, party: old })
+      }
+    }
+    store.remove(OLD_PARTY)
   }
 
-  get current(): Evening | null {
-    return this.evening
+  get current(): Party | null {
+    return this.party
   }
 
-  get history(): EveningResult[] {
+  get history(): PartyResult[] {
     const saved = this.store.load(HISTORY)
-    return Array.isArray(saved) ? (saved as EveningResult[]) : []
+    return Array.isArray(saved) ? (saved as PartyResult[]) : []
   }
 
   boardEvent(event: BoardEvent): void {
-    if (this.evening) this.set(applyBoardEvent(this.evening, event))
+    if (this.party) this.set(applyBoardEvent(this.party, event))
   }
 
-  command(command: EveningCommand): void {
+  command(command: PartyCommand): void {
     if (command.type === 'start') {
-      // Players are fixed once an evening starts; abort it first.
-      if (this.evening) return
+      // Players are fixed once a party starts; abort it first.
+      if (this.party) return
       try {
-        this.set(startEvening(command.players, command.games, this.games(), this.random))
+        this.set(startParty(command.players, command.games, this.games(), this.random))
       } catch {
-        // Not a valid evening: nothing starts.
+        // Not a valid party: nothing starts.
       }
       return
     }
 
     if (command.type === 'startFreePlay') {
-      if (this.evening) return
+      if (this.party) return
       try {
         if (!freePlayGames.some((game) => game.id === command.game)) return
         const setup = command.game === 'x01' ? cleanX01Setup(command.options) : null
@@ -149,53 +160,53 @@ export class EveningSession {
       return
     }
 
-    const evening = this.evening
-    if (!evening) return
+    const party = this.party
+    if (!party) return
     switch (command.type) {
       case 'playAgain':
-        return this.set(playAgain(evening))
+        return this.set(playAgain(party))
       case 'advance':
-        return this.set(advance(evening, this.random))
+        return this.set(advance(party, this.random))
       case 'addDart': {
         const dart = toDart(command.dart)
-        return dart ? this.set(addDart(evening, dart, 'hand')) : undefined
+        return dart ? this.set(addDart(party, dart, 'hand')) : undefined
       }
       case 'correctDart': {
         const dart = toDart(command.dart)
-        return dart ? this.set(correctDart(evening, command.turn, command.index, dart)) : undefined
+        return dart ? this.set(correctDart(party, command.turn, command.index, dart)) : undefined
       }
       case 'removeLastDart':
-        return this.set(removeLastDart(evening))
+        return this.set(removeLastDart(party))
       case 'nextPlayer':
-        return this.set(nextPlayer(evening))
+        return this.set(nextPlayer(party))
       case 'abort':
         return this.set(null)
       case 'finish':
         // Free play just ends: its result is kept nowhere.
-        if (evening.freePlay) return this.set(null)
-        if (evening.stage !== 'podium') return
-        this.store.save(HISTORY, [...this.history, this.result(evening)])
+        if (party.freePlay) return this.set(null)
+        if (party.stage !== 'podium') return
+        this.store.save(HISTORY, [...this.history, this.result(party)])
         return this.set(null)
     }
   }
 
-  private result(evening: Evening): EveningResult {
+  private result(party: Party): PartyResult {
     const points: Record<PlayerId, number> = {}
-    for (const row of standings(evening)) points[row.player] = row.points
+    for (const row of standings(party)) points[row.player] = row.points
     return {
       finishedAt: this.now().toISOString(),
-      players: evening.players,
-      ranking: finalRanking(evening),
+      players: party.players,
+      ranking: finalRanking(party),
       points,
-      games: evening.games.map((record) => record.gameId),
+      games: party.games.map((record) => record.gameId),
     }
   }
 
-  private set(next: Evening | null): void {
-    if (next === this.evening) return
-    this.evening = next
-    if (next) this.store.save(EVENING, { format: FORMAT, evening: next })
-    else this.store.remove(EVENING)
+  private set(next: Party | null): void {
+    if (next === this.party) return
+    this.party = next
+    if (next) this.store.save(PARTY, { format: FORMAT, party: next })
+    else this.store.remove(PARTY)
     this.onChange(next)
   }
 }

@@ -1,7 +1,7 @@
 # Dart Party
 
 A desktop party game for a group of friends around one dartboard. Autodarts
-detects the darts; this app runs an evening of randomly drawn mini-games on top
+detects the darts; this app runs a party of randomly drawn mini-games on top
 of that, with a running scoreboard and a winner at the end.
 
 Unofficial. Not affiliated with Autodarts.

@@ -3,7 +3,7 @@
 
 export const strings = {
   appName: 'Dart Party',
-  tagline: 'An evening of darts mini-games',
+  tagline: 'A party full of darts mini-games',
   disclaimer: 'Unofficial. Not affiliated with Autodarts.',
   version: (version: string) => `Version ${version}`,
 
@@ -133,7 +133,7 @@ export const strings = {
   },
 
   home: {
-    newEvening: 'New evening',
+    newParty: 'New party',
     boardCheck: 'Board check',
     boardCheckHint: 'Throw a few darts to see whether they arrive.',
     freePlay: 'Free play',
@@ -146,7 +146,7 @@ export const strings = {
     addPlayer: 'New player',
     edit: 'Edit',
     games: 'Games',
-    start: 'Start the evening',
+    start: 'Start the party',
     newPlayerTitle: 'New player',
     editPlayerTitle: 'Edit player',
     name: 'Name',
@@ -155,7 +155,7 @@ export const strings = {
 
   freePlay: {
     title: 'Free play',
-    hint: 'Tap who is playing, 1 to 8. One game, no points for an evening.',
+    hint: 'Tap who is playing, 1 to 8. One game on its own, outside a party.',
     game: 'Game',
     startScore: 'Start at',
     doubleOut: 'Double out',
@@ -342,11 +342,11 @@ export const strings = {
     },
     decider: {
       name: 'Deciding round',
-      rules: ['Three darts each.', 'The highest score wins the evening.'],
+      rules: ['Three darts each.', 'The highest score wins the party.'],
     },
   },
 
-  evening: {
+  party: {
     gameOf: (game: number, total: number) => `Game ${game} of ${total}`,
     round: (round: number, max: number) => `Round ${round} of ${max}`,
     roundOnly: (round: number) => `Round ${round}`,
@@ -363,9 +363,9 @@ export const strings = {
     earned: (points: number) => `+${points}`,
     tie: 'It\'s a tie at the top!',
     podiumTitle: 'Tonight\'s winner',
-    stop: 'Stop evening',
-    stopQuestion: 'Stop this evening? Nothing of it is kept.',
-    stopYes: 'Stop the evening',
+    stop: 'Stop party',
+    stopQuestion: 'Stop this party? Nothing of it is kept.',
+    stopYes: 'Stop the party',
     stopNo: 'Keep playing',
     place: (place: number) => `${place}.`,
     out: 'Out',

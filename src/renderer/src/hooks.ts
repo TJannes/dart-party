@@ -1,23 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { BoardSnapshot } from '../../core/board/tracker'
-import type { Evening, Player } from '../../core/evening/evening'
-import type { EveningCommand } from '../../core/evening/session'
+import type { Party, Player } from '../../core/party/party'
+import type { PartyCommand } from '../../core/party/session'
 import { DEFAULT_SETTINGS, type Settings } from '../../core/settings'
 import type { ScreensState } from '../../shared/api'
 
-/** The evening being played. Undefined until the main process has answered. */
-export function useEvening(): Evening | null | undefined {
-  const [evening, setEvening] = useState<Evening | null | undefined>(undefined)
+/** The party being played. Undefined until the main process has answered. */
+export function useParty(): Party | null | undefined {
+  const [party, setParty] = useState<Party | null | undefined>(undefined)
   useEffect(() => {
-    const stop = window.dartParty.onEvening(setEvening)
-    void window.dartParty.getEvening().then(setEvening)
+    const stop = window.dartParty.onParty(setParty)
+    void window.dartParty.getParty().then(setParty)
     return stop
   }, [])
-  return evening
+  return party
 }
 
-export function send(command: EveningCommand): void {
-  window.dartParty.eveningCommand(command)
+export function send(command: PartyCommand): void {
+  window.dartParty.partyCommand(command)
 }
 
 export function useBoardSnapshot(): BoardSnapshot {

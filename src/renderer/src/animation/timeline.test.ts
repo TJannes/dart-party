@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Beat, Cue, DartStory } from '../../../core/evening/cues'
+import type { Beat, Cue, DartStory } from '../../../core/party/cues'
 import { manualDart } from '../../../core/board/ring'
 import { blowTimes, DIG_TIME, MAX_CHAIN, timelineOf } from './timeline'
 

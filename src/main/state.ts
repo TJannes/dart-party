@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'node:path'
 import { BoardTracker } from '../core/board/tracker'
-import { EveningSession, type EveningCommand } from '../core/evening/session'
+import { PartySession, type PartyCommand } from '../core/party/session'
 import { cleanProfiles } from '../core/players'
 import { cleanSettings, enabledGames, type Settings } from '../core/settings'
 import { ipc } from '../shared/api'
@@ -9,7 +9,7 @@ import { AutodartsClient } from './autodarts/client'
 import { fileStore } from './store'
 
 // The main process owns everything that must survive a window: the
-// connection to Autodarts, the evening being played, the player profiles and
+// connection to Autodarts, the party being played, the player profiles and
 // the settings. Windows get these to render and send commands back.
 
 export function broadcast(channel: string, payload: unknown): void {
@@ -29,10 +29,10 @@ export function initState(onSettingsChanged: (settings: Settings) => void): AppS
   let settings = cleanSettings(store.load('settings'))
   let client: AutodartsClient | null = null
 
-  const session = new EveningSession(
+  const session = new PartySession(
     store,
     Math.random,
-    (evening) => broadcast(ipc.evening, evening),
+    (party) => broadcast(ipc.party, party),
     () => new Date(),
     () => enabledGames(settings),
   )
@@ -68,13 +68,13 @@ export function initState(onSettingsChanged: (settings: Settings) => void): AppS
   ipcMain.handle(ipc.getBoardSnapshot, () => tracker.snapshot)
   ipcMain.on(ipc.resetBoard, () => void client?.reset())
 
-  ipcMain.handle(ipc.getEvening, () => session.current)
-  ipcMain.on(ipc.eveningCommand, (_event, command: EveningCommand) => {
+  ipcMain.handle(ipc.getParty, () => session.current)
+  ipcMain.on(ipc.partyCommand, (_event, command: PartyCommand) => {
     try {
       session.command(command)
     } catch (error) {
       // A window must never be able to take the main process down.
-      console.error('Evening command failed', error)
+      console.error('Party command failed', error)
     }
   })
 

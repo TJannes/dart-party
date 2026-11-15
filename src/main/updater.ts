@@ -4,7 +4,7 @@ import { ipc } from '../shared/api'
 import type { UpdateAction, UpdateStatus } from '../shared/update'
 
 // The app looks for a newer release at startup and shows a button. It never
-// downloads or installs by itself: an update must not interrupt an evening.
+// downloads or installs by itself: an update must not interrupt a party.
 
 /** Only an installed Windows copy or a Linux AppImage can replace itself. */
 function canSelfUpdate(): boolean {

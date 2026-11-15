@@ -105,7 +105,7 @@ export interface Theme {
   id: string
   /** CSS custom properties, without the leading dashes. */
   colours: Record<string, string>
-  /** One per seat in an evening. */
+  /** One per seat in a party. */
   playerColours: string[]
   effects: Record<EffectName, Tone[]>
   music: Record<MusicScene, Music>

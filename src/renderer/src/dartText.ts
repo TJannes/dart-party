@@ -1,5 +1,5 @@
 import type { Dart } from '../../core/board/state'
-import type { GameRecord } from '../../core/evening/evening'
+import type { GameRecord } from '../../core/party/party'
 import { archeryPoints } from '../../core/game/robinHood'
 import { distanceMm, type SniperSetup } from '../../core/game/sniper'
 import { dartLabel } from '../../shared/board'

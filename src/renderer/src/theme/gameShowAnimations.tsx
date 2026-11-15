@@ -4,7 +4,7 @@ import { strings } from '../../../shared/strings'
 import type { AnimationPack, SceneProps, Spot } from '../animation/pack'
 import { blowTimes } from '../animation/timeline'
 import { Avatar } from '../components/Avatar'
-import { Bomb, Glove } from './partyProps'
+import { Bomb, Glove } from './gameShowProps'
 
 // How the default theme draws the moments: simple shapes, moved with
 // `motion`. Everything is drawn here; there are no image files. Each
@@ -918,7 +918,7 @@ function PigTapped({ step, stage }: SceneProps<'bad'>): React.JSX.Element {
   return <HammerBlow stage={stage} at={step.at} length={step.length} coins={0} />
 }
 
-export const partyAnimations: AnimationPack = {
+export const gameShowAnimations: AnimationPack = {
   general: {
     impact: Impact,
     good: Good,
@@ -947,7 +947,7 @@ export const partyAnimations: AnimationPack = {
     won: Won,
     turn: Turn,
   },
-  // A game's own versions; eight more games are in partyGames.tsx.
+  // A game's own versions; eight more games are in gameShowGames.tsx.
   games: {
     timeBomb: { fuse: Fuse, passed: Passed, exploded: Exploded },
     lastOneStanding: { attacked: Punch, knockedOut: CountedOut },

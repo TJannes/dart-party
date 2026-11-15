@@ -1,8 +1,8 @@
 # Dart Party
 
-A desktop party game for a group of friends around one dartboard: an evening
-of randomly drawn darts mini-games with a running scoreboard and a winner at
-the end.
+A desktop party game for a group of friends around one dartboard: a party
+full of randomly drawn darts mini-games, with a running scoreboard and a
+winner at the end.
 
 Dart detection comes from [Autodarts](https://autodarts.io) Desktop running on
 the same machine. **Dart Party is unofficial and not affiliated with

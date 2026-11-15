@@ -1,4 +1,4 @@
-import type { Beat, Cue, DartStory } from '../../../core/evening/cues'
+import type { Beat, Cue, DartStory } from '../../../core/party/cues'
 import type { DartFeedback, PlayerId } from '../../../core/game/types'
 import type { Mood } from '../components/Avatar'
 import type { EffectName } from '../theme/types'

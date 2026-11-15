@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DEFAULT_GAMES, MAX_PLAYERS, MIN_FREE_PLAYERS, MIN_PLAYERS, type Player } from '../../../core/evening/evening'
+import { DEFAULT_GAMES, MAX_PLAYERS, MIN_FREE_PLAYERS, MIN_PLAYERS, type Player } from '../../../core/party/party'
 import { freePlayGames } from '../../../core/game/registry'
 import { X01_STARTS } from '../../../core/game/x01'
 import { AVATARS, cleanName, MAX_NAME_LENGTH, MAX_PROFILES } from '../../../core/players'
