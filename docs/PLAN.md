@@ -1,14 +1,15 @@
 # Dart Party: plan and decisions
 
-Status: steps 1 to 3 are built and released (0.2.0). Steps 4 to 6 are built
-and released as 0.3.0, for the owner to test: eleven mini-games are in the
+Status: steps 1 to 3 are built and released (0.2.0). Steps 4 to 7 are built
+and released, for the owner to test (0.3.0 has the games and the animations,
+0.4.0 adds free play): eleven mini-games are in the
 draw. Updating from 0.1.0 to
 0.1.1 inside the app works on Ubuntu; the owner still has to install on the
 Surface and do the same on Windows. Everything from step 3 on has only been
 played through by hand on Ubuntu with one display: not with real darts, not
 with a real second screen, not on Windows, and nobody has listened to the
 sound yet. The owner still has to judge step 6 (animations in every game) on the
-Surface, under Settings, "Try the animations". Step 7 (free play) is built but not released. The next thing to build is
+Surface, under Settings, "Try the animations". The next thing to build is
 step 8 (themed animations per game); agree the ideas per game first. See
 [Build steps](#build-steps).
 
