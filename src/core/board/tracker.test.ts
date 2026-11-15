@@ -61,6 +61,16 @@ describe('darts', () => {
     })
   })
 
+  it('takes darts that vanish in a hanging takeout for removed, not deleted', () => {
+    const { tracker, types } = setup()
+    const three = [dart('S20', 20, 1), dart('S5', 5, 1), dart('S1', 1, 1)]
+    tracker.receiveState(idle)
+    tracker.receiveState(state('throwDetected', 'takeout', three))
+    tracker.receiveState(state('takeoutStarted', 'takeoutInProgress', three))
+    tracker.receiveState(stuck)
+    expect(types()).toEqual(['dartThrown', 'dartThrown', 'dartThrown', 'dartsRemoved', 'boardStuck'])
+  })
+
   it('reports two darts that arrive in one state', () => {
     const { tracker, events } = setup()
     tracker.receiveState(idle)

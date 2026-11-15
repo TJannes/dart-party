@@ -156,8 +156,17 @@ recordings (`hand`, `hand-herstel`, `reset`).
 While stuck, **darts are lost**: a dart thrown and removed in this state
 produced no message at all.
 
+Seen once by the owner during a party (2026-11-15, not recorded): darts were
+pulled, the board reset itself after a moment, and the darts of that turn
+were gone from the app. The likely cause: `throws` emptied while the status
+stayed `takeoutInProgress`, without `takeoutFinished`, so the app read it as
+every dart being deleted inside Autodarts. The app now takes that for the
+darts being removed. The party log will show whether this was it.
+
 **Rules:**
 
+- `throws` becoming empty while `status` is `takeoutInProgress` is the darts
+  being removed, also without `takeoutFinished`.
 - `takeoutStarted` with empty `throws` is not a change of turn.
 - `status: "takeoutInProgress"` with empty `throws` means stuck. Show it, offer
   a reset button, and send `POST /api/reset` automatically after a short delay

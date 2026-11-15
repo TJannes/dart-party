@@ -121,6 +121,11 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   (seen by the owner). No reset when the list is empty, because resetting
   with a dart still in the board makes it stuck once that dart is pulled.
   Decided with the owner on 2026-11-15.
+- Darts that vanish from Autodarts' list during a takeout (status
+  `takeoutInProgress`, no `takeoutFinished`) count as removed: the turn
+  passes and its darts stay. Only a shorter list outside a takeout is a
+  correction. Decided with the owner on 2026-11-15 after darts of a Minefield
+  turn disappeared.
 - Darts that are already in the board when the app first connects are shown
   but not reported as thrown.
 - The bull is assumed to be number 25 (multiplier 2 for the bull, 1 for the

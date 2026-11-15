@@ -53,7 +53,10 @@ export function diffStates(previous: BoardState | null, next: BoardState): Board
     for (let index = before.length; index < after.length; index++) {
       events.push({ type: 'dartThrown', dart: after[index]!, index })
     }
-  } else if (after.length === 0 && next.event === 'takeoutFinished') {
+  } else if (after.length === 0 && (next.event === 'takeoutFinished' || next.status === 'takeoutInProgress')) {
+    // Darts gone. A takeout can also hang with the list already emptied and
+    // no takeoutFinished to come; that is the same takeout, not a player
+    // deleting every dart inside Autodarts.
     events.push({ type: 'dartsRemoved' })
   } else if (after.length === 0 && resetNow) {
     events.push({ type: 'boardReset' })
