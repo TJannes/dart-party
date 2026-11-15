@@ -173,6 +173,10 @@ Autodarts does exactly the same.
 - `manualReset` is its own event and is not a change of turn.
 - If a dart is still in the board when you reset, pulling it out afterwards
   makes the board stuck again; a second reset fixes it.
+- Darts noted while the app has no game running still count towards
+  Autodarts' three per turn. A turn that starts with one already noted
+  detects only two more. The app therefore resets at the start of a game
+  when `throws` is not empty.
 
 ### Without internet
 

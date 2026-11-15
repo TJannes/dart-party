@@ -35,6 +35,13 @@ export function initState(onSettingsChanged: (settings: Settings) => void): AppS
     (party) => broadcast(ipc.party, party),
     () => new Date(),
     () => enabledGames(settings),
+    () => {
+      // Darts Autodarts noted between games still take up places in its
+      // turn of three, so the first player would lose a dart. Only reset
+      // when there is something to clear: resetting with a dart still in
+      // the board makes it stuck once that dart is pulled.
+      if (tracker.snapshot.throws.length > 0) client?.reset()
+    },
   )
 
   const tracker = new BoardTracker({

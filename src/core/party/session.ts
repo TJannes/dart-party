@@ -6,6 +6,7 @@ import { cleanX01Setup } from '../game/x01'
 import type { PlayerId, Ranking } from '../game/types'
 import type { Random } from '../random'
 import {
+  activeRecord,
   addDart,
   advance,
   applyBoardEvent,
@@ -110,6 +111,11 @@ export class PartySession {
     private readonly now: () => Date = () => new Date(),
     /** The mini-games that may be drawn in a party started now. */
     private readonly games: () => string[] = () => drawableGames.map((game) => game.id),
+    /**
+     * A game, deciding round or free-play game is about to take its first
+     * dart. The app uses it to clear darts Autodarts noted in between.
+     */
+    private readonly onGameStart: () => void = () => {},
   ) {
     this.party = readSavedParty(store.load(PARTY))
     // A party saved by an older version: carry it over under the new name.
@@ -137,6 +143,15 @@ export class PartySession {
   }
 
   command(command: PartyCommand): void {
+    const before = this.party ? activeRecord(this.party) : null
+    this.apply(command)
+    const after = this.party ? activeRecord(this.party) : null
+    // Only these commands begin a game; the others change the one running.
+    const begins = command.type === 'startFreePlay' || command.type === 'playAgain' || command.type === 'advance'
+    if (begins && after && after !== before) this.onGameStart()
+  }
+
+  private apply(command: PartyCommand): void {
     if (command.type === 'start') {
       // Players are fixed once a party starts; abort it first.
       if (this.party) return

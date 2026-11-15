@@ -114,6 +114,13 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   unreachable it retries every 2 seconds.
 - A stuck board is reset automatically after 2 seconds (the prototype's
   value), and again every 2 seconds for as long as it stays stuck.
+- When a game starts (Start on the rules card, a deciding round, a free-play
+  game or playing it again) the board is reset, but only if Autodarts
+  already holds darts. Darts noted between games are ignored by the app but
+  still fill Autodarts' turn of three, so the first player lost a dart
+  (seen by the owner). No reset when the list is empty, because resetting
+  with a dart still in the board makes it stuck once that dart is pulled.
+  Decided with the owner on 2026-11-15.
 - Darts that are already in the board when the app first connects are shown
   but not reported as thrown.
 - The bull is assumed to be number 25 (multiplier 2 for the bull, 1 for the

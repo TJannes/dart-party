@@ -156,4 +156,33 @@ describe('PartySession', () => {
       games: ['race'],
     })
   })
+
+  it('reports the start of a game, and nothing else', () => {
+    let starts = 0
+    const s = new PartySession(memoryStore().store, seededRandom(5), () => {}, () => new Date(0), () => ['race'], () => starts++)
+    s.command({ type: 'start', players, games: 1 })
+    s.command({ type: 'advance' }) // The rules card.
+    expect(starts).toBe(0)
+    s.command({ type: 'advance' }) // Start.
+    expect(starts).toBe(1)
+
+    s.command({ type: 'addDart', dart: { miss: true } })
+    s.command({ type: 'removeLastDart' })
+    s.command({ type: 'nextPlayer' })
+    s.command({ type: 'advance' }) // Mid-game: does nothing.
+    expect(starts).toBe(1)
+
+    winRace(s)
+    s.command({ type: 'advance' }) // The podium.
+    expect(starts).toBe(1)
+  })
+
+  it('reports the start of a free-play game and of playing it again', () => {
+    let starts = 0
+    const s = new PartySession(memoryStore().store, seededRandom(5), () => {}, () => new Date(0), () => ['race'], () => starts++)
+    s.command({ type: 'startFreePlay', players, game: 'aroundTheClock' })
+    expect(starts).toBe(1)
+    s.command({ type: 'playAgain' })
+    expect(starts).toBe(2)
+  })
 })
