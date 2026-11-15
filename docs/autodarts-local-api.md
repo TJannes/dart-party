@@ -142,7 +142,9 @@ bounce-out may look the same.
 
 **Rule:** `failed`, `bouncer` or `multiplier` 0 means a miss. The Python
 prototype once crashed on `segmentNumber` 0; treat any number outside 1–20 as
-"off the board".
+"off the board". A throw without a `segmentNumber` or `multiplier` (not seen
+yet) is also taken as a miss, so one odd dart cannot hide the whole state
+behind an "unexpected answer".
 
 ### The stuck board
 

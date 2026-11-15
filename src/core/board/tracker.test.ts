@@ -196,13 +196,23 @@ describe('connection', () => {
     tracker.receiveState(state('throwDetected', 'throw', [dart('S20', 20, 1)]))
     tracker.receiveState({ hello: 'world' })
     tracker.receiveState('<html>')
-    tracker.receiveState(state('throwDetected', 'throw', [{ segmentName: 'S20' }]))
+    tracker.receiveState(state('throwDetected', 'throw', ['S20']))
     expect(events).toHaveLength(1)
     expect(events[0]).toMatchObject({ type: 'unexpectedData' })
     expect(tracker.snapshot).toMatchObject({ link: 'unexpected', throws: [{ name: 'S20' }] })
 
     tracker.receiveState(state('throwDetected', 'throw', [dart('S20', 20, 1)]))
     expect(tracker.snapshot.link).toBe('online')
+  })
+
+  it('counts a dart without a number or ring as a miss, not as an error', () => {
+    const { tracker, events } = setup()
+    tracker.receiveState(idle)
+    tracker.receiveState(state('throwDetected', 'throw', [{ bed: 'Outside', coordsX: 1.3, coordsY: 0.2 }]))
+    expect(tracker.snapshot.link).toBe('online')
+    expect(events).toMatchObject([
+      { type: 'dartThrown', index: 0, dart: { name: 'Miss', miss: true, number: null, position: { x: 1.3, y: 0.2 } } },
+    ])
   })
 
   it('ignores messages that are not a state', () => {

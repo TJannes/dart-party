@@ -62,22 +62,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function parseDart(raw: unknown, index: number): Dart {
   if (!isRecord(raw)) fail(`throw ${index} is not an object`)
   const { segmentName, segmentNumber, multiplier, bed, coordsX, coordsY } = raw
-  if (typeof segmentName !== 'string') fail(`throw ${index} has no segmentName`)
-  if (typeof segmentNumber !== 'number') fail(`throw ${index} has no segmentNumber`)
-  if (typeof multiplier !== 'number') fail(`throw ${index} has no multiplier`)
-
   const failed = raw['failed'] === true
+  // A dart reported without a number or ring is still a dart: it counts as
+  // a miss, to be corrected by hand, rather than hiding every dart behind an
+  // error.
+  const number = typeof segmentNumber === 'number' ? segmentNumber : null
   // Bull as number 25 is an assumption carried over from the prototype; it
   // has not been seen in a recording yet.
-  const onBoard =
-    (Number.isInteger(segmentNumber) && segmentNumber >= 1 && segmentNumber <= 20) ||
-    segmentNumber === 25
+  const onBoard = number !== null && ((Number.isInteger(number) && number >= 1 && number <= 20) || number === 25)
   const scoring = multiplier === 1 || multiplier === 2 || multiplier === 3
   const miss = failed || raw['bouncer'] === true || !scoring || !onBoard
 
   return {
-    name: segmentName,
-    number: miss ? null : segmentNumber,
+    name: typeof segmentName === 'string' ? segmentName : 'Miss',
+    number: miss ? null : number,
     multiplier: miss ? 0 : (multiplier as 1 | 2 | 3),
     bed: typeof bed === 'string' ? bed : '',
     miss,
