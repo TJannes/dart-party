@@ -198,9 +198,44 @@ All of these were agreed with the owner. Do not reopen them unprompted.
 - For now every sound is synthesised by the app itself (Web Audio), so the
   first theme pack contains no recordings at all. Effects: hit, big hit,
   thud, miss, pushed back, win, the reel ticking and stopping, the podium
-  fanfare. Music: a simple generated loop per scene (menu, game, podium).
-  The owner has not yet judged whether this is good enough or whether CC0
-  recordings should replace it.
+  fanfare. The effects stay synthesised.
+- Every effect must be audible on a small laptop speaker, which plays almost
+  nothing under 200 Hz. A low thump keeps its body for a good speaker and
+  gets a short mid-range knock on top; a test guards this. No setting for
+  the kind of speaker. A dart that does nothing (neutral) sounds such a
+  knock: heard, but not a fault; the fault sound stays for a dart off the
+  board. Decided with the owner on 2026-11-15.
+- Music: the generated loop per scene proved too monotonous after a few
+  minutes, so it is replaced by CC0 recordings and the music generator is
+  removed. Decided with the owner on 2026-11-15:
+  - Style per scene: lounge in the menu, upbeat funk or game show during
+    play, something triumphant on the podium.
+  - A small playlist per scene: 3 to 5 tracks for play, 2 to 3 for the
+    menu, 1 to 2 for the podium. Random order, never the same track twice
+    in a row, a pause of 2 to 4 seconds between tracks.
+  - All mini-games share one pool of play music. The theme allows music per
+    game later.
+  - The music ducks by about 40% under darts and effects and comes back in
+    about half a second. A change of scene crossfades in about a second.
+    Tracks are loudness-normalised.
+  - Moving to the next mini-game keeps the current track playing.
+  - On the podium the existing fanfare plays first, then the podium music
+    loops for as long as the screen is open.
+  - Claude finds candidates (OpenGameArt and Freesound, CC0 only, licence
+    checked per track) and lists them with links; the owner listens and
+    picks. Source, author and licence of every track go into `CREDITS.md`.
+  - Files are OGG; the music may add 20 to 30 MB to the installer.
+  - Music that follows the tension of a game is an idea for later.
+  - Shortlist (OpenGameArt, CC0 on 2026-11-15; recheck before use).
+    Play: Funked Up (Joth), Funky Disco Beats to Boogie/Woogie to (Fupi),
+    Midnight Cruiser, Wednesday Night and Rhythm Factory (Zane Little
+    Music), Catchy Swing (Doge), Electro Swing type (G_P), Funky House (Of
+    Far Different Nature), 1-UP Nightclub (neonarkade). Menu: Shop Theme
+    (CleytonKauffman), Coffee House Bump (OatCog), Mocha Frapp (Pro
+    Sensory), Bossa Town (KarateStudios), Jazzy Blues (LushoGames). Podium:
+    Victory! Victory! Victory! (Spring Spring), Racing Game Result
+    (MintoDog), Outro party music (buffy), Winning the Race (section31),
+    Triumphant (Emma_MA). Funky Victory Loop was dropped: only 8 seconds.
 - Sound plays in one window only: the show window when there is one.
 
 ### Animations
@@ -699,6 +734,10 @@ number hit, with the next one under the name.
     the avatar in the high-jump set stands at the height of its total so
     far.*
 - [ ] **9. Rules explained by animation** on the rules card.
+- [ ] **Parked: recorded music.** CC0 playlists per scene in place of the
+  generated loops, as decided under [Style and sound](#style-and-sound).
+  Parked by the owner on 2026-11-15; pick it up only when asked. The
+  shortlist is ready; the owner still has to listen and pick.
 - [ ] **Later**: streaks (a flame after three good turns), a comeback
   animation, a polished version of one game to compare, seasonal and holiday theme packs, hall of fame, teams,
   players joining or leaving mid-party, phones as remotes, starting

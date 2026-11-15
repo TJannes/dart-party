@@ -26,6 +26,17 @@ const ticks = (count: number, over: number, pitch: number): Tone[] =>
     gain: 0.2,
   }))
 
+/**
+ * A short, dry knock in the middle range, like a dart going into the board.
+ * Small speakers, such as a laptop's, play almost nothing under 200 Hz, so
+ * every low thump gets one of these on top: the thump adds body on a good
+ * speaker, the knock keeps it audible on a small one.
+ */
+const knock = (at: number, gain = 0.4): Tone[] => [
+  { wave: 'square', from: 1100, to: 450, at, length: 0.025, gain: gain * 0.3 },
+  { wave: 'triangle', from: 560, to: 380, at, length: 0.09, gain },
+]
+
 // Chords as semitones above middle C.
 const chord = (...semitones: number[]): number[] => semitones.map(note)
 const C = chord(-12, 0, 4, 7, 12)
@@ -49,11 +60,12 @@ export const gameShow: Theme = {
   effects: {
     hit: [blip(12, 0), blip(19, 0.09)],
     bigHit: [blip(12, 0), blip(16, 0.08), blip(19, 0.16), blip(24, 0.24, 0.25)],
-    thud: [{ wave: 'sine', from: 160, to: 90, at: 0, length: 0.12, gain: 0.5 }],
-    miss: [{ wave: 'sawtooth', from: 220, to: 70, at: 0, length: 0.45, gain: 0.3 }],
+    thud: [...knock(0, 0.5), { wave: 'sine', from: 160, to: 90, at: 0, length: 0.12, gain: 0.4 }],
+    miss: [{ wave: 'sawtooth', from: 220, to: 90, at: 0, length: 0.45, gain: 0.3 }],
     pushed: [
       { wave: 'square', from: 520, to: 180, at: 0, length: 0.4, gain: 0.22 },
       { wave: 'sine', from: 140, to: 80, at: 0.3, length: 0.2, gain: 0.4 },
+      ...knock(0.3, 0.3),
     ],
     win: [blip(12, 0), blip(16, 0.14), blip(19, 0.28), blip(24, 0.42, 0.6), blip(16, 0.42, 0.6, 0.3)],
     tick: [{ wave: 'square', from: 1300, at: 0, length: 0.03, gain: 0.18 }],
@@ -65,6 +77,7 @@ export const gameShow: Theme = {
     knockedOut: [
       { wave: 'sawtooth', from: 440, to: 55, at: 0, length: 0.7, gain: 0.28 },
       { wave: 'sine', from: 120, to: 50, at: 0.62, length: 0.3, gain: 0.6 },
+      ...knock(0.62, 0.35),
     ],
     sparkle: [blip(24, 0, 0.1, 0.35), blip(28, 0.07, 0.1, 0.35), blip(31, 0.14, 0.1, 0.35), blip(36, 0.21, 0.5, 0.4), blip(24, 0.21, 0.5, 0.2)],
     trombone: [
@@ -81,6 +94,7 @@ export const gameShow: Theme = {
     crown: [blip(12, 0, 0.1), blip(19, 0.1, 0.1), blip(24, 0.2, 0.4), blip(28, 0.2, 0.4, 0.25)],
     climb: [
       { wave: 'sine', from: 180, to: 110, at: 0, length: 0.14, gain: 0.55 },
+      ...knock(0, 0.25),
       blip(12, 0.02, 0.2, 0.3),
     ],
     fuseSlow: ticks(2, 0.5, 900),
@@ -89,12 +103,14 @@ export const gameShow: Theme = {
     toss: [{ wave: 'sine', from: 280, to: 920, at: 0, length: 0.3, gain: 0.3 }],
     boom: [
       { wave: 'sawtooth', from: 180, to: 35, at: 0, length: 0.5, gain: 0.45 },
+      { wave: 'sawtooth', from: 900, to: 150, at: 0, length: 0.25, gain: 0.18 },
       { wave: 'sine', from: 110, to: 28, at: 0, length: 0.9, gain: 0.9 },
       { wave: 'square', from: 70, to: 30, at: 0.05, length: 0.35, gain: 0.3 },
     ],
     punch: [
       { wave: 'square', from: 240, to: 90, at: 0, length: 0.07, gain: 0.3 },
       { wave: 'sine', from: 130, to: 60, at: 0, length: 0.16, gain: 0.7 },
+      ...knock(0, 0.3),
     ],
     bell: [blip(31, 0, 0.3, 0.4), blip(31, 0.2, 0.3, 0.4), blip(31, 0.4, 0.7, 0.45), blip(43, 0.4, 0.5, 0.15)],
     duel: [
@@ -127,6 +143,7 @@ export const gameShow: Theme = {
     ],
     arrow: [
       { wave: 'sine', from: 170, to: 80, at: 0, length: 0.08, gain: 0.6 },
+      ...knock(0, 0.3),
       { wave: 'triangle', from: 330, to: 300, at: 0.05, length: 0.3, gain: 0.25 },
       { wave: 'triangle', from: 345, to: 315, at: 0.05, length: 0.3, gain: 0.2 },
     ],
@@ -142,7 +159,10 @@ export const gameShow: Theme = {
     ],
     drumroll: [
       ...Array.from({ length: 14 }, (_, n): Tone => ({ wave: 'triangle', from: 150, to: 110, at: n * 0.06, length: 0.05, gain: 0.25 + n * 0.02 })),
+      // The snare's rattle, which a small speaker can play.
+      ...Array.from({ length: 14 }, (_, n): Tone => ({ wave: 'square', from: 620, to: 480, at: n * 0.06, length: 0.03, gain: 0.05 + n * 0.006 })),
       { wave: 'sine', from: 120, to: 60, at: 0.86, length: 0.3, gain: 0.8 },
+      ...knock(0.86, 0.35),
       blip(24, 0.86, 0.4, 0.35),
     ],
     applause: [blip(12, 0, 0.1, 0.35), blip(16, 0.1, 0.1, 0.35), blip(19, 0.2, 0.1, 0.35), blip(24, 0.3, 0.5, 0.4), blip(19, 0.3, 0.5, 0.25)],
@@ -154,16 +174,21 @@ export const gameShow: Theme = {
       { wave: 'sine', from: 200, to: 120, at: 0, length: 0.07, gain: 0.55 },
       { wave: 'sine', from: 230, to: 140, at: 0.14, length: 0.07, gain: 0.55 },
       { wave: 'sine', from: 260, to: 160, at: 0.28, length: 0.09, gain: 0.55 },
+      ...knock(0, 0.3),
+      ...knock(0.14, 0.32),
+      ...knock(0.28, 0.34),
     ],
     catapult: [
       { wave: 'triangle', from: 90, to: 240, at: 0, length: 0.12, gain: 0.4 },
       { wave: 'sine', from: 700, to: 300, at: 0.1, length: 0.35, gain: 0.2 },
       { wave: 'sine', from: 130, to: 50, at: 0.42, length: 0.2, gain: 0.8 },
+      ...knock(0.42, 0.35),
     ],
     crumble: [
       { wave: 'sawtooth', from: 220, to: 60, at: 0, length: 0.4, gain: 0.3 },
       { wave: 'square', from: 140, to: 50, at: 0.1, length: 0.4, gain: 0.2 },
       { wave: 'sine', from: 90, to: 40, at: 0.3, length: 0.3, gain: 0.6 },
+      ...knock(0.3, 0.3),
     ],
     lock: [
       { wave: 'sine', from: 1400, to: 700, at: 0, length: 0.35, gain: 0.2 },
