@@ -185,7 +185,7 @@ export const strings = {
       knockedOut: 'Knocked out: take 2 sips.',
       barDropped: 'Knock the bar off: take a sip.',
       feat: 'A 180 or three darts in one segment: hand out a sip.',
-      afterGame: 'After a game the last places take a sip and the winner hands out as many.',
+      afterGame: 'After a game the last places take a sip and the winner hands out one.',
       podium: 'At the end the last of the party takes 2 sips and the winner hands out 2.',
     },
     wheelRule: 'Between the games the wheel picks a player and a task.',
@@ -267,6 +267,14 @@ export const strings = {
         'Hit someone else\'s: they go back just as far.',
         'First across the finish wins!',
       ],
+      /** The card with a demo beside it says less: the demo shows the rest. */
+      short: [
+        'Hit your own two segments to move forward.',
+        'Hit someone else\'s to send them back.',
+        'First across the finish wins!',
+      ],
+      /** One caption per dart of the demo on the rules card. */
+      demo: ['Your own segment: one step forward.', 'A triple: three steps!', 'Someone else\'s segment: back they go.'],
     },
     robinHood: {
       name: 'Robin Hood',
@@ -274,6 +282,15 @@ export const strings = {
         'The board is an archery target: only the distance to the centre counts.',
         'Bullseye 6, outer bull 5, inside the triple ring 4, the rest of the board 3.',
         'Six rounds. The highest total wins.',
+      ],
+      short: [
+        'Only the distance to the centre counts.',
+        'Six rounds. The highest total wins.',
+      ],
+      demo: [
+        'Bullseye: 6 points.',
+        'Inside the triple ring: 4.',
+        'The rest of the board: 3.',
       ],
       zones: {
         6: 'Bullseye · 6',
@@ -291,6 +308,16 @@ export const strings = {
         'Doubles and triples count the same. The bull scores nothing.',
         'Six rounds. The highest total wins.',
       ],
+      short: [
+        'Each round the spotlight lands on one segment.',
+        'The closer to it, the more points. Rings and the bull do not count.',
+        'Six rounds. The highest total wins.',
+      ],
+      demo: [
+        'Hit the spotlight: 3 points.',
+        'Its neighbour: 2.',
+        'Far off: nothing.',
+      ],
       target: (segment: number) => `Spotlight on ${segment}`,
     },
     piggyBank: {
@@ -299,6 +326,15 @@ export const strings = {
         'Every dart adds its value to your piggy bank.',
         'A dart off the board breaks the pig: you lose half.',
         'Six rounds. The fullest pig wins.',
+      ],
+      short: [
+        'Fill your pig, and stay on the board.',
+        'Six rounds. The fullest pig wins.',
+      ],
+      demo: [
+        'Every dart fills your pig.',
+        '40 or more: a golden coin!',
+        'Off the board: the pig breaks and you lose half.',
       ],
       breaks: (count: number) => (count === 0 ? 'Pig intact' : `Broken ${count}×`),
     },
@@ -310,6 +346,16 @@ export const strings = {
         'A double is 2 hits, a triple 3. The bull does nothing.',
         'Six rounds. The most segments wins.',
       ],
+      short: [
+        'Take segments and defend them. A double is 2 hits, a triple 3.',
+        'Six rounds. The most segments wins.',
+      ],
+      demo: [
+        'A free segment: it is yours.',
+        'Hit it again: fortified.',
+        'Someone else attacks it...',
+        '...and the last hit takes it.',
+      ],
       fortified: (count: number) => `${count} fortified`,
     },
     sniper: {
@@ -319,6 +365,15 @@ export const strings = {
         'Three darts each. Only your closest dart counts.',
         'Closest to the cross: 3 points. Second: 2. Third: 1.',
         'Five rounds. The highest total wins.',
+      ],
+      short: [
+        'Each round a cross appears somewhere on the board.',
+        'Three darts each, five rounds. The highest total wins.',
+      ],
+      demo: [
+        'Every dart is measured to the cross.',
+        'Only your closest dart counts.',
+        'Closest gets 3 points, then 2, then 1.',
       ],
       mm: (mm: number) => `${mm} mm`,
       noDart: 'No dart yet',
@@ -332,6 +387,16 @@ export const strings = {
         'A bomb costs you half your points.',
         'Six rounds, or until every treasure is found.',
       ],
+      short: [
+        'Treasures and bombs are hidden under the segments.',
+        'The first to hit a segment gets what is under it.',
+        'Six rounds, or until every treasure is found.',
+      ],
+      demo: [
+        'A chest: 5 points.',
+        'A coin: 2.',
+        'A bomb: half your points gone.',
+      ],
       left: (chests: number, coins: number, bombs: number) =>
         `Still hidden: ${chests} chests, ${coins} coins, ${bombs} bombs`,
     },
@@ -343,6 +408,16 @@ export const strings = {
         'Careful: your own segment costs you lives too.',
         'Out of lives is out. The last one standing wins.',
       ],
+      short: [
+        'Everyone has 3 lives and one segment.',
+        'Double takes 2 lives, triple 3.',
+        'The last one standing wins.',
+      ],
+      demo: [
+        'Hit someone\'s segment: they lose a life.',
+        'Your own segment costs you a life too.',
+        'A triple takes three: out!',
+      ],
     },
     higherOrLower: {
       name: 'Higher or Lower',
@@ -351,6 +426,16 @@ export const strings = {
         'Your dart must be worth more, or less, than the dart before it.',
         'Wrong, the same, or off the board: you lose a life.',
         '3 lives. The last one standing wins.',
+      ],
+      short: [
+        'Before every dart the game calls higher or lower.',
+        'The same, or off the board, is wrong too.',
+        '3 lives. The last one standing wins.',
+      ],
+      demo: [
+        'The first dart sets the number to beat.',
+        '"Higher", and it is: safe.',
+        '"Lower", and it is not: a life gone.',
       ],
       higher: (bar: number) => `Higher than ${bar}!`,
       lower: (bar: number) => `Lower than ${bar}!`,
@@ -364,6 +449,15 @@ export const strings = {
         'Every other dart burns the fuse. If it goes off, you lose a life.',
         '3 lives. The last one standing wins.',
       ],
+      short: [
+        'At the board, you are holding the bomb. Its fuse is hidden.',
+        '3 lives. The last one standing wins.',
+      ],
+      demo: [
+        'A dart outside the target zone burns the fuse.',
+        'Hit the target zone: the bomb is passed on.',
+        'The fuse runs out: boom, a life gone.',
+      ],
       target: (segments: number[]) => `Hit ${segments.join(', ')} to get rid of the bomb`,
       burned: (darts: number) => `Fuse burned: ${darts}`,
     },
@@ -374,6 +468,15 @@ export const strings = {
         'The next player must throw more. Over it? You hold the bar, and the pot grows.',
         'Not over it? The holder wins the pot, and the next opener sets a new bar.',
         'Everyone opens equally often. The most points wins.',
+      ],
+      short: [
+        'Throw more than the player before you.',
+        'Everyone opens equally often. The most points wins.',
+      ],
+      demo: [
+        'The opener\'s three darts set the bar.',
+        'Over it: the bar goes up and the pot grows.',
+        'Not over it: the holder wins the pot.',
       ],
       open: 'Set the bar!',
       beat: (bar: number, needed: number) => `Beat ${bar}: ${needed} to go`,

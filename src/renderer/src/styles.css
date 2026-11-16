@@ -584,6 +584,84 @@ h1 {
   flex: 1;
 }
 
+/* With a demo: the text and the order on the left, the game's scene playing on the right. */
+.rules--demo {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  align-items: stretch;
+}
+
+.rules__text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 0;
+}
+
+.rules--demo .rules__list {
+  font-size: 1.7rem;
+  line-height: 1.4;
+}
+
+.order--row {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.order--row li {
+  font-size: 1.2rem;
+}
+
+.demo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 0;
+  min-height: 0;
+  padding: 1rem;
+  border-radius: 1.5rem;
+  background: var(--panel);
+  /* Nothing in a demo can be pressed. */
+  pointer-events: none;
+}
+
+.demo__scene {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.demo__caption {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  margin: 0;
+  min-height: 2.6em;
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  animation: demo-caption 0.35s ease-out;
+}
+
+.demo__count {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.6em;
+  height: 1.6em;
+  border-radius: 50%;
+  background: var(--gold, #ffd23f);
+  color: #1b1030;
+}
+
+@keyframes demo-caption {
+  from {
+    opacity: 0;
+    transform: translateY(0.4em);
+  }
+}
+
 /* ------------------------------------------------------------------ play */
 
 .turn {

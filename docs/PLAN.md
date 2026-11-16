@@ -6,8 +6,8 @@ and released, for the owner to test (0.3.0 has the games and the animations,
 the evening to a party, 0.7.0 adds the drinking game): eleven
 mini-games are in the
 draw. Updating from 0.1.0 to
-0.1.1 inside the app works on Ubuntu; the owner still has to install on the
-Surface and do the same on Windows. Everything from step 3 on has only been
+0.1.1 inside the app works on Ubuntu; the owner confirmed step 1 done on
+2026-11-16. Everything from step 3 on has only been
 played through by hand on Ubuntu with one display: not with real darts, not
 with a real second screen, not on Windows, and nobody has listened to the
 sound yet. The owner still has to judge step 6 (animations in every game) on the
@@ -15,7 +15,10 @@ Surface, under Settings, "Try the animations". Step 8 (themed animations per
 game) is built for all eleven games and seen only on the Animations screen
 on Ubuntu. Step 9 (the drinking game) is built and released in 0.7.0: played
 through by hand on Ubuntu in one window, without darts, a second screen or
-sound. The next thing to build is step 10 (rules explained by animation).
+sound. Step 10 (rules explained by animation) is built for all eleven games
+and seen on Ubuntu in one window. Not yet released: the two changes to the
+drinking game of 2026-11-16 and step 10. No build step is open; what is
+left is under "Later" and "Parked".
 See [Build steps](#build-steps).
 
 ## Goal
@@ -303,8 +306,10 @@ Agreed with the owner in an interview on 2026-11-16.
   default.
 - After a game: the last drinks with 2 to 4 players, the last two with 5 or
   6, the last three with 7 or 8, one sip each. Whoever shares a place with a
-  drinker drinks too. The winner hands out as many sips as there are
-  drinkers.
+  drinker drinks too. The winner hands out 1 sip, whatever the number of
+  players; several winners each hand out 1. It was as many sips as there
+  were drinkers; with 8 players that made up to 6 of 8 drink, which the
+  owner found too much (2026-11-16).
 - On the podium: the last of the party drinks 2, the winner hands out 2,
   and two titles are shown: "Thirstiest" (most sips taken) and "Most
   generous" (most handed out). No drinking in a deciding round.
@@ -338,6 +343,10 @@ Agreed with the owner in an interview on 2026-11-16.
   the 3 seconds in the middle, the 10 seconds and staying until the next
   dart (2026-11-16). Several drinkers from one dart share one banner. It
   stays in calm mode, without flash or shaking.
+- The dart that ends a game gets no banner: it came on top of the win
+  animation and was followed straight away by the orders under the
+  standings, too much at once (owner, 2026-11-16). Its orders stand with
+  the lines under the standings instead, first, so nothing is let off.
 - A glass with a count beside every player on the scoreboard and on the
   standings; a crossed-out glass for a player who sits out.
 - Two new synthesised sounds (drink, hand out); the wheels use the
@@ -359,9 +368,10 @@ Agreed with the owner in an interview on 2026-11-16.
   that does nothing; when a dart gives a player an order to drink and one
   to hand out of the same size, drinking wins; "after a game" and "podium"
   are one switch each, covering both the drinker and the winner; the
-  winner hands out as many sips as players who really drink, so not for
-  those sitting out; several winners each hand out; when everyone is level
-  nobody drinks; on the podium only the last place drinks, whatever the
+  winner of a game hands out nothing when nobody drinks after it (everyone
+  level, or every drinker sits out); the dart that ends a game still plays
+  no drink sound, as the lines under the standings never did; when
+  everyone is level nobody drinks; on the podium only the last place drinks, whatever the
   number of players; skipping a wheel also ends the buddy pair; the buddy
   drinks the same number of sips as the chooser; the order of the slots on
   the task wheel.
@@ -731,13 +741,12 @@ number hit, with the next one under the name.
 
 ## Build steps
 
-- [ ] **1. Shell, installer, updater.** An empty Electron window that installs
+- [x] **1. Shell, installer, updater.** An empty Electron window that installs
   on Windows (wizard) and runs on Ubuntu (AppImage), built by GitHub Actions,
   with the "new version available" button working. Include `LICENSE` (MIT) and
   a README with the disclaimer. Done when the owner has installed a release on
   the Surface and updated it to a second release from inside the app.
-  *Built and checked on Ubuntu 24.04 (AppImage starts, update check runs).
-  Not yet released; the Windows installer and both update paths are untested.*
+  *Confirmed done by the owner on 2026-11-16.*
 - [x] **2. Autodarts connection.** Read the local API, turn state snapshots
   into events (dart thrown, darts removed, corrected, reset, stuck, detection
   stopped/started, connection lost/restored), recover a stuck board. Tested
@@ -898,7 +907,45 @@ number hit, with the next one under the name.
   sound; the two wheels stand side by side, the task wheel starts when the
   player wheel stops; with the mode switched off the glasses are hidden;
   the Animations screen has no drinking moments.*
-- [ ] **10. Rules explained by animation** on the rules card.
+- [x] **10. Rules explained by animation** on the rules card.
+  *The owner saw Race first and agreed the steps of the other ten on
+  2026-11-16. A demo is a script per game in `src/core/party/demo.ts`: a
+  few darts played through the real rules by the party's own players, in
+  a party of its own that is never saved. Its captions are `demo` in
+  `strings.games`, one per dart, and `short` is the shortened text.
+  `components/RulesDemo.tsx` shows the game's scene and plays the darts in
+  a loop through the stage, silently (`silent` on a cue played by hand);
+  the stage is halted when the card closes. A game without a script (free
+  play has no card) would keep the old card.*
+  *The steps: Race: own segment, a triple, pushed back. Robin Hood:
+  bullseye 6, inside the triple ring 4, the rest 3. Spotlight: on the
+  target 3, its neighbour 2, far off nothing. Piggy Bank: coins, a golden
+  coin, the hammer. Land Grab: claimed, fortified, attacked, taken. Sniper:
+  a dart measured, a closer one, the round paid out. Minefield: chest,
+  coin, bomb. Last One Standing: a life off someone, one off yourself, a
+  triple knocks out. Higher or Lower: the first dart, a right call, a
+  wrong one. Time Bomb: the fuse burns, the bomb is passed on, it goes
+  off. Raise the Bar: the opener, over the bar, not over it.*
+  *Looked at on Ubuntu in one window: every step of every game with four
+  players; Race, Last One Standing and Raise the Bar with two; Race,
+  Sniper, Time Bomb, Land Grab and Last One Standing with eight (it fits,
+  the rows get small); pressing "Let's play" in the middle of an
+  animation. Not looked at: the show window, calm mode, Windows, the
+  Surface's speed with a demo looping.*
+  *Filled in while building, not put to the owner: the demo is on the
+  right and takes three fifths of the card; the throwing order moves under
+  the text as a row of chips; a step waits 1.2 seconds, throws, and stays
+  3.2 seconds; a demo only shows darts, never a turn being announced;
+  moments that fill the screen in a game (a spectacle such as "Bullseye!",
+  the win, the final duel banner) are left off the card, and the scripts
+  avoid a triple 20 and three darts in one segment for that reason; what a
+  game keeps hidden (mines, the fuse, the targets, the cross, the calls)
+  is made up for the demo, never the party's real one; only Race and Last
+  One Standing use the dealt segments; the first player in the throwing
+  order throws first in every demo; in Sniper the darts of the other
+  players appear at once before the last dart, and the round is paid out
+  by pulling the darts straight after it; the captions and the shortened
+  texts.*
 - [ ] **Parked: recorded music.** CC0 playlists per scene in place of the
   generated loops, as decided under [Style and sound](#style-and-sound).
   Parked by the owner on 2026-11-15; pick it up only when asked. The
@@ -907,6 +954,15 @@ number hit, with the next one under the name.
   animation, a polished version of one game to compare, seasonal and holiday theme packs, hall of fame, teams,
   players joining or leaving mid-party, phones as remotes, starting
   Autodarts from the app.
+- [ ] **Later: a way to the board calibration.** Asked by the owner on
+  2026-11-16. Calibrating inside the app is not possible: the local API has
+  no calibration endpoint (`/api/config/calibration` gives 404) and it would
+  mean config writes, which are never used. Idea: a button, for example on
+  the board check, that opens the board manager's own page at the address
+  in the settings, where Autodarts calibrates. To check first: whether that
+  page offers calibration in board manager 2.1.1 and under which path; the
+  app now only opens `https://` links outside, so a local `http://` address
+  needs allowing.
 
 ## Open items for the owner
 

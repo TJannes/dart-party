@@ -17,7 +17,11 @@ import { DRINK_BANNER, DRINK_CENTRE, timelineOf, type MoodSpan, type Timeline } 
 type Moods = Record<PlayerId, Mood>
 
 const MoodContext = createContext<Moods>({})
-const PlayContext = createContext<(cue: Cue, party: Party, before?: Party) => void>(() => {})
+/** Plays a cue by hand. `silent` leaves its sounds out, for the demo on the rules card. */
+type Play = (cue: Cue, party: Party, before?: Party, options?: { silent?: boolean }) => void
+
+const PlayContext = createContext<Play>(() => {})
+const HaltContext = createContext<() => void>(() => {})
 const SuspenseContext = createContext<Party | null>(null)
 const CalmContext = createContext(false)
 const BusyContext = createContext(false)
@@ -25,8 +29,11 @@ const BusyContext = createContext(false)
 /** How the animation in progress makes the players feel, if it does. */
 export const useMoods = (): Moods => useContext(MoodContext)
 
-/** Plays a cue by hand, for the Animations screen. */
-export const usePlayCue = (): ((cue: Cue, party: Party, before?: Party) => void) => useContext(PlayContext)
+/** Plays a cue by hand, for the Animations screen and the demo on the rules card. */
+export const usePlayCue = (): Play => useContext(PlayContext)
+
+/** Ends whatever is playing at once, for a screen that played cues by hand and is leaving. */
+export const useHaltCue = (): (() => void) => useContext(HaltContext)
 
 /**
  * The party as it was before the dart being played, for as long as the
@@ -83,8 +90,15 @@ export function Stage(props: { party: Party | null | undefined; calm: boolean; c
     timers.current = []
   }, [])
 
-  const play = useCallback(
-    (cue: Cue, during: Party, before?: Party) => {
+  const halt = useCallback(() => {
+    stop()
+    setRunning(null)
+    setMoods({})
+    setSuspense(null)
+  }, [stop])
+
+  const play = useCallback<Play>(
+    (cue, during, before, options) => {
       stop()
       // The drinking game: who this dart makes drink. Only darts of a party game do.
       const game = cue.kind === 'dart' && cue.story.game.startsWith('g') ? Number(cue.story.game.slice(1)) : null
@@ -102,7 +116,7 @@ export function Stage(props: { party: Party | null | undefined; calm: boolean; c
       setRunning({ id: ++serial.current, timeline, party: during, cue })
       setSuspense(timeline.suspense > 0 && before ? before : null)
       if (timeline.suspense > 0) later(timeline.suspense, () => setSuspense(null))
-      for (const { at, effect } of timeline.sounds) later(at, () => sound.play(effect))
+      if (!options?.silent) for (const { at, effect } of timeline.sounds) later(at, () => sound.play(effect))
       // The banner: big in the middle first, then down to its strip at the bottom.
       if (cue.kind === 'dart' && game !== null && timeline.banner !== null) {
         const { story } = cue
@@ -160,6 +174,7 @@ export function Stage(props: { party: Party | null | undefined; calm: boolean; c
     <CalmContext.Provider value={calm}>
       <BusyContext.Provider value={running !== null}>
       <PlayContext.Provider value={play}>
+      <HaltContext.Provider value={halt}>
         <MoodContext.Provider value={moods}>
           <SuspenseContext.Provider value={suspense}>{props.children}</SuspenseContext.Provider>
           {drinks && <DrinkBanner key={drinks.id} party={drinks.party} orders={drinks.orders} phase={drinks.phase} />}
@@ -172,6 +187,7 @@ export function Stage(props: { party: Party | null | undefined; calm: boolean; c
             </div>
           )}
         </MoodContext.Provider>
+      </HaltContext.Provider>
       </PlayContext.Provider>
       </BusyContext.Provider>
     </CalmContext.Provider>
