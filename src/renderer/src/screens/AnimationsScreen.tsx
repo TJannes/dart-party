@@ -106,8 +106,8 @@ const LAST_ONE: Demo[] = [
 
 const PIGGY: Demo[] = [
   demo(t.coins, piggy, S(20)),
-  demo(t.goldCoin, piggy, T(20)),
-  demo(t.hammer, thrown(piggy, T(20), S(20)), miss),
+  demo(t.goldCoin, piggy, manualDart(20, 2)),
+  demo(t.hammer, thrown(piggy, manualDart(20, 2), S(20)), miss),
   demo(t.hammerEmpty, piggy, miss),
 ]
 
@@ -171,6 +171,7 @@ const HIGHER_OR_LOWER: Demo[] = [demo(t.callRight, calls, S(15)), demo(t.callWro
 
 /** The first player holds the bar at 60 and the second has thrown two darts. */
 const barAt60 = dartsRemoved(thrown(game('raiseTheBar', null, IDS.slice(0, 3)), S(20), S(20), S(20)))
+const bar = game('raiseTheBar', null, IDS.slice(0, 3))
 const RAISE_THE_BAR: Demo[] = [
   demo(t.jumpOver, thrown(barAt60, S(20), S(20)), T(20)),
   demo(t.jumpFail, thrown(barAt60, S(1), S(1)), S(1)),
@@ -194,8 +195,9 @@ const s = strings.animations.spectacle
 const SPECTACLES: Demo[] = [
   demo(s.hatTrick, thrown(spotlight, S(7), S(7)), S(7)),
   demo(s.bullseye, piggy, manualDart(25, 2)),
-  demo(s.triple20, piggy, T(20)),
-  demo(s.oneEighty, thrown(piggy, T(20), T(20)), T(20)),
+  // Piggy Bank pays a triple only once, so these two are shown in Raise the Bar.
+  demo(s.triple20, bar, T(20)),
+  demo(s.oneEighty, thrown(bar, T(20), T(20)), T(20)),
   demo(s.threeMisses, thrown(spotlight, miss, miss), miss),
   demo(s.lastDart, thrown(dartsRemoved(thrown(tieBreak, S(20), miss, miss)), S(1), S(1)), S(19)),
 ]

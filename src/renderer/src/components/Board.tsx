@@ -28,8 +28,12 @@ export interface BoardProps {
   marks?: Record<number, string>
   /** A castle to draw on a segment: its walls and the hits they have taken. */
   castles?: Record<number, { colour: string; fortified: boolean; damage: number }>
-  /** 'target' draws the board as an archery target, by distance only. */
-  variant?: 'board' | 'target'
+  /**
+   * 'target' draws the board as an archery target, by distance only.
+   * 'piggy' draws it as Piggy Bank counts it: a golden double ring with
+   * coins on it, no triple ring, and a surround that spells trouble.
+   */
+  variant?: 'board' | 'target' | 'piggy'
   /** A cross to aim at, in board coordinates. */
   cross?: { x: number; y: number }
   /** Small coloured dots, for darts that are no longer in the board. */
@@ -39,6 +43,9 @@ export interface BoardProps {
 }
 
 const VIEW = 1.32
+
+/** Where the coins sit on Piggy Bank's golden ring, on the wires between two numbers. */
+const PIGGY_COINS = [45, 135, 225, 315]
 
 const ZONES: [radius: number, colour: string, points: number][] = [
   [R.doubleOut, '#f3ead7', 3],
@@ -113,6 +120,7 @@ export function Board({
   // When segments belong to players, the rest of the board goes quiet so the
   // usual red and green rings are not mistaken for a player's colour.
   const quiet = Object.keys(owners).length > 0
+  const piggy = variant === 'piggy'
   const tap = (event: React.MouseEvent<SVGSVGElement>): void => {
     const box = event.currentTarget.getBoundingClientRect()
     // The drawing is square and centred inside the element.
@@ -129,18 +137,22 @@ export function Board({
       onClick={onTap ? tap : undefined}
       style={onTap ? { cursor: 'crosshair' } : undefined}
     >
-      <circle r="1.3" fill="#1b0a38" />
+      <circle r="1.3" fill={piggy ? '#4a0f2c' : '#1b0a38'} />
+      {piggy && <circle r={(R.doubleIn + R.doubleOut) / 2} fill="none" stroke="#ffd23f" strokeWidth="0.16" opacity="0.3" />}
       {RING.map((segment, index) => {
         const owner = owners[segment]
         const even = index % 2 === 0
         const single = owner ?? (even ? '#2a1b3d' : '#f3ead7')
         const ring = owner ?? (quiet ? (even ? '#4a4458' : '#b9b2a6') : even ? '#ee4266' : '#3bceac')
+        // In Piggy Bank the triple ring pays like the single around it and the double ring is gold.
+        const triple = piggy ? single : ring
+        const double = piggy ? (even ? '#ffd23f' : '#f5b21e') : ring
         return (
           <g key={segment} stroke="#1b0a38" strokeWidth="0.008">
             <path d={piece(index, R.outerBull, R.tripleIn)} fill={single} opacity={owner ? 0.85 : 1} />
-            <path d={piece(index, R.tripleIn, R.tripleOut)} fill={ring} />
+            <path d={piece(index, R.tripleIn, R.tripleOut)} fill={triple} />
             <path d={piece(index, R.tripleOut, R.doubleIn)} fill={single} opacity={owner ? 0.85 : 1} />
-            <path d={piece(index, R.doubleIn, R.doubleOut)} fill={ring} />
+            <path d={piece(index, R.doubleIn, R.doubleOut)} fill={double} />
             <text
               x={1.16 * Math.sin((index * 18 * Math.PI) / 180)}
               y={-1.16 * Math.cos((index * 18 * Math.PI) / 180)}
@@ -158,6 +170,16 @@ export function Board({
       })}
       <circle r={R.outerBull} fill={quiet ? '#b9b2a6' : '#3bceac'} stroke="#1b0a38" strokeWidth="0.008" />
       <circle r={R.bull} fill={quiet ? '#4a4458' : '#ee4266'} stroke="#1b0a38" strokeWidth="0.008" />
+      {piggy &&
+        PIGGY_COINS.map((degrees) => (
+          <g key={degrees} transform={`translate(${point((R.doubleIn + R.doubleOut) / 2, degrees)})`}>
+            <circle r="0.155" fill="#ffd23f" stroke="#1b0a38" strokeWidth="0.022" />
+            <circle r="0.122" fill="none" stroke="#c98a12" strokeWidth="0.014" />
+            <text fontSize="0.16" fontWeight="800" textAnchor="middle" dominantBaseline="central" fill="#1b0a38">
+              ×3
+            </text>
+          </g>
+        ))}
       {RING.map((segment, index) =>
         marks[segment] ? (
           <text

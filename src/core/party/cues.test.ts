@@ -91,7 +91,7 @@ describe('moments from the rules', () => {
   })
 
   it('reports what the pig gains and what it loses', () => {
-    const state = piggyBank.evaluate(null, ['ann'], [{ darts: [T(20), miss].map((dart) => ({ dart, by: 'board' as const })), done: false }])
+    const state = piggyBank.evaluate(null, ['ann'], [{ darts: [manualDart(20, 2), miss].map((dart) => ({ dart, by: 'board' as const })), done: false }])
     expect(state.played.map((p) => p.moments)).toEqual([
       [{ kind: 'scored', player: 'ann', amount: 60 }],
       [{ kind: 'lost', player: 'ann', amount: 30 }],

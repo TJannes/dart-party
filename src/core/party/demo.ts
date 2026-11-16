@@ -68,8 +68,8 @@ const SCRIPTS: Record<string, (record: GameRecord) => Script> = {
     moves: [{ dart: S(20) }, { dart: S(1) }, { dart: S(3) }],
   }),
 
-  // Coins, a golden coin, and the hammer. A triple 19, as a triple 20 would fill the screen.
-  piggyBank: () => ({ setup: null, moves: [{ dart: S(20) }, { dart: T(19) }, { dart: manualMiss() }] }),
+  // Coins, the double ring that pays three times, and the hammer that waits just beyond it.
+  piggyBank: () => ({ setup: null, moves: [{ dart: S(20) }, { dart: D(20) }, { dart: manualMiss() }] }),
 
   // Claimed and fortified by the first player, then taken by the second in three hits.
   landGrab: () => ({

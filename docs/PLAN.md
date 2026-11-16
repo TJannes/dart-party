@@ -18,7 +18,8 @@ on Ubuntu. Step 9 (the drinking game) is built and released in 0.7.0: played
 through by hand on Ubuntu in one window, without darts, a second screen or
 sound. Step 10 (rules explained by animation) is built for all eleven games
 and seen on Ubuntu in one window; released in 0.8.0 with the two changes
-to the drinking game of 2026-11-16. No build step is open; what is
+to the drinking game of 2026-11-16. Not yet released: the new values
+in Piggy Bank (the double ring pays three times). No build step is open; what is
 left is under "Later" and "Parked".
 See [Build steps](#build-steps).
 
@@ -530,8 +531,24 @@ top: 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5.
 
 ### Piggy Bank
 
-- Every dart adds its normal value to your piggy bank.
+- Every dart adds its value to your piggy bank. The double ring pays three
+  times the number of its segment (double 20 is 60); the triple ring pays
+  only once (triple 20 is 20). The bull keeps its 25 and 50.
 - A dart off the board breaks the pig: you lose half, rounded down.
+- Why: with ordinary values the safe middle paid best (triple 20), so the
+  pig only broke by bad luck. Now the big darts lie next to the edge, and
+  going for them is a choice. The owner's idea (2026-11-16); he left the
+  numbers to Claude, who chose three times over four so one lucky dart
+  does not decide a game, and the triple ring at once so the middle of the
+  board is never the best place to aim. A segment that may not be hit was
+  considered and dropped: too close to Minefield and Last One Standing.
+- A dart of 40 or more is still the golden coin: now a double 14 or
+  higher, or the bullseye. Only the bullseye is a spectacle in this game.
+- The board shows it (asked by the owner, 2026-11-16): the double ring is
+  gold with a glow and four coins marked "×3" on it, the triple ring is
+  drawn like the singles around it, the surround is dark red, and the
+  heading above the pigs says "The gold ring pays ×3". The rules text
+  calls it the gold double ring. Filled in while building: these looks.
 - Off the board means: the black surround, fully off, or a bounce-out.
 - 6 rounds, highest total wins.
 - This game leans hardest on miss detection. "Add a miss" must be within easy

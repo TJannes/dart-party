@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { useEffect, type ReactNode } from 'react'
+import { PIGGY_GOLD } from '../../../core/game/piggyBank'
 import { strings } from '../../../shared/strings'
 import type { AnimationPack, SceneProps, Spot } from '../animation/pack'
 import { blowTimes } from '../animation/timeline'
@@ -806,7 +807,7 @@ function Coins({ step, stage }: SceneProps<'scored'>): React.JSX.Element | null 
   const { player, amount } = step.scene
   const to = pigSlot(stage, player)
   const from = stage.dartPoint()
-  const gold = amount >= 40
+  const gold = amount >= PIGGY_GOLD
   const coins = gold ? 1 : Math.min(5, Math.max(1, Math.ceil(amount / 10)))
   const flight = step.length * 0.6
   const landing = step.at + flight

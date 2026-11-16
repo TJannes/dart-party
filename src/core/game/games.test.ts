@@ -202,9 +202,16 @@ describe('moments of the themed games', () => {
 })
 
 describe('Piggy Bank', () => {
-  it('adds the ordinary value of every dart', () => {
-    const state = piggyBank.evaluate(null, players, [turn(T(20), D(5), manualDart(25, 2))])
-    expect(state.view.scores['ann']).toBe(120)
+  it('pays three times in the double ring and only once in the triple ring', () => {
+    const state = piggyBank.evaluate(null, players, [turn(T(20), D(5), S(7))])
+    // 20 + 15 + 7.
+    expect(state.view.scores['ann']).toBe(42)
+    expect(piggyBank.evaluate(null, players, [turn(D(20))]).view.scores['ann']).toBe(60)
+  })
+
+  it('leaves the bull at its ordinary 25 and 50', () => {
+    const state = piggyBank.evaluate(null, players, [turn(manualDart(25, 1), manualDart(25, 2))])
+    expect(state.view.scores['ann']).toBe(75)
   })
 
   it('loses half, rounded down, on a dart off the board', () => {

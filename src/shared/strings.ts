@@ -324,18 +324,21 @@ export const strings = {
       name: 'Piggy Bank',
       rules: [
         'Every dart adds its value to your piggy bank.',
+        'The gold double ring pays three times. The triple ring counts only once.',
         'A dart off the board breaks the pig: you lose half.',
         'Six rounds. The fullest pig wins.',
       ],
       short: [
-        'Fill your pig, and stay on the board.',
+        'Fill your pig. The gold double ring pays three times, the triple ring only once.',
         'Six rounds. The fullest pig wins.',
       ],
       demo: [
         'Every dart fills your pig.',
-        '40 or more: a golden coin!',
+        'The gold ring pays three times!',
         'Off the board: the pig breaks and you lose half.',
       ],
+      /** Above the pigs while playing: what the golden ring on the board means. */
+      heading: 'The gold ring pays ×3',
       breaks: (count: number) => (count === 0 ? 'Pig intact' : `Broken ${count}×`),
     },
     landGrab: {

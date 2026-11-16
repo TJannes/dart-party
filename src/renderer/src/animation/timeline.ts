@@ -1,4 +1,5 @@
 import type { Beat, Cue, DartStory } from '../../../core/party/cues'
+import { PIGGY_GOLD } from '../../../core/game/piggyBank'
 import type { DartFeedback, PlayerId } from '../../../core/game/types'
 import type { Mood } from '../components/Avatar'
 import type { EffectName } from '../theme/types'
@@ -159,7 +160,7 @@ function soundsOf(beat: Beat, story: DartStory, step: Step): Sound[] {
   const one = (effect: EffectName, after = 0): Sound[] => [{ at: step.at + after * step.length, effect }]
   switch (beat.kind) {
     case 'scored':
-      if (gameId === 'piggyBank') return one(beat.amount >= 40 ? 'goldCoin' : 'clink', 0.6)
+      if (gameId === 'piggyBank') return one(beat.amount >= PIGGY_GOLD ? 'goldCoin' : 'clink', 0.6)
       if (gameId === 'race') return one(beat.amount >= 3 ? 'nitro' : 'vroom')
       if (gameId === 'spotlight') return beat.amount === 3 ? one('applause', 0.3) : []
       if (gameId === 'landGrab') return one('build')

@@ -5,7 +5,7 @@ import type { HigherOrLowerView } from '../../../core/game/higherOrLower'
 import type { LandGrabView } from '../../../core/game/landGrab'
 import type { KnockoutView, LastOneStandingView } from '../../../core/game/lastOneStanding'
 import type { MinefieldView } from '../../../core/game/minefield'
-import type { PiggyBankView } from '../../../core/game/piggyBank'
+import { PIGGY_GOLD, piggyValue, type PiggyBankView } from '../../../core/game/piggyBank'
 import type { RaceView } from '../../../core/game/race'
 import type { RaiseTheBarView } from '../../../core/game/raiseTheBar'
 import type { RobinHoodView } from '../../../core/game/robinHood'
@@ -20,7 +20,6 @@ import { RING } from '../../../core/board/ring'
 import { dartLabel } from '../../../shared/board'
 import { strings } from '../../../shared/strings'
 import { motion } from 'motion/react'
-import { dartScore } from '../../../core/board/ring'
 import { activeRecord, evaluateRecord } from '../../../core/party/party'
 import { useCalm, useSuspense } from '../animation/Stage'
 import { playerOf } from '../colours'
@@ -56,7 +55,7 @@ function pigFace(record: GameRecord, state: GameState<unknown>, player: string):
   const turn = state.throwers.findLastIndex((thrower, n) => thrower === player && record.turns[n]!.darts.length > 0)
   const dart = turn < 0 ? undefined : record.turns[turn]!.darts.at(-1)?.dart
   if (!dart) return 'plain'
-  return dart.miss ? 'grumpy' : dartScore(dart) >= 40 ? 'grin' : 'plain'
+  return dart.miss ? 'grumpy' : piggyValue(dart) >= PIGGY_GOLD ? 'grin' : 'plain'
 }
 
 /** How high something worth `value` sits in the high-jump set, from the ground. */
@@ -124,6 +123,7 @@ function Scene(props: SceneProps): React.JSX.Element | null {
       return (
         <ScoreScene
           {...common}
+          heading={g.piggyBank.heading}
           score={(id) => view.scores[id]}
           detail={(id) => g.piggyBank.breaks(view.breaks[id]!)}
           feature={
@@ -147,7 +147,7 @@ function Scene(props: SceneProps): React.JSX.Element | null {
               </div>
             )
           }
-          board={<Board darts={darts} />}
+          board={<Board variant="piggy" darts={darts} />}
         />
       )
     }
