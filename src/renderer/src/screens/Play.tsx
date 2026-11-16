@@ -3,7 +3,7 @@ import { placesOf, pointsForRanking } from '../../../core/party/points'
 import { rulesFor } from '../../../core/game/registry'
 import { useRef } from 'react'
 import { activeGameKey } from '../../../core/party/cues'
-import type { GameState, WithOpenings } from '../../../core/game/types'
+import { roundLimit, type GameState, type WithOpenings } from '../../../core/game/types'
 import { strings } from '../../../shared/strings'
 import { colourOf, playerOf } from '../colours'
 import { Avatar } from '../components/Avatar'
@@ -118,7 +118,7 @@ export function Play({ party }: { party: Party }): React.JSX.Element {
     <PartyFrame
       party={party}
       title={gameName(record.gameId)}
-      detail={roundText(record.gameId, state, rules.maxRounds)}
+      detail={roundText(record.gameId, state, roundLimit(rules, record.order.length))}
     >
       <div className="turn" style={{ borderColor: current ? colourOf(party, current.player) : 'transparent' }}>
         {thrower && current && (

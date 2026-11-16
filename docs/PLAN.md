@@ -509,7 +509,12 @@ top: 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5.
 - Anything else: nothing happens.
 - The track is 10 steps. First across the finish wins at once; the rest are
   ranked by distance.
-- Safety limit: 10 rounds. Then the furthest player wins.
+- Safety limit: 10 rounds, fewer with more players: about 40 turns in all,
+  so 10 rounds up to 4 players, then 8, 7, 6 and 5 with 8 players. Then
+  the furthest player wins. Why: with 6 to 8 players most of the board is
+  dealt, everyone is pushed back by everyone, and an estimate put the game
+  at 30 to 40 minutes. The owner asked for the shorter limit
+  (2026-11-16); the 40 turns were filled in while building.
 - Scene: a race track with the avatars as racers.
 
 ### Robin Hood
@@ -639,7 +644,13 @@ happens after a reveal.
   the bomb off: the thrower loses a life and their turn ends. A new bomb
   with a new fuse starts with the next player.
 - How much fuse has burned is shown; how much is left is not.
-- 3 lives, knockout as in Last One Standing, 10 rounds.
+- 3 lives, knockout as in Last One Standing, 10 rounds, fewer with more
+  players: about 48 turns in all, so 10 rounds up to 5 players, then 8, 7
+  and 6 with 8 players. Why: a life is only lost when a whole fuse burns
+  out, so with many players nobody is knocked out before the limit and
+  the game always ran its 10 rounds, 20 to 30 minutes. The owner asked
+  for the shorter limit (2026-11-16); the 48 turns were filled in while
+  building.
 - The target zone follows the players (owner, 2026-11-16: the game was too
   easy, and it must only change when the game sees that). Every game
   starts three segments wide. After a round in which more than two thirds
@@ -676,6 +687,10 @@ The owner's own idea: do better than the player before you.
   players, twice with 3 or 4, once with 5 to 8. The game ends when the last
   bar falls. Most points wins.
 - An attempt is settled by its third dart, without waiting for the takeout.
+- One bar can be raised at most five times: the fifth raise wins the pot
+  (6) at once, and the next opener starts. Without it the game had no
+  limit at all, against the rule that every game has one. Asked for by
+  the owner (2026-11-16); the five was filled in while building.
 - Filled in while building: the number of openings per player count, and
   that the first challenger is the player after the opener.
 

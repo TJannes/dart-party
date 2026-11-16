@@ -477,6 +477,7 @@ export const strings = {
         'The opener throws three darts. That total is the bar.',
         'The next player must throw more. Over it? You hold the bar, and the pot grows.',
         'Not over it? The holder wins the pot, and the next opener sets a new bar.',
+        'Five raises on one bar? The fifth wins the pot at once.',
         'Everyone opens equally often. The most points wins.',
       ],
       short: [

@@ -116,6 +116,11 @@ export interface GameRules<Setup = unknown, View = unknown> {
   /** Infinity for a free-play game that lasts until someone finishes. */
   maxRounds: number
   /**
+   * Fewer rounds with more players, for a game that would otherwise drag
+   * on with a big group. Never more than `maxRounds`. Use `roundLimit`.
+   */
+  roundsFor?: (players: number) => number
+  /**
    * Which ordinary darts feats are something special in this game. Three
    * darts in one segment and three misses in a turn always are.
    */
@@ -130,6 +135,19 @@ export interface GameRules<Setup = unknown, View = unknown> {
   setup(players: readonly PlayerId[], random: Random): Setup
   /** `players` is the throwing order. */
   evaluate(setup: Setup, players: readonly PlayerId[], turns: readonly Turn[]): GameState<View>
+}
+
+/** How many rounds a game lasts at most with this many players. */
+export function roundLimit(rules: Pick<GameRules, 'maxRounds' | 'roundsFor'>, players: number): number {
+  return Math.min(rules.maxRounds, rules.roundsFor?.(players) ?? rules.maxRounds)
+}
+
+/**
+ * Rounds for a game that should last about `turns` turns in all, but
+ * never more than `most` rounds: 40 turns over 8 players is 5 rounds.
+ */
+export function roundsWithin(turns: number, most: number): (players: number) => number {
+  return (players) => Math.max(1, Math.min(most, Math.round(turns / players)))
 }
 
 /** How far a game has got: everything in its state but the view and the ranking. */
@@ -156,7 +174,7 @@ export function rankByScore(players: readonly PlayerId[], score: (p: PlayerId) =
  * thrown.
  */
 export function playTurns(
-  rules: Pick<GameRules, 'dartsPerTurn' | 'maxRounds'>,
+  rules: Pick<GameRules, 'dartsPerTurn' | 'maxRounds' | 'roundsFor'>,
   players: readonly PlayerId[],
   turns: readonly Turn[],
   onDart: (
@@ -167,7 +185,7 @@ export function playTurns(
     emit: Emit,
   ) => DartFeedback | { feedback: DartFeedback; finish: true } | { feedback: DartFeedback; endTurn: true },
 ): Progress {
-  const maxTurns = rules.maxRounds * players.length
+  const maxTurns = roundLimit(rules, players.length) * players.length
   const feedback: DartFeedback[] = []
   const throwers: PlayerId[] = []
   const played: PlayedDart[] = []
@@ -234,7 +252,7 @@ export function playTurns(
  * in the board): the next dart then starts the next player's turn.
  */
 export function playKnockout(
-  rules: Pick<GameRules, 'dartsPerTurn' | 'maxRounds'>,
+  rules: Pick<GameRules, 'dartsPerTurn' | 'maxRounds' | 'roundsFor'>,
   players: readonly PlayerId[],
   turns: readonly Turn[],
   isOut: (player: PlayerId) => boolean,
@@ -253,6 +271,7 @@ export function playKnockout(
   const played: PlayedDart[] = []
   const over = (): Progress => ({ finished: true, current: null, feedback, throwers, played })
   const standing = (): number => players.filter((player) => !isOut(player)).length
+  const lastRound = roundLimit(rules, players.length)
   let seat = -1
   let round = 1
 
@@ -263,7 +282,7 @@ export function playKnockout(
     while (isOut(players[(seat + step) % players.length]!)) step++
     if (seat >= 0 && seat + step >= players.length) round++
     seat = (seat + step) % players.length
-    if (round > rules.maxRounds) return over()
+    if (round > lastRound) return over()
     const thrower = players[seat]!
 
     const turn = turns[index]

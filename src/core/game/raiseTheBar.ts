@@ -7,6 +7,12 @@ import { rankByScore, type DartFeedback, type GameRules, type PlayedDart, type P
 // grows. Whoever fails hands the pot to the holder, and that attempt is
 // void: the next opener sets a fresh bar. Everyone opens equally often.
 
+/**
+ * How often one bar can be raised. The raise that reaches it wins the pot at
+ * once, so an opening lasts at most this many turns plus the opener's.
+ */
+export const MAX_RAISES = 5
+
 /** How often each player opens: more with few players, so the game has body. */
 export function openingsEach(players: number): number {
   return players <= 2 ? 3 : players <= 4 ? 2 : 1
@@ -29,7 +35,8 @@ export interface RaiseTheBarView {
 export const raiseTheBar: GameRules<null, RaiseTheBarView> = {
   id: 'raiseTheBar',
   dartsPerTurn: 3,
-  // An upper bound only; the real length is the number of openings.
+  // Not used to end the game: that is the number of openings, each of at
+  // most MAX_RAISES + 1 turns. The header counts openings.
   maxRounds: 8,
   feats: ['bullseye', 'triple20', 'oneEighty'],
 
@@ -90,6 +97,17 @@ export const raiseTheBar: GameRules<null, RaiseTheBarView> = {
         return state(false, { dartsLeft: raiseTheBar.dartsPerTurn - darts.length, turn: index }, total)
       }
 
+      /** The holder takes the pot and the next opener sets a fresh bar. */
+      const cashIn = (winner: PlayerId, shown: boolean): void => {
+        if (shown) played.at(-1)!.moments.push({ kind: 'scored', player: winner, amount: pot })
+        scores[winner]! += pot
+        opening += 1
+        holder = null
+        bar = null
+        pot = 1
+        seat = opening % players.length
+      }
+
       if (holder === null) {
         // The opener sets the bar, whatever they threw.
         holder = thrower
@@ -101,20 +119,19 @@ export const raiseTheBar: GameRules<null, RaiseTheBarView> = {
         bar = total
         pot += 1
         seat = (seat + 1) % players.length
+        // The bar cannot go up for ever: the last raise wins the pot itself.
+        if (pot > MAX_RAISES) {
+          cashIn(thrower, true)
+          if (opening >= openings) return state(true, null)
+        }
       } else {
         // Not over: the holder takes the pot and the attempt is void.
         if (darts.length > 0) {
           feedback[feedback.length - 1] = 'bad'
           played.at(-1)!.moments.push({ kind: 'jump', player: thrower, holder, cleared: false })
-          played.at(-1)!.moments.push({ kind: 'scored', player: holder, amount: pot })
         }
-        scores[holder]! += pot
-        opening += 1
-        holder = null
-        bar = null
-        pot = 1
+        cashIn(holder, darts.length > 0)
         if (opening >= openings) return state(true, null)
-        seat = opening % players.length
       }
     }
 

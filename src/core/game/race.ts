@@ -1,6 +1,6 @@
 import { RING } from '../board/ring'
 import { randomInt, shuffle } from '../random'
-import { playTurns, rankByScore, type GameRules, type PlayerId } from './types'
+import { playTurns, rankByScore, roundsWithin, type GameRules, type PlayerId } from './types'
 
 // Race: everyone owns two adjacent segments. Hit your own to move forward,
 // hit someone else's to push them back. First across the finish wins.
@@ -37,6 +37,9 @@ export const race: GameRules<RaceSetup, RaceView> = {
   id: 'race',
   dartsPerTurn: 3,
   maxRounds: 10,
+  // With many players everyone is pushed back by everyone, so nobody gets
+  // across and the race runs to the limit: keep it to about 40 turns.
+  roundsFor: roundsWithin(40, 10),
   emptyTurnsAreNormal: true,
 
   setup(players, random) {

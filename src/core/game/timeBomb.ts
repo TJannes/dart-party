@@ -1,7 +1,7 @@
 import { neighbour, RING } from '../board/ring'
 import { pick, randomInt } from '../random'
 import { LIVES, type KnockoutView } from './lastOneStanding'
-import { playKnockout, rankKnockout, type GameRules, type PlayerId } from './types'
+import { playKnockout, rankKnockout, roundsWithin, type GameRules, type PlayerId } from './types'
 
 // Time Bomb: a bomb with a hidden fuse goes round. At the board you hold it.
 // Hit the target and you are rid of it: your turn ends safely. Every other
@@ -69,6 +69,9 @@ export const timeBomb: GameRules<TimeBombSetup, TimeBombView> = {
   id: 'timeBomb',
   dartsPerTurn: 3,
   maxRounds: 10,
+  // With many players nobody runs out of lives before the limit, so the
+  // limit is the real end: keep it to about 48 turns, which are often short.
+  roundsFor: roundsWithin(48, 10),
   emptyTurnsAreNormal: true,
 
   setup: (_players, random) => ({

@@ -6,11 +6,11 @@ import { landGrab } from './landGrab'
 import { minefield, MINEFIELD_CONTENTS, type Hidden } from './minefield'
 import { piggyBank } from './piggyBank'
 import { drawableGames } from './registry'
-import { openingsEach, raiseTheBar } from './raiseTheBar'
+import { MAX_RAISES, openingsEach, raiseTheBar } from './raiseTheBar'
 import { archeryPoints, robinHood } from './robinHood'
 import { sniper } from './sniper'
 import { spotlight, spotlightWorth } from './spotlight'
-import type { Turn } from './types'
+import { roundLimit, type Turn } from './types'
 
 const players = ['ann', 'bob']
 const KNOCKOUT = ['lastOneStanding', 'higherOrLower', 'timeBomb', 'raiseTheBar']
@@ -52,6 +52,23 @@ describe('every drawable game', () => {
         expect(end.throwers, rules.id).toHaveLength(all.length)
         expect(rules.evaluate(setup, players, all.slice(0, -1)).finished, rules.id).toBe(false)
       }
+    }
+  })
+
+  it('ends Race and Time Bomb sooner with more players', () => {
+    const limits = (id: string) =>
+      [2, 3, 4, 5, 6, 7, 8].map((n) => roundLimit(drawableGames.find((rules) => rules.id === id)!, n))
+    expect(limits('race')).toEqual([10, 10, 10, 8, 7, 6, 5])
+    expect(limits('timeBomb')).toEqual([10, 10, 10, 10, 8, 7, 6])
+    expect(limits('robinHood')).toEqual([6, 6, 6, 6, 6, 6, 6])
+
+    const eight = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    for (const id of ['race', 'timeBomb']) {
+      const rules = drawableGames.find((game) => game.id === id)!
+      const setup = rules.setup(eight, seededRandom(1))
+      const all = Array.from({ length: roundLimit(rules, 8) * 8 }, () => turn(miss))
+      expect(rules.evaluate(setup, eight, all.slice(0, -1)).finished, id).toBe(false)
+      expect(rules.evaluate(setup, eight, all).finished, id).toBe(true)
     }
   })
 
@@ -450,6 +467,22 @@ describe('Raise the Bar', () => {
     expect(state.finished).toBe(true)
     expect(state.view.scores).toEqual({ ann: 2, bob: 2, cy: 2 })
     expect(play(...turns.slice(0, -1)).finished).toBe(false)
+  })
+
+  it('lets the fifth raise on one bar win the pot at once', () => {
+    // ann opens with 1, then every challenger throws one more.
+    const raises = [2, 3, 4, 5, 6].map((n) => turn(S(n)))
+    const state = play(turn(S(1)), ...raises)
+    expect(MAX_RAISES).toBe(5)
+    // The fifth raise was cy's (bob, cy, ann, bob, cy): pot 1 + 5.
+    expect(state.view.scores).toEqual({ ann: 0, bob: 0, cy: 6 })
+    expect(state.view).toMatchObject({ holder: null, bar: null, pot: 1, opening: 2 })
+    expect(state.current).toMatchObject({ player: 'bob', round: 2 })
+    expect(state.played.at(-1)!.moments).toEqual([
+      { kind: 'jump', player: 'cy', holder: 'bob', cleared: true },
+      { kind: 'scored', player: 'cy', amount: 6 },
+    ])
+    expect(play(turn(S(1)), ...raises.slice(0, 4)).view).toMatchObject({ holder: 'bob', pot: 5 })
   })
 
   it('tells when a dart takes you over the bar, and when the attempt failed', () => {
