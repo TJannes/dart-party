@@ -184,6 +184,14 @@ describe('the timeline of a cue', () => {
     expect(bomb.banner!).toBeGreaterThan(DIG_TIME)
   })
 
+  it('shows no drinking banner on the dart that ends the game', () => {
+    const out: Beat[] = [
+      { kind: 'knockedOut', player: 'bob' },
+      { kind: 'won', players: ['ann'] },
+    ]
+    expect(timelineOf(dart('great', out), false, [], { orders: true }).banner).toBeNull()
+  })
+
   it('lets a turn change wait for a drinking banner that is still in the middle', () => {
     const timeline = timelineOf({ kind: 'turn', game: 'g0', gameId: 'race', player: 'bob' }, false, [], { wait: 1.2 })
     expect(timeline.steps[0]!.at).toBeCloseTo(1.2)

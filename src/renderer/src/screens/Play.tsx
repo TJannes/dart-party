@@ -9,7 +9,7 @@ import { colourOf, playerOf } from '../colours'
 import { Avatar } from '../components/Avatar'
 import { Controls } from '../components/Controls'
 import { Glass, OrderList, useDrinks } from '../components/Drinks'
-import { ordersAfterGame } from '../../../core/party/drinking'
+import { ordersAfterGame, ordersOfLastDart } from '../../../core/party/drinking'
 import { Standings } from '../components/Standings'
 import { dartText } from '../dartText'
 import { PartyFrame } from '../components/PartyFrame'
@@ -40,7 +40,9 @@ function Result({ party, animate }: { party: Party; animate: boolean }): React.J
   const earned = isGame ? pointsForRanking(state.ranking) : {}
   const totals = new Map(standings(party).map((row) => [row.player, row.points]))
   const drinks = useDrinks(party)
-  const orders = isGame ? ordersAfterGame(party, party.games.length - 1) : []
+  // The deciding dart showed no banner: its orders stand here, above those of the result.
+  const game = party.games.length - 1
+  const orders = isGame ? [...ordersOfLastDart(party, game), ...ordersAfterGame(party, game)] : []
 
   return (
     <div className="result">

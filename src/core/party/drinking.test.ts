@@ -10,6 +10,7 @@ import {
   drinkTitles,
   drinkingNow,
   newDrinking,
+  ordersOfLastDart,
   pickBuddy,
   setDrinkingOn,
   setSitOut,
@@ -230,14 +231,14 @@ describe('drinking: after a game', () => {
     expect(afterGame(playPiggyBank(playing('piggyBank', null, six), scores(six)))).toEqual([
       'f drinks 1 (afterGame)',
       'e drinks 1 (afterGame)',
-      'a hands out 2 (afterGame)',
+      'a hands out 1 (afterGame)',
     ])
     const eight = [...six, 'g', 'h']
     expect(afterGame(playPiggyBank(playing('piggyBank', null, eight), scores(eight)))).toEqual([
       'h drinks 1 (afterGame)',
       'g drinks 1 (afterGame)',
       'f drinks 1 (afterGame)',
-      'a hands out 3 (afterGame)',
+      'a hands out 1 (afterGame)',
     ])
   })
 
@@ -247,7 +248,7 @@ describe('drinking: after a game', () => {
     expect(afterGame(party)).toEqual([
       'bob drinks 1 (afterGame)',
       'cy drinks 1 (afterGame)',
-      'ann hands out 2 (afterGame)',
+      'ann hands out 1 (afterGame)',
     ])
   })
 
@@ -258,6 +259,15 @@ describe('drinking: after a game', () => {
 
   it('asks nothing while the game is still going', () => {
     expect(afterGame(turn(playing('piggyBank', null), S(20)))).toEqual([])
+  })
+
+  it('hands the orders of the dart that ended the game to the result', () => {
+    const duel = { ann: [1], bob: [2] }
+    const going = addDart(playing('lastOneStanding', { segments: duel }, ['ann', 'bob']), S(2), 'board')
+    expect(ordersOfLastDart(going, 0)).toEqual([])
+    const over = addDart(playing('lastOneStanding', { segments: duel }, ['ann', 'bob']), T(2), 'board')
+    expect(activeState(over)!.finished).toBe(true)
+    expect(told(ordersOfLastDart(over, 0))).toEqual(['bob drinks 2 (knockedOut)'])
   })
 })
 

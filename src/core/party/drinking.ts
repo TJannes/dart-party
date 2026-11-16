@@ -259,7 +259,7 @@ function bottomOf(ranking: Ranking, count: number): PlayerId[] {
   return bottom
 }
 
-/** The result of a game: the last drink, the winner hands out as many sips as there are drinkers. */
+/** The result of a game: the last drink and the winner hands out one sip, however many drink. */
 function afterGameOrders(party: Party, drinking: Drinking, game: number): DrinkOrder[] {
   const state = evaluateRecord(party.games[game]!)
   if (!state.finished) return []
@@ -269,7 +269,7 @@ function afterGameOrders(party: Party, drinking: Drinking, game: number): DrinkO
   return settle(drinking, at, [
     ...drinkers.map((player): Candidate => ({ source: 'afterGame', player, kind: 'drink', sips: 1 })),
     ...(state.ranking[0] ?? []).map(
-      (player): Candidate => ({ source: 'afterGame', player, kind: 'handOut', sips: drinkers.length }),
+      (player): Candidate => ({ source: 'afterGame', player, kind: 'handOut', sips: drinkers.length > 0 ? 1 : 0 }),
     ),
   ])
 }
@@ -323,6 +323,18 @@ export function ordersOfDart(party: Party, game: number, turn: number, dart: num
   const drinking = party.drinking
   if (!drinking || !party.games[game]) return []
   return dartOrders(party, drinking, game).filter((order) => order.at[2] === turn && order.at[3] === dart)
+}
+
+/**
+ * The orders of the dart that ended a game. They get no banner, which
+ * would land on top of the win; the result lists them instead.
+ */
+export function ordersOfLastDart(party: Party, game: number): DrinkOrder[] {
+  const record = party.games[game]
+  if (!record) return []
+  const state = evaluateRecord(record)
+  const last = state.played.at(-1)
+  return state.finished && last ? ordersOfDart(party, game, last.turn, last.index) : []
 }
 
 /** The orders the result of a game gave: who drinks, who hands out. */

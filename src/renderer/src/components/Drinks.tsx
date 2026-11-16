@@ -82,7 +82,7 @@ export function OrderList({ party, orders }: { party: Party; orders: readonly Dr
   return (
     <div className="order-lines">
       {orders.map((order) => (
-        <OrderLine key={`${order.player}-${order.kind}`} party={party} order={order} />
+        <OrderLine key={`${order.source}-${order.player}-${order.kind}`} party={party} order={order} />
       ))}
     </div>
   )

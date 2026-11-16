@@ -53,7 +53,8 @@ export interface Timeline {
   /**
    * When the drinking banner comes up in the middle of the screen: after
    * the chain, so it never fights a full-screen moment, and before the
-   * next player is announced. Null when nobody has to drink.
+   * next player is announced. Null when nobody has to drink, and on the
+   * dart that ends the game.
    */
   banner: number | null
 }
@@ -332,11 +333,12 @@ export function timelineOf(
     if (beat.kind === 'lost') moods.push({ player: beat.player, mood: 'shocked', from: step.at, until: step.at + 1.05 })
   }
 
+  const won = story.chain.some((beat) => beat.kind === 'won')
   // The drinking banner takes the middle of the screen once the chain is over.
-  const banner = drinking.orders ? Math.max(lead + 0.4, cursor) : null
+  // Not on the dart that ends the game: the result lists its orders instead.
+  const banner = drinking.orders && !won ? Math.max(lead + 0.4, cursor) : null
   const bannerDown = banner === null ? 0 : banner + DRINK_CENTRE
 
-  const won = story.chain.some((beat) => beat.kind === 'won')
   if (cue.next && !won) {
     const at = Math.max(cursor, lead + 0.9, bannerDown)
     steps.push({ key: 'turn', at, length: TURN_LENGTH, scene: { kind: 'turn', player: cue.next } })
