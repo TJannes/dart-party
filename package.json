@@ -1,7 +1,7 @@
 {
   "name": "dart-party",
   "productName": "Dart Party",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "An evening of randomly drawn darts mini-games around one board. Unofficial, not affiliated with Autodarts.",
   "license": "MIT",
   "author": "Tom Jannes",

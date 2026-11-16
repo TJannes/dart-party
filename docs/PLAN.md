@@ -4,7 +4,8 @@ Status: steps 1 to 3 are built and released (0.2.0). Steps 4 to 8 are built
 and released, for the owner to test (0.3.0 has the games and the animations,
 0.4.0 adds free play, 0.5.0 the themed animations per game, 0.6.0 renames
 the evening to a party, 0.7.0 adds the drinking game, 0.8.0 the demo on
-the rules card, 0.9.0 three games for balance): fourteen
+the rules card, 0.9.0 three games for balance, 0.10.0 a world of
+their own for eight games): fourteen
 mini-games are in the
 draw. Updating from 0.1.0 to
 0.1.1 inside the app works on Ubuntu; the owner confirmed step 1 done on
@@ -1323,7 +1324,7 @@ number hit, with the next one under the name.
   [A world per game](#a-world-per-game), with the owner's changes of the
   same day (bicycle and scooter, the forest, the beach, the sniper, the
   catapult). *Each seen once on Ubuntu in a party of three, in one window; not with eight players, where the rows
-  are smallest; not on Windows; not released.*
+  are smallest; not on Windows; released in 0.10.0.*
 - [ ] **Parked: recorded music.** CC0 playlists per scene in place of the
   generated loops, as decided under [Style and sound](#style-and-sound).
   Parked by the owner on 2026-11-15; pick it up only when asked. The
