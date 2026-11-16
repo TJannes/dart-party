@@ -166,7 +166,8 @@ All of these were agreed with the owner. Do not reopen them unprompted.
 - A tie in the final standings is settled by a short deciding round, for
   first place only: lower ties stay shared. Each tied player throws three
   darts and the highest ordinary score wins. If that is level too, those
-  still level throw again.
+  still level throw again. It has no rules card: these rules stand in one
+  line under the heading of its play screen (owner, 2026-11-16).
 - Throwing order: drawn for the first game; after that the reverse of the
   standings, so the last starts and the leader throws last. Players level on
   points keep their order from the previous game.

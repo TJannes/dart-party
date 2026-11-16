@@ -747,6 +747,12 @@ h1 {
   color: var(--hot);
 }
 
+.scene__how {
+  font-size: 0.6em;
+  font-weight: 700;
+  color: var(--text);
+}
+
 .lane__who {
   width: 6.5em;
   display: flex;

@@ -10,7 +10,7 @@ import { gameName } from './Draw'
 /** The rules card before a game, with the throwing order. */
 export function Rules({ party }: { party: Party }): React.JSX.Element {
   const record = party.games.at(-1)!
-  const rules = (strings.games as Record<string, { rules: readonly string[] }>)[record.gameId]?.rules ?? []
+  const rules = (strings.games as Record<string, { rules?: readonly string[] }>)[record.gameId]?.rules ?? []
   // Games that deal segments to players show them with the throwing order.
   const segments = (record.setup as Partial<RaceSetup> | null)?.segments ?? null
 

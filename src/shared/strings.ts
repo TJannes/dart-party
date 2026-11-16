@@ -408,7 +408,8 @@ export const strings = {
     },
     decider: {
       name: 'Deciding round',
-      rules: ['Three darts each.', 'The highest score wins the party.'],
+      /** Under the heading on the play screen; a deciding round has no rules card. */
+      howTo: 'Three darts each, highest score wins. Still level? Throw again.',
     },
   },
 

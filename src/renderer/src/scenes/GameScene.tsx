@@ -400,7 +400,13 @@ function Scene(props: SceneProps): React.JSX.Element | null {
       return (
         <ScoreScene
           {...common}
-          heading={strings.party.tie}
+          heading={
+            <>
+              {strings.party.tie}
+              <br />
+              <span className="scene__how">{g.decider.howTo}</span>
+            </>
+          }
           score={(id) => view.scores[id]}
           board={<Board darts={darts} />}
         />
