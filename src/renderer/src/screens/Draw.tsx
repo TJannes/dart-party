@@ -4,6 +4,7 @@ import type { Party } from '../../../core/party/party'
 import { strings } from '../../../shared/strings'
 import { PartyFrame } from '../components/PartyFrame'
 import { send } from '../hooks'
+import { reelRows } from '../reel'
 import { sound } from '../sound'
 
 const ROWS = 18
@@ -17,12 +18,8 @@ function gameName(id: string): string {
 export function Draw({ party }: { party: Party }): React.JSX.Element {
   const drawn = party.games.at(-1)!.gameId
   const [stopped, setStopped] = useState(false)
-  const reel = useMemo(() => {
-    const names = party.enabledGames.map(gameName)
-    const rows = Array.from({ length: ROWS - 1 }, (_, i) => names[(i * 7 + party.games.length) % names.length]!)
-    return [...rows, gameName(drawn)]
-    // One reel per drawn game.
-  }, [party.games.length])
+  // One reel per drawn game.
+  const reel = useMemo(() => reelRows(party.enabledGames.map(gameName), gameName(drawn), ROWS), [party.games.length])
 
   // The reel ticks while it turns, slower towards the end.
   useEffect(() => {
