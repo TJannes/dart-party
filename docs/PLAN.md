@@ -18,8 +18,9 @@ on Ubuntu. Step 9 (the drinking game) is built and released in 0.7.0: played
 through by hand on Ubuntu in one window, without darts, a second screen or
 sound. Step 10 (rules explained by animation) is built for all eleven games
 and seen on Ubuntu in one window; released in 0.8.0 with the two changes
-to the drinking game of 2026-11-16. Not yet released: the new values
-in Piggy Bank (the double ring pays three times). No build step is open; what is
+to the drinking game of 2026-11-16. 0.8.1 has the new values in Piggy
+Bank (the double ring pays three times) and its own board. No build step
+is open; what is
 left is under "Later" and "Parked".
 See [Build steps](#build-steps).
 
