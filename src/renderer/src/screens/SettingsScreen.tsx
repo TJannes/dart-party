@@ -3,6 +3,7 @@ import { drawableGames } from '../../../core/game/registry'
 import { cleanAddress } from '../../../core/settings'
 import { strings } from '../../../shared/strings'
 import { BugReports } from '../components/BugReports'
+import { DrinkRuleSwitches } from '../components/Drinks'
 import { Volume } from '../components/Volume'
 import { useScreens, useSettings } from '../hooks'
 import { gameName } from './Draw'
@@ -102,6 +103,12 @@ export function SettingsScreen({ onBack, onPreview }: { onBack: () => void; onPr
             </button>
           </div>
           <p className="hint hint--left">{s.checkoutHint}</p>
+        </section>
+
+        <section>
+          <h3>{s.drinkRules}</h3>
+          <p className="hint hint--left">{strings.drinking.settingsHint}</p>
+          <DrinkRuleSwitches />
         </section>
 
         <section>

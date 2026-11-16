@@ -120,6 +120,12 @@ export interface GameRules<Setup = unknown, View = unknown> {
    * darts in one segment and three misses in a turn always are.
    */
   feats?: readonly ScoreFeat[]
+  /**
+   * Set when a turn that brings the thrower nothing is the usual thing in
+   * this game (one segment in twenty counts). The drinking game then does
+   * not ask for a sip for it.
+   */
+  emptyTurnsAreNormal?: boolean
   /** Whatever is decided by chance before the first dart. */
   setup(players: readonly PlayerId[], random: Random): Setup
   /** `players` is the throwing order. */

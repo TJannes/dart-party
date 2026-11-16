@@ -1,12 +1,14 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { cueBetween, type Cue } from '../../../core/party/cues'
+import { activeGameKey, cueBetween, type Cue } from '../../../core/party/cues'
+import { ordersOfDart, type DrinkOrder } from '../../../core/party/drinking'
 import { activeRecord, type Party } from '../../../core/party/party'
 import type { PlayerId } from '../../../core/game/types'
 import type { Mood } from '../components/Avatar'
+import { DrinkBanner, type DrinkBannerPhase } from '../components/Drinks'
 import { sound } from '../sound'
 import { theme } from '../theme'
 import { animationFor, stageInfo } from './pack'
-import { timelineOf, type MoodSpan, type Timeline } from './timeline'
+import { DRINK_BANNER, DRINK_CENTRE, timelineOf, type MoodSpan, type Timeline } from './timeline'
 
 // Plays the animations and their sounds on top of whatever screen is up.
 // It only watches the party change; it never sends a command, so nothing
@@ -58,6 +60,19 @@ export function Stage(props: { party: Party | null | undefined; calm: boolean; c
   const [running, setRunning] = useState<Running | null>(null)
   const [moods, setMoods] = useState<Moods>({})
   const [suspense, setSuspense] = useState<Party | null>(null)
+  const [drinks, setDrinks] = useState<{ id: number; party: Party; orders: DrinkOrder[]; phase: DrinkBannerPhase } | null>(null)
+  /** Until when (a clock time) a banner holds the middle of the screen. */
+  const centreUntil = useRef(0)
+  // The drinking banner keeps its own time: a turn passing must not cut it short.
+  const drinkTimers = useRef<ReturnType<typeof setTimeout>[]>([])
+  const drinkDart = useRef<{ key: string; game: number; turn: number; index: number } | null>(null)
+  const stopDrinks = useCallback(() => {
+    drinkTimers.current.forEach(clearTimeout)
+    drinkTimers.current = []
+    drinkDart.current = null
+    centreUntil.current = 0
+    setDrinks(null)
+  }, [])
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
   const serial = useRef(0)
   const calmNow = useRef(calm)
@@ -71,7 +86,15 @@ export function Stage(props: { party: Party | null | undefined; calm: boolean; c
   const play = useCallback(
     (cue: Cue, during: Party, before?: Party) => {
       stop()
-      const timeline = timelineOf(cue, calmNow.current, activeRecord(during)?.order ?? [])
+      // The drinking game: who this dart makes drink. Only darts of a party game do.
+      const game = cue.kind === 'dart' && cue.story.game.startsWith('g') ? Number(cue.story.game.slice(1)) : null
+      const orders = cue.kind === 'dart' && game !== null ? ordersOfDart(during, game, cue.story.turn, cue.story.index) : []
+      // A new dart replaces the banner of the last one; a turn passing waits for it and leaves it up.
+      if (cue.kind === 'dart') stopDrinks()
+      const timeline = timelineOf(cue, calmNow.current, activeRecord(during)?.order ?? [], {
+        orders: orders.length > 0,
+        wait: (centreUntil.current - Date.now()) / 1000,
+      })
       const later = (seconds: number, run: () => void): void => {
         if (seconds <= 0) run()
         else timers.current.push(setTimeout(run, seconds * 1000))
@@ -80,6 +103,23 @@ export function Stage(props: { party: Party | null | undefined; calm: boolean; c
       setSuspense(timeline.suspense > 0 && before ? before : null)
       if (timeline.suspense > 0) later(timeline.suspense, () => setSuspense(null))
       for (const { at, effect } of timeline.sounds) later(at, () => sound.play(effect))
+      // The banner: big in the middle first, then down to its strip at the bottom.
+      if (cue.kind === 'dart' && game !== null && timeline.banner !== null) {
+        const { story } = cue
+        const id = ++serial.current
+        const start = timeline.banner * 1000
+        drinkDart.current = { key: story.game, game, turn: story.turn, index: story.index }
+        centreUntil.current = Date.now() + start + DRINK_CENTRE * 1000
+        drinkTimers.current = [
+          setTimeout(() => {
+            setDrinks({ id, party: during, orders, phase: 'centre' })
+            sound.play(orders.some((order) => order.kind === 'drink') ? 'drink' : 'handOut')
+          }, start),
+          setTimeout(() => setDrinks((now) => now && { ...now, phase: 'strip' }), start + DRINK_CENTRE * 1000),
+          // It stays, small, until the next dart or until the party moves on.
+          setTimeout(() => setDrinks((now) => now && { ...now, phase: 'small' }), start + DRINK_BANNER * 1000),
+        ]
+      }
       // The moods change at the start and the end of every span.
       const moments = new Set([0, ...timeline.moods.flatMap((span) => [span.from, span.until])])
       for (const time of moments) later(time, () => setMoods(moodsAt(timeline.moods, time)))
@@ -88,7 +128,7 @@ export function Stage(props: { party: Party | null | undefined; calm: boolean; c
         setMoods({})
       })
     },
-    [stop],
+    [stop, stopDrinks],
   )
 
   // Compare each party with the one before it. The first look, a resume
@@ -100,9 +140,16 @@ export function Stage(props: { party: Party | null | undefined; calm: boolean; c
     const cue = cueBetween(before, party)
     if (cue && party) play(cue, party, before ?? undefined)
     else setSuspense(null)
-  }, [party, play])
+    // The banner goes when its dart is taken back or the party has moved on.
+    const shown = drinkDart.current
+    const gone =
+      shown !== null &&
+      (!party || activeGameKey(party) !== shown.key || ordersOfDart(party, shown.game, shown.turn, shown.index).length === 0)
+    if (gone) stopDrinks()
+  }, [party, play, stopDrinks])
 
   useEffect(() => stop, [stop])
+  useEffect(() => stopDrinks, [stopDrinks])
 
   const info = useMemo(
     () => (running ? stageInfo(running.party, calm, running.cue.kind === 'dart' ? running.cue.story : null) : null),
@@ -115,6 +162,7 @@ export function Stage(props: { party: Party | null | undefined; calm: boolean; c
       <PlayContext.Provider value={play}>
         <MoodContext.Provider value={moods}>
           <SuspenseContext.Provider value={suspense}>{props.children}</SuspenseContext.Provider>
+          {drinks && <DrinkBanner key={drinks.id} party={drinks.party} orders={drinks.orders} phase={drinks.phase} />}
           {running && info && (
             <div className="stage-layer" key={running.id} aria-hidden>
               {running.timeline.steps.map((step) => {

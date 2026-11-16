@@ -10,6 +10,7 @@ import {
   type Turn,
 } from '../game/types'
 import { pick, shuffle, type Random } from '../random'
+import { drinkTally, drinkingNow, newDrinking, wheelDue, type Drinking, type DrinkRule } from './drinking'
 import { pointsForRanking } from './points'
 
 // One party: a fixed group of players, a number of drawn mini-games, a
@@ -43,12 +44,16 @@ export interface GameRecord {
 }
 
 export type Stage =
+  /** The card with the drinking rules, before the first draw. Only in a drinking game. */
+  | 'drinkRules'
   /** The next game is being drawn. It is already decided: `games.at(-1)`. */
   | 'draw'
   /** The rules card of the drawn game is on screen. */
   | 'rules'
   /** Darts count. Stays here after the last dart until someone moves on. */
   | 'playing'
+  /** The drinking wheel between two games. Only in a drinking game. */
+  | 'wheel'
   /** A deciding round for a tie at the top: `deciders.at(-1)`. */
   | 'decider'
   | 'podium'
@@ -66,6 +71,8 @@ export interface Party {
    * no draw, no points and no podium. `games` holds just that game.
    */
   freePlay?: boolean
+  /** Set when the party is a drinking game. Never changes a score. */
+  drinking?: Drinking
 }
 
 export interface StandingsRow {
@@ -101,6 +108,7 @@ export function partySummary(party: Party): unknown {
     lastTurn: open ? { done: open.done, darts: open.darts.map((d) => `${d.dart.name}/${d.by}`) } : null,
     current: state?.current ?? null,
     finished: state?.finished ?? null,
+    ...(party.drinking ? { drinks: drinkTally(party), drinking: drinkingNow(party) } : {}),
   }
 }
 
@@ -167,6 +175,8 @@ export function startParty(
   gamesPlanned: number,
   enabledGames: readonly string[],
   random: Random,
+  /** Makes it a drinking game: the rules that are on and who sits out. */
+  drinking?: { rules: readonly DrinkRule[]; sitOut?: readonly PlayerId[] },
 ): Party {
   if (players.length < MIN_PLAYERS || players.length > MAX_PLAYERS) {
     throw new Error(`A party needs ${MIN_PLAYERS} to ${MAX_PLAYERS} players`)
@@ -186,8 +196,11 @@ export function startParty(
     stage: 'draw',
     games: [],
     deciders: [],
+    ...(drinking ? { drinking: newDrinking(drinking.rules, drinking.sitOut) } : {}),
   }
-  return drawNextGame(party, random)
+  const drawn = drawNextGame(party, random)
+  // The first game is drawn, but the card with the drinking rules comes first.
+  return drinking ? { ...drawn, stage: 'drinkRules' } : drawn
 }
 
 /** A single game outside a party. `setup` must suit the game. */
@@ -258,8 +271,10 @@ function startDecider(party: Party, players: PlayerId[]): Party {
 /** True when "continue" would do something: the step on screen is over. */
 export function canAdvance(party: Party): boolean {
   switch (party.stage) {
+    case 'drinkRules':
     case 'draw':
     case 'rules':
+    case 'wheel':
       return true
     case 'playing':
     case 'decider':
@@ -273,10 +288,13 @@ export function canAdvance(party: Party): boolean {
 export function advance(party: Party, random: Random): Party {
   // Free play has nowhere to go on to: it is played again or left.
   if (party.freePlay || !canAdvance(party)) return party
+  if (party.stage === 'drinkRules') return { ...party, stage: 'draw' }
   if (party.stage === 'draw') return { ...party, stage: 'rules' }
   if (party.stage === 'rules') return { ...party, stage: 'playing' }
+  // Moving on from the wheel without spinning it skips it.
+  if (party.stage === 'wheel') return drawNextGame(party, random)
   if (party.stage === 'playing' && finishedGames(party) < party.gamesPlanned) {
-    return drawNextGame(party, random)
+    return wheelDue(party) ? { ...party, stage: 'wheel' } : drawNextGame(party, random)
   }
   // The last game or a deciding round is over: is there one winner?
   const tied = tiedForFirst(party)

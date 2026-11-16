@@ -5,12 +5,14 @@ import { X01_STARTS } from '../../../core/game/x01'
 import { AVATARS, cleanName, MAX_NAME_LENGTH, MAX_PROFILES } from '../../../core/players'
 import { strings } from '../../../shared/strings'
 import { Avatar } from '../components/Avatar'
+import { DrinkRuleSwitches, GlassIcon } from '../components/Drinks'
 import { Modal } from '../components/Modal'
-import { send, useProfiles } from '../hooks'
+import { send, useProfiles, useSettings } from '../hooks'
 import { gameName } from './Draw'
 
 const s = strings.setup
 const f = strings.freePlay
+const d = strings.drinking
 const MAX_GAMES = 15
 
 function newId(): string {
@@ -85,6 +87,10 @@ export function Setup({ onBack, freePlay = false }: { onBack: () => void; freePl
   const [doubleOut, setDoubleOut] = useState(true)
   const [editing, setEditing] = useState<Player | 'new' | null>(null)
   const [editMode, setEditMode] = useState(false)
+  // The drinking game: the switch remembers the last party; who sits out is asked each time.
+  const drinking = useSettings().drinkingGame && !freePlay
+  const [sitOut, setSitOut] = useState<string[]>([])
+  const [showRules, setShowRules] = useState(false)
 
   const picked = profiles.filter((p) => chosen.includes(p.id))
   const ready = picked.length >= (freePlay ? MIN_FREE_PLAYERS : MIN_PLAYERS) && picked.length <= MAX_PLAYERS
@@ -168,7 +174,53 @@ export function Setup({ onBack, freePlay = false }: { onBack: () => void; freePl
           </button>
         </footer>
       ) : (
-        <footer className="bar">
+        <footer className="bar bar--wrap">
+          <div className={drinking ? 'drink-setup drink-setup--on' : 'drink-setup'}>
+            <div className="row row--left">
+              <strong className="drink-setup__title">
+                <GlassIcon out={!drinking} /> {d.switch}
+              </strong>
+              <button
+                type="button"
+                className={drinking ? 'chip chip--on' : 'chip'}
+                onClick={() => window.dartParty.updateSettings({ drinkingGame: true })}
+              >
+                {d.on}
+              </button>
+              <button
+                type="button"
+                className={drinking ? 'chip' : 'chip chip--on'}
+                onClick={() => window.dartParty.updateSettings({ drinkingGame: false })}
+              >
+                {d.off}
+              </button>
+              <button type="button" className="button button--quiet" onClick={() => setShowRules(true)}>
+                {d.showRules}
+              </button>
+            </div>
+            <p className="hint hint--left">{d.hint}</p>
+            {drinking && picked.length > 0 && (
+              <>
+                <div className="row row--left">
+                  {picked.map((player) => {
+                    const out = sitOut.includes(player.id)
+                    return (
+                      <button
+                        key={player.id}
+                        type="button"
+                        className={out ? 'chip' : 'chip chip--on'}
+                        aria-pressed={!out}
+                        onClick={() => setSitOut(out ? sitOut.filter((id) => id !== player.id) : [...sitOut, player.id])}
+                      >
+                        <GlassIcon out={out} /> {player.name}
+                      </button>
+                    )
+                  })}
+                </div>
+                <p className="hint hint--left">{d.sitOutHint}</p>
+              </>
+            )}
+          </div>
           <div className="stepper">
             <span>{s.games}</span>
             <button type="button" className="key" disabled={games <= 1} onClick={() => setGames(games - 1)}>
@@ -183,13 +235,24 @@ export function Setup({ onBack, freePlay = false }: { onBack: () => void; freePl
             type="button"
             className="button button--big"
             disabled={!ready}
-            onClick={() => send({ type: 'start', players: picked, games })}
+            onClick={() => send({ type: 'start', players: picked, games, ...(drinking ? { drinking: { sitOut } } : {}) })}
           >
             {s.start}
           </button>
         </footer>
       )}
 
+      {showRules && (
+        <Modal title={d.rulesTitle} onClose={() => setShowRules(false)}>
+          <p className="hint">{d.settingsHint}</p>
+          <DrinkRuleSwitches />
+          <p className="hint">{d.wheelRule}</p>
+          <p className="hint">{d.footer}</p>
+          <button type="button" className="button" onClick={() => setShowRules(false)}>
+            {strings.common.back}
+          </button>
+        </Modal>
+      )}
       {editing && (
         <PlayerEditor
           player={editing === 'new' ? null : editing}

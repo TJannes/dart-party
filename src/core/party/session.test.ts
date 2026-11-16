@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { seededRandom } from '../random'
+import { drinkTally, drinkingNow } from './drinking'
 import { activeState, type Party, type Player } from './party'
 import { PartySession, type Store } from './session'
 
@@ -184,5 +185,78 @@ describe('PartySession', () => {
     expect(starts).toBe(1)
     s.command({ type: 'playAgain' })
     expect(starts).toBe(2)
+  })
+
+  describe('as a drinking game', () => {
+    const three: Player[] = ['ann', 'bob', 'cy'].map((name) => ({ id: name, name, avatar: 'fox' }))
+    function drinking(store: Store, games = 2) {
+      const s = new PartySession(store, seededRandom(5), () => {}, () => new Date(0), () => ['race'], () => {}, () => [
+        'threeMisses',
+        'afterGame',
+        'podium',
+      ])
+      s.command({ type: 'start', players: three, games, drinking: { sitOut: ['cy', 'nobody'] } })
+      return s
+    }
+    const miss = { type: 'addDart', dart: { miss: true } } as const
+
+    it('starts on the rules card with the rules of the settings and who sits out', () => {
+      const s = drinking(memoryStore().store)
+      expect(s.current!.stage).toBe('drinkRules')
+      expect(s.current!.drinking).toMatchObject({ rules: ['threeMisses', 'afterGame', 'podium'], sitOut: ['cy'] })
+      s.command({ type: 'advance' })
+      expect(s.current!.stage).toBe('draw')
+    })
+
+    it('is an ordinary party without the word', () => {
+      const { s } = session(memoryStore().store)
+      s.command({ type: 'start', players, games: 1 })
+      expect(s.current!.stage).toBe('draw')
+      expect(s.current!.drinking).toBeUndefined()
+    })
+
+    it('lets a player sit out and the mode be switched off during the party', () => {
+      const s = drinking(memoryStore().store)
+      for (let i = 0; i < 3; i++) s.command({ type: 'advance' })
+      const first = activeState(s.current!)!.current!.player
+      s.command({ type: 'setSitOut', player: first, out: true })
+      for (let i = 0; i < 3; i++) s.command(miss)
+      expect(drinkTally(s.current!)[first]!.drunk).toBe(0)
+      s.command({ type: 'setDrinking', on: false })
+      expect(drinkingNow(s.current!).on).toBe(false)
+    })
+
+    it('spins the wheel between games, keeps the outcome over a restart, and saves the sips', () => {
+      const { store } = memoryStore()
+      const s = drinking(store, 2)
+      for (let i = 0; i < 3; i++) s.command({ type: 'advance' })
+      winRace(s)
+      s.command({ type: 'advance' })
+      expect(s.current!.stage).toBe('wheel')
+      s.command({ type: 'spinWheel' })
+      const wheel = s.current!.drinking!.wheels[0]!
+      expect(['ann', 'bob']).toContain(wheel.player)
+
+      const resumed = drinking(store)
+      expect(resumed.current!.stage).toBe('wheel')
+      expect(resumed.current!.drinking!.wheels[0]).toEqual(wheel)
+      resumed.command({ type: 'spinWheel' })
+      expect(resumed.current!.drinking!.wheels[0]).toEqual(wheel)
+
+      for (let i = 0; i < 3; i++) resumed.command({ type: 'advance' })
+      winRace(resumed)
+      resumed.command({ type: 'advance' })
+      // A tie at the top is played off first.
+      for (let guard = 0; guard < 20 && resumed.current!.stage === 'decider'; guard++) {
+        resumed.command({ type: 'addDart', dart: { number: 20, multiplier: guard % 3 === 0 ? 3 : 1 } })
+        resumed.command({ type: 'nextPlayer' })
+        resumed.command({ type: 'advance' })
+      }
+      expect(resumed.current!.stage).toBe('podium')
+      const tally = drinkTally(resumed.current!)
+      resumed.command({ type: 'finish' })
+      expect(resumed.history.at(-1)!.drinks).toEqual(tally)
+      expect(tally['cy']!.drunk).toBe(0)
+    })
   })
 })

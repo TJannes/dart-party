@@ -6,7 +6,8 @@ import { PartyLog } from '../core/log/partyLog'
 import { partySummary, type Party } from '../core/party/party'
 import { PartySession, type PartyCommand } from '../core/party/session'
 import { cleanProfiles } from '../core/players'
-import { cleanSettings, enabledGames, type Settings } from '../core/settings'
+import { drinkOrders } from '../core/party/drinking'
+import { cleanSettings, enabledDrinkRules, enabledGames, type Settings } from '../core/settings'
 import { ipc } from '../shared/api'
 import { AutodartsClient } from './autodarts/client'
 import { logFiles } from './logFiles'
@@ -46,6 +47,19 @@ export function initState(onSettingsChanged: (settings: Settings) => void): AppS
     }
     if (party) log.party(partySummary(party))
     else log.end()
+    logDrinks(party)
+  }
+
+  /** The orders of the drinking game, each logged once; a correction logs the list again. */
+  let loggedOrders: string[] | null = null
+  function logDrinks(party: Party | null): void {
+    const orders = party ? drinkOrders(party).map((order) => JSON.stringify(order)) : []
+    // A party carried over from before a restart has its orders in the log already.
+    loggedOrders ??= orders
+    const same = loggedOrders.every((order, n) => orders[n] === order)
+    if (!same) log.record('drinksRecounted', { orders: orders.map((order) => JSON.parse(order) as unknown) })
+    else for (const order of orders.slice(loggedOrders.length)) log.record('drink', JSON.parse(order))
+    loggedOrders = orders
   }
 
   const session = new PartySession(
@@ -64,6 +78,7 @@ export function initState(onSettingsChanged: (settings: Settings) => void): AppS
       // the board makes it stuck once that dart is pulled.
       if (tracker.snapshot.throws.length > 0) reset('gameStart')
     },
+    () => enabledDrinkRules(settings),
   )
 
   const tracker = new BoardTracker({

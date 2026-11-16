@@ -3,6 +3,7 @@ import type { Party } from '../../../core/party/party'
 import { strings } from '../../../shared/strings'
 import { send } from '../hooks'
 import { BoardStatus } from './BoardStatus'
+import { DrinksPanel } from './Drinks'
 import { Modal } from './Modal'
 import { Volume } from './Volume'
 
@@ -23,6 +24,7 @@ export function PartyFrame(props: { party: Party; title: string; detail?: string
             : party.stage !== 'decider' && party.stage !== 'podium' && s.gameOf(party.games.length, party.gamesPlanned)}
           {props.detail ? ` · ${props.detail}` : ''}
         </span>
+        <DrinksPanel party={party} />
         <button type="button" className="button button--quiet" onClick={() => setVolume(true)}>
           {strings.settings.volume}
         </button>

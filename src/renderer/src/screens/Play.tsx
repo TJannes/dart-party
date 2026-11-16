@@ -8,6 +8,8 @@ import { strings } from '../../../shared/strings'
 import { colourOf, playerOf } from '../colours'
 import { Avatar } from '../components/Avatar'
 import { Controls } from '../components/Controls'
+import { Glass, OrderList, useDrinks } from '../components/Drinks'
+import { ordersAfterGame } from '../../../core/party/drinking'
 import { Standings } from '../components/Standings'
 import { dartText } from '../dartText'
 import { PartyFrame } from '../components/PartyFrame'
@@ -37,6 +39,8 @@ function Result({ party, animate }: { party: Party; animate: boolean }): React.J
   const isGame = party.stage === 'playing' && !party.freePlay
   const earned = isGame ? pointsForRanking(state.ranking) : {}
   const totals = new Map(standings(party).map((row) => [row.player, row.points]))
+  const drinks = useDrinks(party)
+  const orders = isGame ? ordersAfterGame(party, party.games.length - 1) : []
 
   return (
     <div className="result">
@@ -53,6 +57,7 @@ function Result({ party, animate }: { party: Party; animate: boolean }): React.J
               before: (totals.get(player.id) ?? 0) - (earned[player.id] ?? 0),
               earned: earned[player.id] ?? 0,
               mood: places[player.id] === 1 ? 'cheer' : 'idle',
+              extra: <Glass drinks={drinks} player={player.id} />,
             }))}
           />
         ) : (
@@ -69,6 +74,7 @@ function Result({ party, animate }: { party: Party; animate: boolean }): React.J
             })}
           </ol>
         )}
+        <OrderList party={party} orders={orders} />
         {party.freePlay ? (
           <div className="row">
             <button type="button" className="button button--big" onClick={() => send({ type: 'playAgain' })}>

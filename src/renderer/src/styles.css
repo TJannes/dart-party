@@ -631,6 +631,10 @@ h1 {
   justify-content: center;
   gap: 0.5rem;
   min-height: 0;
+  /* The rows measure themselves against the height there is, so eight players fit too. */
+  container-type: size;
+  /* As big as usual when there is room, else what a row of two lines can hold. */
+  --lane-font: min(1.5rem, calc((100cqh / var(--rows, 4) - 0.5rem) / 2.9));
 }
 
 .race__board {
@@ -684,6 +688,7 @@ h1 {
 
 .lane {
   flex: 1;
+  min-height: 0;
   max-height: 6.5rem;
   display: flex;
   align-items: center;
@@ -692,7 +697,7 @@ h1 {
   border-left: 0.6rem solid;
   border-radius: 0.8rem;
   background: var(--panel);
-  font-size: 1.5rem;
+  font-size: var(--lane-font, 1.5rem);
 }
 
 .lane--active {
@@ -749,7 +754,7 @@ h1 {
   line-height: 1.15;
 }
 
-.lane__who span {
+.lane__who > span {
   font-size: 1.15em;
   font-weight: 800;
 }
@@ -873,7 +878,8 @@ h1 {
 }
 
 .scene__heading {
-  font-size: 2rem;
+  margin: 0;
+  font-size: min(2rem, calc(var(--lane-font, 1.5rem) * 1.33));
   font-weight: 800;
   color: var(--gold);
   text-align: center;
@@ -1689,4 +1695,286 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+}
+
+/* --------------------------------------------------------- drinking game */
+
+.glass {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  font-size: 0.87em;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.glass--out {
+  opacity: 0.6;
+}
+
+.glass__icon {
+  width: 0.9em;
+  height: 1.1em;
+  vertical-align: -0.15em;
+}
+
+.order-lines {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.order-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.2em 0.8em;
+  border-left: 0.35em solid;
+  border-radius: 0.6em;
+  background: var(--panel);
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.order-line small {
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.order-line--handOut {
+  color: var(--mint);
+}
+
+/* The strip at the bottom: above the scene, below nothing, and never in the way of a tap. */
+.drink-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 31;
+  display: flex;
+  justify-content: center;
+  /* Clear of the controls, which sit at the bottom of the window that has them. */
+  padding: 0 1rem 5.4rem;
+  pointer-events: none;
+}
+
+[data-role='show'] .drink-banner {
+  padding-bottom: 1.2rem;
+}
+
+.drink-banner__strip {
+  /* It shrinks towards the bottom edge, clear of the scene above it. */
+  transform-origin: 50% 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 1.2rem;
+  background: var(--panel-strong);
+  box-shadow:
+    0 0 0 4px var(--gold),
+    0 0.6rem 1.5rem rgb(0 0 0 / 45%);
+}
+
+.drink-banner .order-line {
+  font-size: 2.4rem;
+}
+
+.rules__drinks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.rules__list--drinks {
+  font-size: 1.5rem;
+  line-height: 1.35;
+}
+
+.modal .rules__list--drinks {
+  padding: 0.8rem 0.8rem 0.8rem 2rem;
+  font-size: 1.1rem;
+  text-align: left;
+}
+
+.rule-switches {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rule-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-height: 48px;
+  padding: 0.3rem 0.8rem;
+  border: 0;
+  border-radius: 0.8rem;
+  background: rgb(255 255 255 / 10%);
+  color: var(--text);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.rule-switch--on {
+  opacity: 1;
+}
+
+.rule-switch__state {
+  min-width: 3em;
+  padding: 0.15em 0.5em;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 18%);
+  font-weight: 800;
+  text-align: center;
+}
+
+.rule-switch--on .rule-switch__state {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+.drink-setup {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  border: 3px solid transparent;
+  border-radius: 1rem;
+  background: var(--panel);
+}
+
+.drink-setup--on {
+  border-color: var(--gold);
+}
+
+.drink-setup__title {
+  font-size: 1.4rem;
+  white-space: nowrap;
+}
+
+.drink-setup .chip,
+.drink-setup .button {
+  flex: 0 0 auto;
+}
+
+.sitters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.sitter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 6rem;
+  padding: 0.5rem;
+  border: 3px solid var(--gold);
+  border-radius: 1rem;
+  background: rgb(255 210 63 / 22%);
+  color: var(--text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sitter--out {
+  border-color: transparent;
+  background: rgb(255 255 255 / 10%);
+  opacity: 0.7;
+}
+
+.wheels {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4vw;
+  min-height: 0;
+}
+
+.wheel {
+  position: relative;
+  height: 100%;
+  max-height: 52vh;
+  aspect-ratio: 1;
+}
+
+.wheel > svg:first-child {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0.5rem 1rem rgb(0 0 0 / 40%));
+}
+
+.wheel__pointer {
+  position: absolute;
+  top: -3%;
+  left: 50%;
+  width: 9%;
+  translate: -50% 0;
+}
+
+.wheel-result {
+  display: grid;
+  place-items: center;
+  min-height: 9rem;
+}
+
+.wheel-result__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.6rem;
+  border-radius: 1.2rem;
+  background: var(--panel-strong);
+  box-shadow: 0 0 0 4px var(--gold);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.wheel-result__card h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  margin: 0;
+  font-size: 2.2rem;
+}
+
+.wheel-result__card p {
+  margin: 0;
+}
+
+.wheel-result__card .chip {
+  flex: 0 0 auto;
+}
+
+.podium__extra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.podium__titles {
+  display: flex;
+  gap: 2rem;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--gold);
 }

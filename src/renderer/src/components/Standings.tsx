@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { placesOf } from '../../../core/party/points'
 import { rankByScore, type PlayerId } from '../../../core/game/types'
 import { strings } from '../../../shared/strings'
@@ -19,6 +19,8 @@ export interface StandingsEntry {
   /** Points earned in it. */
   earned: number
   mood?: Mood
+  /** Something after the name: the glass of a drinking game. */
+  extra?: ReactNode
 }
 
 function Crown(): React.JSX.Element {
@@ -102,6 +104,7 @@ export function Standings(props: { rows: readonly StandingsEntry[]; animate: boo
             <Avatar avatar={row.avatar} size="2em" mood={row.mood ?? 'idle'} />
           </span>
           <span className="scoreboard__name">{row.name}</span>
+          {row.extra}
           {phase >= 1 ? (
             <motion.span
               className="scoreboard__earned"

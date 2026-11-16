@@ -6,6 +6,16 @@ import { cleanX01Setup } from '../game/x01'
 import type { PlayerId, Ranking } from '../game/types'
 import type { Random } from '../random'
 import {
+  DRINK_RULES,
+  drinkTally,
+  pickBuddy,
+  setDrinkingOn,
+  setSitOut,
+  spinWheel,
+  type DrinkRule,
+  type DrinkTally,
+} from './drinking'
+import {
   activeRecord,
   addDart,
   advance,
@@ -35,7 +45,8 @@ export type DartInput =
   | { position: { x: number; y: number } }
 
 export type PartyCommand =
-  | { type: 'start'; players: Player[]; games: number }
+  /** `drinking` makes it a drinking game; `sitOut` are the players who do not drink. */
+  | { type: 'start'; players: Player[]; games: number; drinking?: { sitOut?: PlayerId[] } }
   /** One game on its own. `options` are the game's own, such as X01's start score. */
   | { type: 'startFreePlay'; players: Player[]; game: string; options?: unknown }
   /** The same free-play game once more. */
@@ -46,6 +57,12 @@ export type PartyCommand =
   | { type: 'correctDart'; turn: number; index: number; dart: DartInput }
   | { type: 'removeLastDart' }
   | { type: 'nextPlayer' }
+  /** The drinking game off or back on, from now on. */
+  | { type: 'setDrinking'; on: boolean }
+  /** One player sits out of the drinking, or joins in again. */
+  | { type: 'setSitOut'; player: PlayerId; out: boolean }
+  | { type: 'spinWheel' }
+  | { type: 'pickBuddy'; player: PlayerId }
   /** Stop the party without a result. */
   | { type: 'abort' }
   /** Leave the podium: the result goes to the history. */
@@ -58,6 +75,8 @@ export interface PartyResult {
   ranking: Ranking
   points: Record<PlayerId, number>
   games: string[]
+  /** Sips taken and handed out, when it was a drinking game. */
+  drinks?: Record<PlayerId, DrinkTally>
 }
 
 /** Named JSON documents that survive a restart. */
@@ -116,6 +135,8 @@ export class PartySession {
      * dart. The app uses it to clear darts Autodarts noted in between.
      */
     private readonly onGameStart: () => void = () => {},
+    /** The drinking rules that hold in a drinking game started now. */
+    private readonly drinkRules: () => DrinkRule[] = () => [...DRINK_RULES],
   ) {
     this.party = readSavedParty(store.load(PARTY))
     // A party saved by an older version: carry it over under the new name.
@@ -156,7 +177,12 @@ export class PartySession {
       // Players are fixed once a party starts; abort it first.
       if (this.party) return
       try {
-        this.set(startParty(command.players, command.games, this.games(), this.random))
+        const ids = command.players.map((p) => p.id)
+        const sitOut = command.drinking?.sitOut
+        const drinking = command.drinking
+          ? { rules: this.drinkRules(), sitOut: Array.isArray(sitOut) ? ids.filter((id) => sitOut.includes(id)) : [] }
+          : undefined
+        this.set(startParty(command.players, command.games, this.games(), this.random, drinking))
       } catch {
         // Not a valid party: nothing starts.
       }
@@ -194,6 +220,14 @@ export class PartySession {
         return this.set(removeLastDart(party))
       case 'nextPlayer':
         return this.set(nextPlayer(party))
+      case 'setDrinking':
+        return this.set(setDrinkingOn(party, command.on === true))
+      case 'setSitOut':
+        return this.set(setSitOut(party, command.player, command.out === true))
+      case 'spinWheel':
+        return this.set(spinWheel(party, this.random))
+      case 'pickBuddy':
+        return this.set(pickBuddy(party, command.player))
       case 'abort':
         return this.set(null)
       case 'finish':
@@ -214,6 +248,7 @@ export class PartySession {
       ranking: finalRanking(party),
       points,
       games: party.games.map((record) => record.gameId),
+      ...(party.drinking ? { drinks: drinkTally(party) } : {}),
     }
   }
 

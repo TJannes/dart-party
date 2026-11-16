@@ -39,6 +39,7 @@ export const timeBomb: GameRules<TimeBombSetup, TimeBombView> = {
   id: 'timeBomb',
   dartsPerTurn: 3,
   maxRounds: 10,
+  emptyTurnsAreNormal: true,
 
   setup: (_players, random) => ({
     fuses: Array.from(

@@ -219,6 +219,13 @@ export const gameShow: Theme = {
       { wave: 'square', from: 420, to: 250, at: 0.12, length: 0.06, gain: 0.22 },
       { wave: 'square', from: 360, to: 200, at: 0.22, length: 0.08, gain: 0.2 },
     ],
+    // Two gulps going down, and a glass being raised.
+    drink: [
+      { wave: 'sine', from: 620, to: 340, at: 0, length: 0.13, gain: 0.4 },
+      { wave: 'sine', from: 560, to: 310, at: 0.2, length: 0.13, gain: 0.4 },
+      { wave: 'triangle', from: 330, to: 440, at: 0.4, length: 0.16, gain: 0.3 },
+    ],
+    handOut: [blip(31, 0, 0.3, 0.3), blip(36, 0.02, 0.45, 0.25), blip(24, 0.25, 0.1, 0.25), blip(28, 0.35, 0.2, 0.3)],
     fanfare: [
       blip(7, 0, 0.18),
       blip(7, 0.2, 0.09),

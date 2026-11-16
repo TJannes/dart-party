@@ -1,4 +1,5 @@
 import { drawableGames } from './game/registry'
+import { DRINK_RULES, type DrinkRule } from './party/drinking'
 
 export const DEFAULT_ADDRESS = 'localhost:3180'
 
@@ -22,6 +23,10 @@ export interface Settings {
   calmAnimations: boolean
   /** In X01, show how the player at the board can finish. */
   checkoutHints: boolean
+  /** Whether the last party was started as a drinking game: the start screen remembers it. */
+  drinkingGame: boolean
+  /** Drinking rules that are switched off. */
+  disabledDrinkRules: DrinkRule[]
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -32,6 +37,8 @@ export const DEFAULT_SETTINGS: Settings = {
   screens: 'auto',
   calmAnimations: false,
   checkoutHints: true,
+  drinkingGame: false,
+  disabledDrinkRules: [],
 }
 
 /** A host:port as typed, tidied. Null when it cannot be an address. */
@@ -67,7 +74,16 @@ export function cleanSettings(raw: unknown): Settings {
     screens: given['screens'] === 'single' ? 'single' : 'auto',
     calmAnimations: given['calmAnimations'] === true,
     checkoutHints: given['checkoutHints'] !== false,
+    drinkingGame: given['drinkingGame'] === true,
+    disabledDrinkRules: Array.isArray(given['disabledDrinkRules'])
+      ? DRINK_RULES.filter((rule) => (given['disabledDrinkRules'] as unknown[]).includes(rule))
+      : [],
   }
+}
+
+/** The drinking rules that are switched on. */
+export function enabledDrinkRules(settings: Settings): DrinkRule[] {
+  return DRINK_RULES.filter((rule) => !settings.disabledDrinkRules.includes(rule))
 }
 
 /** The mini-games that may be drawn. */

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { cleanAddress, cleanSettings, DEFAULT_SETTINGS, enabledGames } from './settings'
+import { DRINK_RULES } from './party/drinking'
+import { cleanAddress, cleanSettings, DEFAULT_SETTINGS, enabledDrinkRules, enabledGames } from './settings'
 
 describe('settings', () => {
   it('shows the X01 finish suggestions unless they were switched off', () => {
@@ -28,6 +29,16 @@ describe('settings', () => {
       effectsVolume: 1,
       musicVolume: 0,
     })
+  })
+
+  it('remembers the drinking game and which of its rules are off', () => {
+    expect(DEFAULT_SETTINGS.drinkingGame).toBe(false)
+    expect(enabledDrinkRules(DEFAULT_SETTINGS)).toEqual([...DRINK_RULES])
+    const some = cleanSettings({ drinkingGame: true, disabledDrinkRules: ['podium', 'nonsense', 'podium'] })
+    expect(some.drinkingGame).toBe(true)
+    expect(some.disabledDrinkRules).toEqual(['podium'])
+    expect(enabledDrinkRules(some)).not.toContain('podium')
+    expect(cleanSettings({ drinkingGame: 'yes', disabledDrinkRules: 'all' })).toEqual(DEFAULT_SETTINGS)
   })
 
   it('never lets every game be switched off', () => {

@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type { Party, GameRecord } from '../../../core/party/party'
 import type { GameState, PlayerId } from '../../../core/game/types'
 import { useMoods } from '../animation/Stage'
 import { colourOf, playerOf } from '../colours'
 import { Avatar, type Mood } from '../components/Avatar'
+import { Glass, useDrinks } from '../components/Drinks'
 
 /** Who threw the last dart that counted, and what it did. */
 function lastThrow(record: GameRecord, state: GameState<unknown>): { player: PlayerId; good: boolean } | null {
@@ -51,12 +52,14 @@ export function ScoreScene(props: {
 }): React.JSX.Element {
   const { party, record, state } = props
   const moods = useMoods()
+  const drinks = useDrinks(party)
   // The animation in progress goes first, then how the game stands.
   const mood = (id: PlayerId): Mood =>
     moods[id] ?? (props.out?.includes(id) ? 'out' : props.nervous?.(id) ? 'sweat' : moodOf(id, record, state))
   return (
     <section className={props.duel ? 'race race--duel' : 'race'}>
-      <div className="race__track">
+      {/* A heading takes about the room of two rows. */}
+      <div className="race__track" style={{ '--rows': record.order.length + (props.heading ? 2 : 0) } as CSSProperties}>
         {props.heading && <p className="scene__heading">{props.heading}</p>}
         {record.order.map((id) => {
           const player = playerOf(party, id)
@@ -77,6 +80,7 @@ export function ScoreScene(props: {
                 {props.detail && <span style={{ color: colour }}>{props.detail(id)}</span>}
               </div>
               {props.held?.(id)}
+              <Glass drinks={drinks} player={id} />
               <strong className="lane__score" data-anim-score={id}>{props.score(id)}</strong>
             </div>
           )

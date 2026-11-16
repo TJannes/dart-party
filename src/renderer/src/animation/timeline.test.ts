@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Beat, Cue, DartStory } from '../../../core/party/cues'
 import { manualDart } from '../../../core/board/ring'
-import { blowTimes, DIG_TIME, MAX_CHAIN, STONE_FLIGHT, timelineOf } from './timeline'
+import { blowTimes, DIG_TIME, DRINK_CENTRE, MAX_CHAIN, STONE_FLIGHT, timelineOf } from './timeline'
 
 const story = (feedback: DartStory['feedback'], chain: Beat[]): DartStory => ({
   game: 'g0',
@@ -162,6 +162,32 @@ describe('the timeline of a cue', () => {
     const timeline = timelineOf(last, false)
     expect(timeline.steps.at(-1)!.scene).toEqual({ kind: 'round', round: 2, player: 'ann' })
     expect(timeline.sounds.at(-1)!.effect).toBe('lock')
+  })
+
+  it('gives the drinking banner the middle of the screen after the chain and before the next player', () => {
+    expect(timelineOf(dart('neutral', []), false).banner).toBeNull()
+
+    const plain = timelineOf(dart('neutral', [], 'bob'), false, [], { orders: true })
+    expect(plain.banner).toBeCloseTo(0.4)
+    const up = plain.steps.find((step) => step.scene.kind === 'turn')!
+    expect(up.at).toBeCloseTo(plain.banner! + DRINK_CENTRE)
+    expect(plain.sounds).toContainEqual({ at: up.at, effect: 'turn' })
+
+    // A hat-trick fills the screen first; the banner waits for it.
+    const feat: Beat[] = [{ kind: 'spectacle', what: 'hatTrick', player: 'ann' }]
+    const hatTrick = timelineOf(dart('good', feat), false, [], { orders: true })
+    const spectacle = hatTrick.steps.find((step) => step.scene.kind === 'spectacle')!
+    expect(hatTrick.banner).toBeCloseTo(spectacle.at + spectacle.length)
+    expect(hatTrick.length).toBeGreaterThanOrEqual(hatTrick.banner! + DRINK_CENTRE)
+
+    const bomb = timelineOf(dart('bad', [{ kind: 'dug', player: 'ann', segment: 20, found: 'bomb' }]), false, [], { orders: true })
+    expect(bomb.banner!).toBeGreaterThan(DIG_TIME)
+  })
+
+  it('lets a turn change wait for a drinking banner that is still in the middle', () => {
+    const timeline = timelineOf({ kind: 'turn', game: 'g0', gameId: 'race', player: 'bob' }, false, [], { wait: 1.2 })
+    expect(timeline.steps[0]!.at).toBeCloseTo(1.2)
+    expect(timeline.sounds).toEqual([{ at: 1.2, effect: 'turn' }])
   })
 
   it('makes a turn change a single short step', () => {

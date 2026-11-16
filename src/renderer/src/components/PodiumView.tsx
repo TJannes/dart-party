@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import type { PlayerId } from '../../../core/game/types'
 import { strings } from '../../../shared/strings'
 import { PLAYER_COLOURS } from '../colours'
@@ -69,6 +69,8 @@ export function PodiumView(props: {
   calm: boolean
   buttonLabel: string
   onButton: () => void
+  /** Shown under the podium once the winner is up: the drinking game's last word. */
+  extra?: ReactNode
 }): React.JSX.Element {
   const { entries } = props
   // Second place stands left of the winner, third place right.
@@ -130,6 +132,16 @@ export function PodiumView(props: {
             </li>
           ))}
         </ol>
+      )}
+      {props.extra && (
+        <motion.div
+          className="podium__extra"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: winnerAt + 0.8, duration: 0.5 }}
+        >
+          {props.extra}
+        </motion.div>
       )}
       <button type="button" className="button button--big" onClick={props.onButton}>
         {props.buttonLabel}

@@ -50,6 +50,28 @@ export interface Timeline {
   suspense: number
   /** When everything is over. */
   length: number
+  /**
+   * When the drinking banner comes up in the middle of the screen: after
+   * the chain, so it never fights a full-screen moment, and before the
+   * next player is announced. Null when nobody has to drink.
+   */
+  banner: number | null
+}
+
+/**
+ * The drinking banner: big in the middle of the screen for the first
+ * `DRINK_CENTRE` seconds, then in its strip at the bottom until
+ * `DRINK_BANNER` seconds, then small until the next dart.
+ */
+export const DRINK_BANNER = 10
+export const DRINK_CENTRE = 3
+
+/** What the drinking game asks of a timeline. */
+export interface DrinkTiming {
+  /** The dart of this cue makes someone drink or hand out: leave room for the banner. */
+  orders?: boolean
+  /** A banner is still in the middle for this many seconds: the next player waits for it. */
+  wait?: number
 }
 
 /** A chain may take this long, however much one dart caused. */
@@ -200,19 +222,27 @@ function roundSteps(gameId: string, round: number, player: PlayerId, at: number)
  * The timeline of a cue. `others` are the players of the game, for moods
  * of those who only watch.
  */
-export function timelineOf(cue: Cue, calm: boolean, others: readonly PlayerId[] = []): Timeline {
+export function timelineOf(
+  cue: Cue,
+  calm: boolean,
+  others: readonly PlayerId[] = [],
+  drinking: DrinkTiming = {},
+): Timeline {
   if (cue.kind === 'turn') {
-    const round = cue.round === undefined ? null : roundSteps(cue.gameId, cue.round, cue.player, 0)
+    // A drinking banner in the middle of the screen has the floor first.
+    const at = Math.max(0, drinking.wait ?? 0)
+    const round = cue.round === undefined ? null : roundSteps(cue.gameId, cue.round, cue.player, at)
     return {
       gameId: cue.gameId,
       steps: [
         ...(round ? [round.step] : []),
-        { key: 'turn', at: 0, length: TURN_LENGTH, scene: { kind: 'turn', player: cue.player } },
+        { key: 'turn', at, length: TURN_LENGTH, scene: { kind: 'turn', player: cue.player } },
       ],
-      sounds: [{ at: 0, effect: 'turn' }, ...(round?.sounds ?? [])],
+      sounds: [{ at, effect: 'turn' }, ...(round?.sounds ?? [])],
       moods: [],
       suspense: 0,
-      length: round ? Math.max(TURN_LENGTH, ROUND_LENGTH) : TURN_LENGTH,
+      length: at + (round ? Math.max(TURN_LENGTH, ROUND_LENGTH) : TURN_LENGTH),
+      banner: null,
     }
   }
 
@@ -302,9 +332,13 @@ export function timelineOf(cue: Cue, calm: boolean, others: readonly PlayerId[] 
     if (beat.kind === 'lost') moods.push({ player: beat.player, mood: 'shocked', from: step.at, until: step.at + 1.05 })
   }
 
+  // The drinking banner takes the middle of the screen once the chain is over.
+  const banner = drinking.orders ? Math.max(lead + 0.4, cursor) : null
+  const bannerDown = banner === null ? 0 : banner + DRINK_CENTRE
+
   const won = story.chain.some((beat) => beat.kind === 'won')
   if (cue.next && !won) {
-    const at = Math.max(cursor, lead + 0.9)
+    const at = Math.max(cursor, lead + 0.9, bannerDown)
     steps.push({ key: 'turn', at, length: TURN_LENGTH, scene: { kind: 'turn', player: cue.next } })
     sounds.push({ at, effect: 'turn' })
     if (cue.round !== undefined) {
@@ -321,6 +355,7 @@ export function timelineOf(cue: Cue, calm: boolean, others: readonly PlayerId[] 
     sounds,
     moods,
     suspense: lead,
-    length: Math.max(0, ...shown.map((step) => step.at + step.length), ...moods.map((span) => span.until)),
+    length: Math.max(bannerDown, ...shown.map((step) => step.at + step.length), ...moods.map((span) => span.until)),
+    banner,
   }
 }

@@ -13,9 +13,10 @@ with a real second screen, not on Windows, and nobody has listened to the
 sound yet. The owner still has to judge step 6 (animations in every game) on the
 Surface, under Settings, "Try the animations". Step 8 (themed animations per
 game) is built for all eleven games and seen only on the Animations screen
-on Ubuntu. The next thing to build is step 9 (rules
-explained by animation). See
-[Build steps](#build-steps).
+on Ubuntu. Step 9 (the drinking game) is built and not yet released: played
+through by hand on Ubuntu in one window, without darts, a second screen or
+sound. The next thing to build is step 10 (rules explained by animation).
+See [Build steps](#build-steps).
 
 ## Goal
 
@@ -137,6 +138,11 @@ All of these were agreed with the owner. Do not reopen them unprompted.
 ### Players
 
 - 2 to 8 players, everyone for themselves. No teams yet.
+  The rows of players in a game scene shrink to the height there is
+  (`--rows` on `.race__track`), so eight fit above the controls; with
+  eight the names get small, smallest in Time Bomb with its heading.
+  Whether to lower the maximum to six is an open question of the owner's
+  (2026-11-16).
 - Each player has a name and picks an avatar from a fixed set of about twenty
   drawn characters. No photo upload. Avatars are vector art so they can move
   and react (cheer, sulk) inside any scene.
@@ -263,6 +269,101 @@ All of these were agreed with the owner. Do not reopen them unprompted.
 - Logs hold the players' names: they stay out of the public repo. A log used
   as a fixture gets neutral names first.
 - Decided with the owner on 2026-11-15.
+
+### Drinking game
+
+Agreed with the owner in an interview on 2026-11-16.
+
+- A layer on top of a party. It never changes points or standings.
+- Switched on per party on the start screen: a switch "Drinking game" with
+  one sentence of explanation and a link to the rules. Off by default; the
+  last choice is remembered. Not in free play.
+- The rules hang on what every game reports (moments, the verdict per dart,
+  the ranking), never on one game, so a new mini-game takes part by itself.
+- The wording stays neutral ("drinks", "sip"); the word alcohol appears
+  nowhere, so any drink counts.
+- During a game:
+  - three misses in one turn: the thrower drinks 1;
+  - a turn that brings nothing (every dart neutral or bad): the thrower
+    drinks 1;
+  - points lost (broken pig, bomb in Minefield): the victim drinks 1;
+  - a life lost or blown up: the victim drinks 1, however many lives;
+  - knocked out: the victim drinks 2;
+  - the bar knocked off in Raise the Bar: the thrower drinks 1;
+  - a 180 or three darts in one segment: the thrower hands out 1.
+- One dart gives one player at most one order: the heaviest.
+- Being attacked without losing a life (pushed back, a wall hit) costs
+  nothing.
+- The empty-turn rule does not hold in Last One Standing, Race and Time
+  Bomb, where an empty turn is the usual thing. A rules module says so with
+  one optional field (`emptyTurnsAreNormal`); a game that says nothing gets
+  the rule.
+- Every rule has its own switch under Settings, "Drinking rules", all on by
+  default.
+- After a game: the last drinks with 2 to 4 players, the last two with 5 or
+  6, the last three with 7 or 8, one sip each. Whoever shares a place with a
+  drinker drinks too. The winner hands out as many sips as there are
+  drinkers.
+- On the podium: the last of the party drinks 2, the winner hands out 2,
+  and two titles are shown: "Thirstiest" (most sips taken) and "Most
+  generous" (most handed out). No drinking in a deciding round.
+- The wheel: after every game but the last, after the standings and before
+  the next draw. Never during a game. First a player wheel (purely random,
+  only players who drink), then a task wheel; one tap on "Spin" starts
+  both, about 8 seconds together, and the outcome stays up until someone
+  continues. "Skip" passes it; it cannot be spun again. The outcome is saved
+  when spun, so a restart shows the same result.
+- The task wheel has eight equal slots: Drink 1 (twice), Drink 2, Hand out
+  2, Everyone drinks, Everyone but you drinks, Pick a drinking buddy, Safe.
+- The buddy is tapped on the control panel and drinks along with the
+  chooser, one way only, until the next wheel. At most one pair. With no
+  other drinker the slot counts as Safe.
+- Handing out is done by word of mouth: the app only counts it for the
+  giver.
+- Sitting out: a tick per player at the start, and at any moment later on
+  the control panel. The whole mode can also be switched off and on again
+  during the party. Both count from that moment; earlier sips stay. A
+  player who sits out is not on the wheel, gets no orders to drink and
+  cannot be a buddy, but may hand out.
+- On screen: a banner that stays until the next dart, nothing to confirm.
+  It comes up big in the middle of the screen once the animation chain is
+  over, stays there for 3 seconds, then moves down to a fixed strip
+  at the bottom. After 10 seconds it shrinks to half its size, so it no
+  longer covers the bottom player or the board, and stays as a reminder
+  until the next dart falls or the party moves to another screen. The next
+  player is announced only when it has left the middle. It was 2 seconds
+  in the strip and was cut short by the turn passing; the owner found that
+  far too short after a hat-trick, asked for the middle first, and chose
+  the 3 seconds in the middle, the 10 seconds and staying until the next
+  dart (2026-11-16). Several drinkers from one dart share one banner. It
+  stays in calm mode, without flash or shaking.
+- A glass with a count beside every player on the scoreboard and on the
+  standings; a crossed-out glass for a player who sits out.
+- Two new synthesised sounds (drink, hand out); the wheels use the
+  existing reel sound.
+- A card "Drinking rules" after choosing the players and before the first
+  draw, with only the rules that are on and, at the bottom, "Any drink
+  counts. Anyone can sit out at any time." It stays within reach on the
+  control panel. Nothing extra on the rules card of a game.
+- The counts follow from the history of darts: a correction recounts them
+  and plays the banner of the new outcome, with no "you drank for nothing".
+  Nothing plays on undo.
+- Orders and wheel outcomes go into the party log; the final counts per
+  player go into the saved result.
+- Filled in while building, not put to the owner: a turn is only empty if
+  it also scored the thrower nothing (in Robin Hood three darts in the
+  outer zone are "neutral" but score 9); only a full turn of three darts
+  can be empty; a miss on an empty pig loses nothing, so costs no sip;
+  three darts in one segment hand out a sip in any game, also on a segment
+  that does nothing; when a dart gives a player an order to drink and one
+  to hand out of the same size, drinking wins; "after a game" and "podium"
+  are one switch each, covering both the drinker and the winner; the
+  winner hands out as many sips as players who really drink, so not for
+  those sitting out; several winners each hand out; when everyone is level
+  nobody drinks; on the podium only the last place drinks, whatever the
+  number of players; skipping a wheel also ends the buddy pair; the buddy
+  drinks the same number of sips as the chooser; the order of the slots on
+  the task wheel.
 
 ### Animations
 
@@ -759,7 +860,44 @@ number hit, with the next one under the name.
     at the start of their next turn; the pot shows its size as a number;
     the avatar in the high-jump set stands at the height of its total so
     far.*
-- [ ] **9. Rules explained by animation** on the rules card.
+- [x] **9. Drinking game.** As decided under
+  [Drinking game](#drinking-game).
+  *The rules are in `src/core/party/drinking.ts`, tested. A party holds an
+  optional `drinking` (the rules that are on, who sits out, the switches
+  thrown with the moment they count from, the wheel outcomes); everything
+  else is worked out from the darts. Two new stages: `drinkRules` (the card
+  before the first draw) and `wheel` (between a finished game and the next
+  draw, only when the mode is on and someone drinks). The session takes
+  `drinking` on `start` and the commands `setDrinking`, `setSitOut`,
+  `spinWheel` and `pickBuddy`. Settings keep `drinkingGame` (the last
+  choice) and `disabledDrinkRules`; a party keeps the rules it started
+  with. On screen: `components/Drinks.tsx` (glass, banner, rule switches,
+  the "Drinks" panel), `screens/DrinkRules.tsx`, `screens/Wheel.tsx`; the
+  banner is started by `animation/Stage.tsx`. The log gets a `drink` entry
+  per order and `drinksRecounted` after a correction; the saved result
+  gets `drinks`.*
+  *Played by hand on Ubuntu, one window, darts entered by command: the
+  switch and sitting out on the start screen, the rule switches, the card,
+  the banner for a knockout and for three misses, no banner for a player
+  who sits out, the glasses, the orders under the standings, the wheel
+  (spun, and again after a reload: it shows its outcome without turning),
+  the podium with its orders and titles. Not looked at: picking a buddy on
+  screen (the tests cover it), the hand-out banner, switching off
+  mid-party on screen, calm mode, the show window, Windows; nobody has
+  heard the two new sounds or the wheel ticking.*
+  *Filled in while building, not put to the owner: the rule switches open
+  in a dialog on the start screen instead of leading to Settings; the
+  "Drinks" button (mode off or on, who sits out, the rules) sits in the
+  header of every party screen, not only among the controls of a game; the
+  banner is a plain component, not a replaceable part of the theme pack;
+  it sits above the controls in the window that has them and at the very
+  bottom on the show; it plays the drink sound when anyone drinks, else
+  the hand-out sound; a dart taken back takes its banner with it; the
+  orders after a game are lines under the standings, without banner or
+  sound; the two wheels stand side by side, the task wheel starts when the
+  player wheel stops; with the mode switched off the glasses are hidden;
+  the Animations screen has no drinking moments.*
+- [ ] **10. Rules explained by animation** on the rules card.
 - [ ] **Parked: recorded music.** CC0 playlists per scene in place of the
   generated loops, as decided under [Style and sound](#style-and-sound).
   Parked by the owner on 2026-11-15; pick it up only when asked. The

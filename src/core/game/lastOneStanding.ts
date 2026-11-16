@@ -27,6 +27,7 @@ export const lastOneStanding: GameRules<LastOneStandingSetup, LastOneStandingVie
   id: 'lastOneStanding',
   dartsPerTurn: 3,
   maxRounds: 10,
+  emptyTurnsAreNormal: true,
 
   setup(players, random) {
     const dealt = shuffle(random, RING)

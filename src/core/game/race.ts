@@ -37,6 +37,7 @@ export const race: GameRules<RaceSetup, RaceView> = {
   id: 'race',
   dartsPerTurn: 3,
   maxRounds: 10,
+  emptyTurnsAreNormal: true,
 
   setup(players, random) {
     // Cut the ring into ten pairs of neighbours, starting at a random

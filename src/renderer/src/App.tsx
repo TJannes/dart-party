@@ -5,12 +5,14 @@ import { ROLE, useParty, useScreens, useSettings } from './hooks'
 import { AnimationsScreen } from './screens/AnimationsScreen'
 import { BoardCheck } from './screens/BoardCheck'
 import { Draw } from './screens/Draw'
+import { DrinkRules } from './screens/DrinkRules'
 import { Home } from './screens/Home'
 import { Play } from './screens/Play'
 import { Podium } from './screens/Podium'
 import { Rules } from './screens/Rules'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { Setup } from './screens/Setup'
+import { Wheel } from './screens/Wheel'
 import { sound } from './sound'
 import { useMusic } from './soundEvents'
 
@@ -75,6 +77,8 @@ function Screen({ party }: { party: ReturnType<typeof useParty> }): React.JSX.El
   if (menu !== 'home') setMenu('home')
 
   switch (party.stage) {
+    case 'drinkRules':
+      return <DrinkRules party={party} />
     case 'draw':
       return <Draw party={party} />
     case 'rules':
@@ -82,6 +86,8 @@ function Screen({ party }: { party: ReturnType<typeof useParty> }): React.JSX.El
     case 'playing':
     case 'decider':
       return <Play party={party} />
+    case 'wheel':
+      return <Wheel party={party} />
     case 'podium':
       return <Podium party={party} />
   }

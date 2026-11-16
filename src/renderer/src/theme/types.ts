@@ -89,6 +89,9 @@ export type EffectName =
   /** Raise the Bar: over the bar, or into it. */
   | 'jump'
   | 'clatter'
+  /** The drinking game: someone has to drink, someone may hand out. */
+  | 'drink'
+  | 'handOut'
 
 export type MusicScene = 'menu' | 'game' | 'podium'
 
