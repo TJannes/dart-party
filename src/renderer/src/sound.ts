@@ -87,6 +87,16 @@ class Sound {
     this.musicTimer = setInterval(() => this.scheduleMusic(theme.music[scene]), 100)
   }
 
+  /** Silences this instance for good: its music loop and anything still sounding. */
+  shutDown(): void {
+    this.stopMusic()
+    void this.context?.close()
+    this.context = null
+    this.effectsGain = null
+    this.musicGain = null
+    this.audible = false
+  }
+
   private stopMusic(): void {
     if (this.musicTimer !== null) clearInterval(this.musicTimer)
     this.musicTimer = null
@@ -111,3 +121,7 @@ class Sound {
 }
 
 export const sound = new Sound()
+
+// In development a changed file can make this module load again. The old
+// instance must stop its music loop then, or two tunes play over each other.
+import.meta.hot?.dispose(() => sound.shutDown())
