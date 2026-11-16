@@ -188,7 +188,8 @@ function soundsOf(beat: Beat, story: DartStory, step: Step): Sound[] {
     case 'roundResult':
       return one('medals')
     case 'blank':
-      return one('cough', 0.4)
+      // A bust in Blackjack is no quiet turn.
+      return one(gameId === 'blackjack' ? 'buzzer' : 'cough', 0.4)
     case 'fuse':
       // The ticking speeds up with what has burned, never with what is left.
       return one(beat.burned <= 2 ? 'fuseSlow' : beat.burned <= 5 ? 'fuseMid' : 'fuseFast')
@@ -263,6 +264,9 @@ export function timelineOf(
   // Digging takes a moment: nothing gives away what is under the segment before it is up.
   const lead = story.chain.some((beat) => beat.kind === 'dug') ? DIG_TIME : 0
   const sounds: Timeline['sounds'] = [{ at: lead, effect: FEEDBACK_SOUND[story.feedback] }]
+  // Every dart on the board is a card dealt; 21 pays out.
+  if (story.gameId === 'blackjack' && story.feedback !== 'bad') sounds.push({ at: 0.12, effect: 'card' })
+  if (story.gameId === 'blackjack' && story.feedback === 'great') sounds.push({ at: 0.45, effect: 'goldCoin' })
   if (story.gameId === 'robinHood') sounds.push(story.dart.miss ? { at: 0.3, effect: 'bird' } : { at: 0, effect: 'arrow' })
 
   steps.push({ key: 'impact', at: 0, length: 0.5, scene: { kind: 'impact', story } })

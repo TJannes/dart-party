@@ -158,3 +158,41 @@ export function Glove({ colour }: { colour: string }): React.JSX.Element {
     </svg>
   )
 }
+
+const SUITS = ['♠', '♥', '♣', '♦']
+
+/**
+ * A playing card of Blackjack: what a dart added to the hand. The suit only
+ * tells the cards apart. Without a value it lies face down: a dart off the
+ * board, or the deck.
+ */
+export function Card({ value, suit = 0 }: { value?: number; suit?: number }): React.JSX.Element {
+  const red = suit % 2 === 1
+  const ink = red ? '#d7263d' : INK
+  const text = value === 11 ? 'A' : String(value)
+  return (
+    <svg viewBox="0 0 50 70" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      {value === undefined || value === 0 ? (
+        <>
+          <rect x="1.5" y="1.5" width="47" height="67" rx="6" fill="#fff" stroke={INK} strokeWidth="2.5" />
+          <rect x="6" y="6" width="38" height="58" rx="3.5" fill="#6d4fb3" />
+          <path d="M25 14 L39 35 L25 56 L11 35 Z" fill="none" stroke="#ffd23f" strokeWidth="2.5" strokeLinejoin="round" />
+          <circle cx="25" cy="35" r="4.5" fill="#ffd23f" />
+        </>
+      ) : (
+        <>
+          <rect x="1.5" y="1.5" width="47" height="67" rx="6" fill="#fffdf6" stroke={INK} strokeWidth="2.5" />
+          <text x="25" y="38" textAnchor="middle" dominantBaseline="middle" fontSize={text.length > 1 ? 27 : 32} fontWeight="900" fill={ink}>
+            {text}
+          </text>
+          <text x="9" y="15" textAnchor="middle" dominantBaseline="middle" fontSize="13" fill={ink}>
+            {SUITS[suit % 4]}
+          </text>
+          <text x="41" y="57" textAnchor="middle" dominantBaseline="middle" fontSize="13" fill={ink} transform="rotate(180 41 57)">
+            {SUITS[suit % 4]}
+          </text>
+        </>
+      )}
+    </svg>
+  )
+}

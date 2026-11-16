@@ -62,6 +62,11 @@ describe('the demo on the rules card', () => {
     for (const { id } of drawableGames) out[id] = told(id)
     expect(out).toMatchInlineSnapshot(`
       {
+        "blackjack": [
+          "",
+          "",
+          "blank",
+        ],
         "higherOrLower": [
           "",
           "call",

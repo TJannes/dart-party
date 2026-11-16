@@ -1,5 +1,6 @@
 import type { Dart } from '../../../core/board/state'
 import type { Party, GameRecord } from '../../../core/party/party'
+import { BLACKJACK, type BlackjackView, type Hand } from '../../../core/game/blackjack'
 import type { DeciderView } from '../../../core/game/decider'
 import type { HigherOrLowerView } from '../../../core/game/higherOrLower'
 import type { LandGrabView } from '../../../core/game/landGrab'
@@ -26,7 +27,7 @@ import { playerOf } from '../colours'
 import { Avatar } from '../components/Avatar'
 import { colourOf } from '../colours'
 import { useSettings } from '../hooks'
-import { Bomb, CallArrow, Pig, Pot, swellOf, type PigFace } from '../theme/gameShowProps'
+import { Bomb, CallArrow, Card, Pig, Pot, swellOf, type PigFace } from '../theme/gameShowProps'
 import { Board } from '../components/Board'
 import { RaceScene } from './RaceScene'
 import { ScoreScene } from './ScoreScene'
@@ -60,6 +61,61 @@ function pigFace(record: GameRecord, state: GameState<unknown>, player: string):
 
 /** How high something worth `value` sits in the high-jump set, from the ground. */
 const jumpHeight = (value: number): string => `${8 + (Math.min(180, value) / 180) * 70}%`
+
+/**
+ * The card table of Blackjack: the deck, the hand of whoever threw last as
+ * cards, and what it adds up to. Every dart deals a card from the deck.
+ */
+function CardTable(props: { party: Party; table: BlackjackView['table'] }): React.JSX.Element {
+  const { party, table } = props
+  const state = !table ? 'empty' : table.bust ? 'bust' : table.total === BLACKJACK ? 'twentyOne' : 'open'
+  return (
+    <div className="felt" data-anim-prop="hand" style={table ? { borderColor: colourOf(party, table.player) } : undefined}>
+      <div className="felt__deck">
+        <Card />
+      </div>
+      <div className="felt__cards">
+        {table?.cards.map((value, n) => (
+          <motion.div
+            // A new hand is a new set of cards; a corrected dart is a new card.
+            key={`${table.turn}:${n}:${value}`}
+            className="felt__card"
+            initial={{ x: '-260%', y: '-20%', rotate: -40, rotateY: 180, opacity: 0 }}
+            animate={{ x: 0, y: 0, rotate: (n - (table.cards.length - 1) / 2) * 6, rotateY: 0, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 220, damping: 20, delay: 0.1 }}
+          >
+            <Card value={value} suit={n + table.turn} />
+          </motion.div>
+        ))}
+        {state === 'bust' && (
+          <motion.b
+            key={table!.turn}
+            className="felt__stamp"
+            initial={{ scale: 3, opacity: 0, rotate: -14 }}
+            animate={{ scale: 1, opacity: 1, rotate: -14 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 18, delay: 0.5 }}
+          >
+            {g.blackjack.bust}
+          </motion.b>
+        )}
+      </div>
+      {table && (
+        <div className="felt__who">
+          <Avatar avatar={playerOf(party, table.player).avatar} size="1.6em" />
+          <motion.b
+            key={table.total}
+            className={`felt__total felt__total--${state}`}
+            initial={{ scale: 1.5 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 14, delay: 0.25 }}
+          >
+            {table.total}
+          </motion.b>
+        </div>
+      )}
+    </div>
+  )
+}
 
 interface SceneProps {
   party: Party
@@ -187,6 +243,29 @@ function Scene(props: SceneProps): React.JSX.Element | null {
             view.closest[id] ? g.sniper.mm(Math.round(view.closest[id].mm)) : g.sniper.noDart
           }
           board={<Board cross={view.target} dots={dots} darts={darts} />}
+        />
+      )
+    }
+
+    case 'blackjack': {
+      const view = state.view as BlackjackView
+      const t = g.blackjack
+      const handText = (hand: Hand): string =>
+        hand.bust ? t.bust : hand.total === BLACKJACK ? t.twentyOne : String(hand.total)
+      return (
+        <ScoreScene
+          {...common}
+          heading={view.toBeat ? t.toBeat(view.toBeat.total) : t.aim}
+          score={(id) => view.scores[id]}
+          detail={(id) => {
+            const hand = view.hands[id]
+            if (hand && id === state.current?.player) return t.throwing(hand.total)
+            if (hand) return hand.bust || hand.total === BLACKJACK ? handText(hand) : t.hand(hand.total)
+            const last = view.previous?.[id]
+            return last ? t.last(handText(last), last.points) : ''
+          }}
+          feature={<CardTable party={party} table={view.table} />}
+          board={<Board darts={darts} />}
         />
       )
     }

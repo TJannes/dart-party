@@ -884,6 +884,105 @@ h1 {
   flex: none;
 }
 
+/* Blackjack: the card table above the board. */
+.felt {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 3%;
+  width: 100%;
+  max-width: 30rem;
+  max-height: 100%;
+  aspect-ratio: 2 / 1;
+  min-height: 0;
+  margin: auto;
+  padding: 2% 6%;
+  box-sizing: border-box;
+  border: 0.35rem solid #b8860b;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at 50% 35%, #2f9e6b, #14613f 75%);
+  box-shadow: inset 0 0 1.5rem rgb(0 0 0 / 45%);
+  container-type: size;
+}
+
+.felt__deck,
+.felt__card {
+  /* The deck, three cards and the total must fit side by side. */
+  height: min(72cqh, 25cqw);
+  aspect-ratio: 5 / 7;
+  filter: drop-shadow(0 0.2rem 0.2rem rgb(0 0 0 / 40%));
+}
+
+/* A few cards under the top one. */
+.felt__deck {
+  border-radius: 9%;
+  box-shadow:
+    0.15rem 0.15rem 0 #f3ead7,
+    0.3rem 0.3rem 0 #cfc6b4;
+}
+
+.felt__cards {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-width: 0;
+  perspective: 40rem;
+}
+
+.felt__card {
+  flex: none;
+  margin: 0 -2cqw;
+}
+
+.felt__stamp {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  padding: 0 0.3em;
+  border: 0.14em solid #ee4266;
+  border-radius: 0.2em;
+  background: rgb(27 10 56 / 78%);
+  color: #ee4266;
+  font-size: min(34cqh, 12cqw);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.felt__who {
+  display: grid;
+  justify-items: center;
+  gap: 0.1rem;
+  font-size: min(26cqh, 9cqw);
+}
+
+.felt__total {
+  min-width: 1.9em;
+  padding: 0.05em 0.2em;
+  border: 0.12em dashed #fff;
+  border-radius: 999px;
+  background: #1b0a38;
+  color: #fff;
+  font-size: 1.15em;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.felt__total--bust {
+  background: #ee4266;
+}
+
+.felt__total--twentyOne {
+  background: var(--gold);
+  color: #1b0a38;
+  box-shadow: 0 0 1rem var(--gold);
+}
+
 /* Raise the Bar: the high-jump set above the board. */
 .jump {
   position: relative;

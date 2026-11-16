@@ -209,6 +209,10 @@ export const gameShow: Theme = {
     ],
     crab: ticks(5, 0.4, 500),
     whoosh: [{ wave: 'sine', from: 300, to: 1200, at: 0, length: 0.25, gain: 0.3 }, blip(24, 0.2, 0.2, 0.3)],
+    card: [
+      { wave: 'sawtooth', from: 2200, to: 700, at: 0, length: 0.07, gain: 0.1 },
+      { wave: 'triangle', from: 480, to: 380, at: 0.07, length: 0.05, gain: 0.32 },
+    ],
     buzzer: [
       { wave: 'sawtooth', from: 110, at: 0, length: 0.45, gain: 0.3 },
       { wave: 'square', from: 117, at: 0, length: 0.45, gain: 0.18 },

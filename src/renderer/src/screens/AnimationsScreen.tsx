@@ -183,6 +183,14 @@ const RAISE_THE_BAR: Demo[] = [
   demo(t.jumpFail, thrown(barAt60, S(1), S(1)), S(1)),
 ]
 
+/** The first player holds 14 with one dart thrown. */
+const hand = thrown(game('blackjack', null, IDS.slice(0, 3)), S(14))
+const BLACKJACK: Demo[] = [
+  demo(t.cardDealt, game('blackjack', null, IDS.slice(0, 3)), S(14)),
+  demo(t.twentyOne, hand, T(7)),
+  demo(t.bust, hand, S(9)),
+]
+
 const PER_GAME: { id: keyof typeof strings.games; demos: Demo[] }[] = [
   { id: 'race', demos: RACE },
   { id: 'robinHood', demos: ROBIN_HOOD },
@@ -195,6 +203,7 @@ const PER_GAME: { id: keyof typeof strings.games; demos: Demo[] }[] = [
   { id: 'higherOrLower', demos: HIGHER_OR_LOWER },
   { id: 'timeBomb', demos: TIME_BOMB },
   { id: 'raiseTheBar', demos: RAISE_THE_BAR },
+  { id: 'blackjack', demos: BLACKJACK },
 ]
 
 const s = strings.animations.spectacle

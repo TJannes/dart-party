@@ -1,4 +1,5 @@
 import { aroundTheClock } from './aroundTheClock'
+import { blackjack } from './blackjack'
 import { decider } from './decider'
 import { higherOrLower } from './higherOrLower'
 import { landGrab } from './landGrab'
@@ -27,6 +28,7 @@ export const drawableGames: readonly GameRules<any, any>[] = [
   higherOrLower,
   timeBomb,
   raiseTheBar,
+  blackjack,
 ]
 
 /** Played on their own, outside a party. Never in the draw. */

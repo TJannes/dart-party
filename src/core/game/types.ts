@@ -184,6 +184,8 @@ export function playTurns(
     dartIndex: number,
     emit: Emit,
   ) => DartFeedback | { feedback: DartFeedback; finish: true } | { feedback: DartFeedback; endTurn: true },
+  /** Who throws which turn, for a game where the order is not the same every round. */
+  throwerOf: (turnIndex: number) => PlayerId = (turnIndex) => players[turnIndex % players.length]!,
 ): Progress {
   const maxTurns = roundLimit(rules, players.length) * players.length
   const feedback: DartFeedback[] = []
@@ -192,7 +194,7 @@ export function playTurns(
   let index = 0
   for (; index < turns.length && index < maxTurns; index++) {
     const turn = turns[index]!
-    const thrower = players[index % players.length]!
+    const thrower = throwerOf(index)
     throwers.push(thrower)
     const darts = turn.darts.slice(0, rules.dartsPerTurn)
     let ended = false
@@ -231,7 +233,7 @@ export function playTurns(
   return {
     finished: false,
     current: {
-      player: players[index % players.length]!,
+      player: throwerOf(index),
       round: Math.floor(index / players.length) + 1,
       dartsLeft: rules.dartsPerTurn,
       turn: index,

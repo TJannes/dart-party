@@ -21,9 +21,10 @@ and seen on Ubuntu in one window; released in 0.8.0 with the two changes
 to the drinking game of 2026-11-16. 0.8.1 has the new values in Piggy
 Bank (the double ring pays three times) and its own board. 0.8.2 has
 the target zone of Time Bomb that follows the players, and a wrong dart
-ending the turn in Higher or Lower. No build
-step is open; what is
-left is under "Later" and "Parked".
+ending the turn in Higher or Lower. Step 11 (Blackjack, a twelfth game) is
+built with its own scene and animations but not released: one round was
+played by hand on Ubuntu in one window, without darts, a second screen or
+sound. What is left after it is under "Later" and "Parked".
 See [Build steps](#build-steps).
 
 ## Goal
@@ -705,6 +706,59 @@ building and not yet confirmed: the 10-round limits, the free first dart and
 the 30 and 5 limits of Higher or Lower, the three-segment target zone and the
 fuse length of Time Bomb, and that hitting the target does not burn fuse.
 
+### Blackjack
+
+Added for balance: see "Balance: skill against luck" under the ideas below.
+Agreed with the owner on 2026-11-16, on Claude's proposal.
+
+- Get as close to 21 as you can without going over.
+- Only the number of the segment counts; the ring does not. A triple 7 is
+  7. So a chance triple cannot bust a weak thrower, and everyone sees at
+  once what a dart is worth.
+- The bull, inner and outer, is the ace: 11, or 1 when 11 would take the
+  hand over 21. The game works it out; nobody chooses.
+- A dart off the board is worth 0, but it is used up.
+- Stopping: pull your darts, after one, two or three. Over 21 is bust and
+  the turn is over at once; the next dart counts for the next player.
+- Per round the closest hand gets 3 points, the second 2, the third 1.
+  Equal hands share the place, as in Sniper. A bust scores nothing, also
+  when nearly everyone is bust.
+- Exactly 21 pays 1 point on top of the place.
+- 5 rounds, highest total wins.
+- The start moves up one player every round: whoever throws last knows
+  what to beat, and without this the leader of the party, who throws last,
+  would have that every round. `playTurns` takes the order of a game as
+  an optional `throwerOf`.
+- Why it balances: two random darts on the board make 21 on average, so a
+  weak thrower is near it by themselves and mostly has to choose when to
+  stop. A strong thrower can take 20 and stop, but going for 21 needs the
+  1, which lies between the 20 and the 18.
+- On screen: above the players "To beat: 19" (the best hand of the round
+  that is no longer being thrown at); under each name the hand, "Bust" or
+  "Blackjack!", and until a player's turn comes what the last round paid.
+  The dart slots show what a dart adds (7, A, Miss), not its ring.
+- Filled in while building, not put to the owner: the ace stays flexible,
+  as in the card game (a bull and then a 15 make 16, not a bust); a hand
+  of exactly 21 ends the turn; a hand of 0 (only misses) gets no place;
+  a bust is reported as a turn that brought nothing (`blank`: a cough, no
+  sip of its own); a miss sounds as a fault, any other dart as a hit, 21
+  as a big hit; the round is paid out without an animation, since it often
+  ends on a takeout and not on a dart; the wording on screen ("18 · pull
+  to stop" under the name of whoever is throwing).
+- Its own scene and animations, asked by the owner on 2026-11-16: a card
+  table above the board with the deck, the hand of whoever threw last as
+  playing cards, that player's avatar and the total on a chip. Every dart
+  deals a card from the deck (a dart off the board lies face down, a bull
+  is an A); a bust gets a red "BUST" stamp across the cards and a red
+  chip, 21 a gold chip. The hand stays on the table until the next player
+  throws, also the hand that closed a round. Themed moments: on a bust the
+  table shakes and the chips are swept off, with the buzzer in place of
+  the cough; on 21 chips fly up from the table, with the gold-coin sound.
+  One new synthesised sound, `card`, with every dart on the board. Three
+  entries on the Animations screen. Filled in while building: all of
+  these looks, the suits (they only tell the cards apart), and that the
+  round has no opening animation of its own.
+
 Some names and themes may still change.
 
 ### Ideas, not agreed
@@ -762,6 +816,56 @@ already have. The three marked "first" are the ones recommended to try first.
   neighbour; who fails loses a life. The next player leads the next round.
   Adds: the players set the targets themselves. To decide: what happens
   when the leader misses the board.
+
+**Balance: skill against luck (2026-11-16).** The owner wants weaker
+throwers to feel they can win. Claude's reading of the eleven games, not
+measured: mostly skill are Robin Hood, Spotlight, Piggy Bank, Sniper and
+Raise the Bar; mixed are Race, Land Grab, Last One Standing, Higher or
+Lower and Time Bomb; mostly luck is only Minefield. So the set leans to
+skill. New games should therefore be of the kind where any dart on the
+board does something and a choice or hidden information decides, not pure
+luck where the throw no longer matters. The owner brought a list of ideas
+on 2026-11-16; the ones below came out of it. Recommended order: Blackjack,
+Memory, Trap Runner. None is agreed; the rules are put to the owner when a
+game is about to be built.
+
+- **Blackjack** (balance, first). Built: see [Blackjack](#blackjack). It
+  is Close Call with a fixed number and stopping, so Close Call above is
+  no longer needed as a game of its own.
+- **Memory** (balance, second). Claude's reading of "Memory Darts" on the
+  owner's list, which only said "remember numbers". Ten pairs of pictures
+  lie hidden under the 20 segments. Every dart turns over the segment it
+  hits; two matching pictures in one turn are yours, the rest turn back
+  when the turn ends. Most pairs wins. Adds: memory and luck early on,
+  aim only once the places are known. Hidden things under segments, like
+  Minefield, but another mechanism. To decide: what the bull does, whether
+  a pair gives an extra dart, the round limit.
+- **Trap Runner** (balance, third). Everyone walks from 0 to exactly 20.
+  Any dart on the board is a step, double 2, triple 3; too many steps do
+  not count. Three segments are traps. Adds: a race where every dart moves
+  you and the leader can fall. As the owner's list had it (a trap sends
+  you back to 0, bull jumps to 18) a weak thrower hits a trap in about
+  four turns out of ten and would never finish, so it needs tuning: a trap
+  that costs a few steps, or checkpoints. To decide: that, whether traps
+  move, the bull.
+- **Bingo**. Everyone is dealt five numbers; the first to hit them all
+  wins. A random dart hits one a quarter of the time, so kinder than Race,
+  but still mostly aim. Close to Race and Around the Clock.
+- **Virus**. Every hit lets you give another player an infection; enough
+  infections cost darts or a turn. Adds: any hit works and the table gangs
+  up on the leader. Needs a choice of victim on the control panel after
+  every dart, which is slow; Bank Robbery covers much of it.
+
+Dropped from that list as too close to what exists: Killer and Survivor
+(Last One Standing), King of the Hill (Raise the Bar), Risky Business and
+Russian Roulette (Minefield), Hot Potato (Time Bomb), Domino (Higher or
+Lower, by position), High Risk / Safe (Call Your Shot), Odd vs Even and
+Color Game (Rule of the Round), Around the World (Around the Clock in free
+play), Tic Tac Toe (Land Grab, Snake), Last Man Standing. The secret-number
+Sniper needs every player to pick in secret, which one shared screen cannot
+do. The team games wait for teams, which do not exist yet. The drinking
+variants are not needed: the drinking game is a layer that every mini-game
+joins by itself.
 
 Ideas for themed animations per game are collected in `ANIMATION-IDEAS.md`.
 What is agreed about animations is under [Animations](#animations).
@@ -1015,6 +1119,12 @@ number hit, with the next one under the name.
   players appear at once before the last dart, and the round is paid out
   by pulling the darts straight after it; the captions and the shortened
   texts.*
+- [x] **11. Blackjack**, a twelfth game, added for balance (2026-11-16).
+  Rules, a card table as its scene, themed animations for a bust and for
+  21, rules card with demo, entries on the Animations screen, tests. *One
+  round played by hand on Ubuntu in one window (three cards, a bust, a 21
+  with a bull, the start moving up in round 2); the new sound not listened
+  to; not on Windows; not released.*
 - [ ] **Parked: recorded music.** CC0 playlists per scene in place of the
   generated loops, as decided under [Style and sound](#style-and-sound).
   Parked by the owner on 2026-11-15; pick it up only when asked. The

@@ -907,6 +907,52 @@ function PotWon(props: SceneProps<'scored'>): React.JSX.Element {
   )
 }
 
+// -------------------------------------------------------------- Blackjack
+
+/** The whole table swells a little: it is far bigger than a score. */
+const TABLE_POP: Keyframe[] = [{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }]
+const CHIPS = ['#ee4266', '#3bceac', '#ffd23f', '#ffffff', '#7fd4ff']
+
+/** Exactly 21: chips fly up from the table and the thrower shines. */
+function BlackjackTwentyOne({ step, stage }: SceneProps<'great'>): React.JSX.Element | null {
+  const table = stage.prop('hand')
+  const at = stage.avatar(step.scene.player)
+  useNudge(() => stage.propElement('hand'), TABLE_POP, step.at + 0.15, 350)
+  if (!table) return null
+  return (
+    <>
+      {!stage.calm && <Flash delay={step.at} strength={0.28} />}
+      <Burst at={table} delay={step.at + 0.15} colours={CHIPS} pieces={22} reach={22} length={1.1} />
+      <Sparkles at={{ ...table, size: table.size * 1.4 }} colour="#ffd23f" delay={step.at + 0.25} />
+      {at && <Sparkles at={at} colour={stage.colourOf(step.scene.player)} delay={step.at + 0.1} />}
+    </>
+  )
+}
+
+/** Bust: the table takes a knock as the stamp comes down, and the chips are swept away. */
+function BlackjackBust({ step, stage }: SceneProps<'blank'>): React.JSX.Element | null {
+  const table = stage.prop('hand')
+  useNudge(() => stage.propElement('hand'), SHAKE, step.at + 0.15, 400)
+  if (!table) return null
+  return (
+    <>
+      <Pow at={table} size={table.size * 1.6} delay={step.at + 0.1} length={0.45} />
+      <Pin at={{ x: table.x, y: table.y + table.size * 0.45 }}>
+        {CHIPS.slice(0, 4).map((colour, n) => (
+          <motion.i
+            key={colour}
+            className="fx-piece"
+            style={{ background: colour, borderRadius: '50%' }}
+            initial={{ x: (n - 1.5) * unit() * 3, y: 0, opacity: 0 }}
+            animate={{ x: unit() * (28 + n * 4), y: [0, -unit() * 2, unit() * 3], opacity: [0, 1, 1, 0], rotate: 540 }}
+            transition={{ duration: step.length * 0.8, delay: step.at + 0.3 + n * 0.05, ease: 'easeIn' }}
+          />
+        ))}
+      </Pin>
+    </>
+  )
+}
+
 /** Which of the general animations each of these games replaces. */
 export const gameShowGames: Record<string, Partial<AnimationSet>> = {
   race: { scored: RaceForward, attacked: RacePushed, won: RaceWon },
@@ -917,4 +963,5 @@ export const gameShowGames: Record<string, Partial<AnimationSet>> = {
   minefield: { dug: MinefieldDug, exploded: Exploded },
   higherOrLower: { call: CallResult },
   raiseTheBar: { jump: BarJump, scored: PotWon },
+  blackjack: { great: BlackjackTwentyOne, blank: BlackjackBust },
 }

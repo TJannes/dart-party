@@ -136,6 +136,12 @@ const SCRIPTS: Record<string, (record: GameRecord) => Script> = {
       { before: ['pull', S(1), S(2)], dart: S(3) },
     ],
   }),
+
+  // A triple that counts once, a hand of exactly 21, and the next player going over.
+  blackjack: () => ({
+    setup: null,
+    moves: [{ dart: T(7) }, { dart: S(14) }, { before: [S(20)], dart: S(18) }],
+  }),
 }
 
 /** The demo of the game in `record`, or null for a game that has none yet. */

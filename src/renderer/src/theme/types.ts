@@ -86,6 +86,8 @@ export type EffectName =
   /** Higher or Lower: the call was met, or not. */
   | 'whoosh'
   | 'buzzer'
+  /** Blackjack: a card is dealt. */
+  | 'card'
   /** Raise the Bar: over the bar, or into it. */
   | 'jump'
   | 'clatter'

@@ -114,6 +114,9 @@ export const strings = {
       callWrong: 'Call missed',
       jumpOver: 'Over the bar',
       jumpFail: 'Not over the bar',
+      cardDealt: 'A card dealt',
+      twentyOne: 'Exactly 21',
+      bust: 'Bust',
       between: 'Between games',
       moods: 'Avatar moods',
       fps: (fps: number) => `${fps} frames per second`,
@@ -495,6 +498,37 @@ export const strings = {
       holds: (bar: number) => `Holds the bar at ${bar}`,
       pot: (pot: number) => `Pot: ${pot}`,
       opening: (opening: number, openings: number) => `Bar ${opening} of ${openings}`,
+    },
+    blackjack: {
+      name: 'Blackjack',
+      rules: [
+        'Get as close to 21 as you can. Over 21 is bust: nothing this round.',
+        'Only the number of the segment counts, not the ring. The bull is 11, or 1 if 11 would bust you.',
+        'Enough? Pull your darts to stop.',
+        'Closest to 21: 3 points. Second: 2. Third: 1. Exactly 21: 1 extra.',
+        'Five rounds. The highest total wins.',
+      ],
+      short: [
+        'Get as close to 21 as you can. Over 21 is bust.',
+        'Enough? Pull your darts to stop.',
+        'Five rounds. The highest total wins.',
+      ],
+      demo: [
+        'Only the number counts: a triple 7 is 7.',
+        'Exactly 21: blackjack!',
+        'Over 21: bust, nothing this round.',
+      ],
+      /** Above the players: the best hand of the round so far, or what the round is about. */
+      toBeat: (total: number) => `To beat: ${total}`,
+      aim: 'Closest to 21 wins the round',
+      hand: (total: number) => `Hand: ${total}`,
+      /** The hand of whoever is at the board. */
+      throwing: (total: number) => `${total} · pull to stop`,
+      bust: 'Bust',
+      twentyOne: 'Blackjack!',
+      last: (hand: string, points: number) => `Last round: ${hand} · +${points}`,
+      /** The bull on a dart slot. */
+      ace: 'A',
     },
     x01: {
       name: 'X01',
