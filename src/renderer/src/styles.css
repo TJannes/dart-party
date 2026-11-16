@@ -1713,6 +1713,7 @@ h1 {
 }
 
 .glass__icon {
+  flex: none;
   width: 0.9em;
   height: 1.1em;
   vertical-align: -0.15em;
@@ -1768,9 +1769,11 @@ h1 {
   /* It shrinks towards the bottom edge, clear of the scene above it. */
   transform-origin: 50% 100%;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   gap: 0.6rem;
+  /* Never wider than the window, even at its largest in the middle (scale 1.5). */
+  max-width: calc((100vw - 2rem) / 1.5);
   padding: 0.6rem 1.2rem;
   border-radius: 1.2rem;
   background: var(--panel-strong);
@@ -1780,7 +1783,15 @@ h1 {
 }
 
 .drink-banner .order-line {
+  max-width: 100%;
   font-size: 2.4rem;
+  line-height: 1.15;
+}
+
+/* The buddy goes on a line of its own, so the banner stays narrow. */
+.drink-banner .order-line small {
+  display: block;
+  font-size: 0.7em;
 }
 
 .rules__drinks {
