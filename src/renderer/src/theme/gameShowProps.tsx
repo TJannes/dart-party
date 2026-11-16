@@ -219,3 +219,92 @@ export function MemoryCard({ picture }: { picture: keyof typeof MEMORY_PICTURES 
     </svg>
   )
 }
+
+/** A burning torch on the wall of the temple in Trap Runner: a rest stop. */
+export function Torch(): React.JSX.Element {
+  return (
+    <svg viewBox="-10 -30 20 44" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      <circle cy="-16" r="15" fill="#ffb347" opacity="0.22" />
+      <path d="M-2.2 -6 L2.2 -6 L1.4 13 L-1.4 13 Z" fill="#8a5a33" stroke={INK} strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M-4.5 -8 H4.5 L3 -3 H-3 Z" fill="#4b4560" stroke={INK} strokeWidth="1.2" strokeLinejoin="round" />
+      <g className="torch__flame">
+        <path d="M0 -27 Q7 -17 4.5 -9 Q0 -6 -4.5 -9 Q-7 -17 0 -27 Z" fill="#f08a4b" stroke="#ee4266" strokeWidth="1" />
+        <path d="M0 -20 Q3.5 -14 2 -10 Q0 -8.5 -2 -10 Q-3.5 -14 0 -20 Z" fill="#ffd23f" />
+      </g>
+    </svg>
+  )
+}
+
+/** The way out of the temple in Trap Runner: a stone arch with daylight and jungle behind it. */
+export function CaveExit(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 44 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      <defs>
+        <linearGradient id="cave-exit-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#7fd4ff" />
+          <stop offset="0.7" stopColor="#fff3b0" />
+          <stop offset="1" stopColor="#ffd23f" />
+        </linearGradient>
+      </defs>
+      {/* The light that falls into the corridor. */}
+      <path d="M8 58 L-12 59 L-12 28 L8 18 Z" fill="#fff3b0" opacity="0.16" />
+      <path d="M6 58 V24 Q6 4 22 4 Q38 4 38 24 V58 Z" fill="url(#cave-exit-sky)" />
+      <circle cx="26" cy="20" r="6" fill="#fff" opacity="0.9" />
+      {/* Jungle outside. */}
+      <path d="M6 58 V46 Q12 38 17 46 Q22 36 28 45 Q33 38 38 44 V58 Z" fill="#2f9e6b" />
+      <path d="M6 58 V51 Q14 45 20 52 Q27 46 38 51 V58 Z" fill="#14613f" />
+      {/* The stones of the arch. */}
+      <path
+        d="M0 60 V22 Q0 -2 22 -2 Q44 -2 44 22 V60 H38 V24 Q38 4 22 4 Q6 4 6 24 V60 Z"
+        fill="#6b5a4e"
+        stroke={INK}
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <path d="M0 40 H6 M0 26 H6 M38 40 H44 M38 26 H44 M3 12 L8 15 M41 12 L36 15 M13 1 L15 6 M31 1 L29 6 M22 -2 V4" stroke={INK} strokeWidth="1.1" strokeLinecap="round" />
+      {/* Vines over the top. */}
+      <path d="M4 6 Q8 14 5 22 M12 0 Q15 9 12 15 M36 2 Q33 10 37 18" fill="none" stroke="#2f9e6b" strokeWidth="2" strokeLinecap="round" />
+      <path d="M5 22 l-3 2 M12 15 l3 2 M37 18 l3 1 M8 12 l3 -1" stroke="#3bceac" strokeWidth="2.4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+/** The treasure chamber where the runners of Trap Runner start: a golden idol in a niche. */
+export function Idol(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 40 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      {/* The niche in the wall. */}
+      <path d="M4 60 V22 Q4 6 20 6 Q36 6 36 22 V60 Z" fill="#1b1220" stroke="#6b5a4e" strokeWidth="3" strokeLinejoin="round" />
+      <circle cx="20" cy="30" r="15" fill="#ffd23f" opacity="0.2" />
+      {/* The pedestal. */}
+      <path d="M11 60 V50 H29 V60 Z M8 50 H32 V46 H8 Z" fill="#8b7a6b" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+      {/* The idol: a squat golden figure with a big head. */}
+      <path d="M14 46 Q12 38 16 35 H24 Q28 38 26 46 Z" fill="#e0a90f" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+      <rect x="12" y="20" width="16" height="16" rx="4" fill="#ffd23f" stroke={INK} strokeWidth="1.4" />
+      <path d="M15.5 26 h3 M21.5 26 h3" stroke={INK} strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M16.5 31 h7" stroke={INK} strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M14 20 l2 -4 l2 4 M22 20 l2 -4 l2 4" fill="#ffd23f" stroke={INK} strokeWidth="1.2" strokeLinejoin="round" />
+      <path className="idol__glint" d="M31 14 l1.2 3 l3 1.2 l-3 1.2 l-1.2 3 l-1.2 -3 l-3 -1.2 l3 -1.2 Z" fill="#fff" />
+    </svg>
+  )
+}
+
+/** The boulder that rolls after whoever is last in Trap Runner. Only for show. */
+export function Boulder(): React.JSX.Element {
+  return (
+    <svg viewBox="-22 -22 44 44" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      <g className="boulder__rock">
+        <path
+          d="M-3 -20 Q10 -22 17 -11 Q23 0 16 12 Q8 21 -5 20 Q-17 17 -20 4 Q-22 -10 -3 -20 Z"
+          fill="#7d6f66"
+          stroke={INK}
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+        <path d="M-12 -8 Q-4 -15 6 -13" fill="none" stroke="#a89a8e" strokeWidth="3" strokeLinecap="round" />
+        <path d="M2 -4 l5 5 l-3 6 M-11 6 l5 -2 l2 6 M9 9 l4 -4" fill="none" stroke="#4b4038" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="-6" cy="-2" r="2" fill="#4b4038" />
+      </g>
+    </svg>
+  )
+}

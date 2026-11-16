@@ -106,6 +106,7 @@ const LENGTH: Record<Beat['kind'], number> = {
   roundResult: 1.3,
   dug: 1.3,
   flipped: 1,
+  trapped: 1.3,
   call: 0.7,
   jump: 1,
   spectacle: 1.4,
@@ -113,7 +114,7 @@ const LENGTH: Record<Beat['kind'], number> = {
 }
 
 /** These play while the dart lands; the rest plays one after the other. */
-const ALONGSIDE: Beat['kind'][] = ['scored', 'lost', 'fuse', 'measured', 'call', 'dug', 'flipped']
+const ALONGSIDE: Beat['kind'][] = ['scored', 'lost', 'fuse', 'measured', 'call', 'dug', 'flipped', 'trapped']
 
 /** How long the shovel digs before the segment shows what was under it. */
 export const DIG_TIME = 0.5
@@ -165,6 +166,8 @@ function soundsOf(beat: Beat, story: DartStory, step: Step): Sound[] {
     case 'scored':
       if (gameId === 'piggyBank') return one(beat.amount >= PIGGY_GOLD ? 'goldCoin' : 'clink', 0.6)
       if (gameId === 'race') return one(beat.amount >= 3 ? 'nitro' : 'vroom')
+      // Only the swing on the bull makes a noise; a step has the sound of its dart.
+      if (gameId === 'trapRunner') return beat.amount >= 2 ? one('jump') : []
       if (gameId === 'spotlight') return beat.amount === 3 ? one('applause', 0.3) : []
       if (gameId === 'landGrab') return one('build')
       if (gameId === 'raiseTheBar') return one('coin', 0.6)
@@ -181,6 +184,9 @@ function soundsOf(beat: Beat, story: DartStory, step: Step): Sound[] {
     case 'flipped':
       // A card turns; a pair is treasure.
       return [...one('flip'), ...(beat.match === null ? [] : one('chest', 0.45))]
+    case 'trapped':
+      // The doors give way, a beat in the air, and down.
+      return [...one('clatter', 0.1), ...one('slip', 0.45)]
     case 'measured':
       return one('measure')
     case 'call':
@@ -230,7 +236,7 @@ function roundSteps(
 ): { step: Step; sounds: Sound[] } {
   const scene: Scene = { kind: 'round', round, player, ...(level ? { level } : {}) }
   const step: Step = { key: 'round', at, length: level ? LEVEL_LENGTH : ROUND_LENGTH, scene }
-  const effect: EffectName | null = level ?? (gameId === 'spotlight' ? 'drumroll' : gameId === 'sniper' ? 'lock' : null)
+  const effect: EffectName | null = level ?? (gameId === 'spotlight' || gameId === 'trapRunner' ? 'drumroll' : gameId === 'sniper' ? 'lock' : null)
   return { step, sounds: effect ? [{ at, effect }] : [] }
 }
 

@@ -183,6 +183,16 @@ const RAISE_THE_BAR: Demo[] = [
   demo(t.jumpFail, thrown(barAt60, S(1), S(1)), S(1)),
 ]
 
+/** Traps under 18, 13 and 2; the first runner is two steps on the way. */
+const trail = game('trapRunner', { traps: [[18, 13, 2]] })
+const trailPair = nextPlayer(game('trapRunner', { traps: [[18, 13, 2]] }, pair))
+const TRAP_RUNNER: Demo[] = [
+  { label: t.trapRound, before: trailPair, after: nextPlayer(trailPair) },
+  demo(t.trapStep, trail, S(20)),
+  demo(t.trapSprung, thrown(trail, S(20), S(20)), S(18)),
+  demo(t.trapBull, thrown(trail, S(20)), manualDart(25, 2)),
+]
+
 /** Clockwise from the 20: star, heart, clover, diamond, triangle, and round again. */
 const cards = game('memory', {
   under: Object.fromEntries(RING.map((segment, index) => [segment, ['star', 'heart', 'clover', 'diamond', 'triangle'][index % 5]])),
@@ -211,6 +221,7 @@ const PER_GAME: { id: keyof typeof strings.games; demos: Demo[] }[] = [
   { id: 'raiseTheBar', demos: RAISE_THE_BAR },
   { id: 'blackjack', demos: BLACKJACK },
   { id: 'memory', demos: MEMORY },
+  { id: 'trapRunner', demos: TRAP_RUNNER },
 ]
 
 const s = strings.animations.spectacle

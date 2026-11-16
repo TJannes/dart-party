@@ -146,6 +146,12 @@ const SCRIPTS: Record<string, (record: GameRecord) => Script> = {
     moves: [{ dart: S(20) }, { dart: S(6) }, { dart: S(1) }],
   }),
 
+  // A step, a trap that sends the first player back, and the bull for the second.
+  trapRunner: () => ({
+    setup: { traps: Array.from({ length: 10 }, () => [18, 13, 2]) },
+    moves: [{ dart: S(20) }, { dart: S(18) }, { dart: manualDart(BULL, 2) }],
+  }),
+
   // A triple that counts once, a hand of exactly 21, and the next player going over.
   blackjack: () => ({
     setup: null,

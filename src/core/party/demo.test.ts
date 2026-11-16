@@ -128,6 +128,11 @@ describe('the demo on the rules card', () => {
           "passed",
           "exploded lifeLost",
         ],
+        "trapRunner": [
+          "scored",
+          "trapped lost",
+          "scored",
+        ],
       }
     `)
   })

@@ -74,6 +74,8 @@ export type Moment =
       picture: 'star' | 'heart' | 'clover' | 'diamond' | 'triangle'
       match: number | null
     }
+  /** `player` stepped into the trap under a segment and fell back `fell` steps. */
+  | { kind: 'trapped'; player: PlayerId; segment: number; fell: number }
   /** `player` had to throw higher or lower, and did or did not. */
   | { kind: 'call'; player: PlayerId; call: 'higher' | 'lower'; right: boolean }
   /** `player` tried to get over the bar `holder` held. */

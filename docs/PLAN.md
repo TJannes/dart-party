@@ -25,7 +25,8 @@ ending the turn in Higher or Lower. Step 11 (Blackjack, a twelfth game) is
 built with its own scene and animations but not released: one round was
 played by hand on Ubuntu in one window, without darts, a second screen or
 sound. Step 12 (Memory, a thirteenth game) is built in the same way and
-checked in the same way: three turns played by hand. What is left after it is under "Later" and "Parked".
+checked in the same way: three turns played by hand. Step 13 (Trap Runner,
+a fourteenth game) likewise. What is left after it is under "Later" and "Parked".
 See [Build steps](#build-steps).
 
 ## Goal
@@ -800,6 +801,79 @@ Claude's proposal.
   turn back without an animation, since that happens on the takeout and
   not on a dart; the wording.
 
+### Trap Runner
+
+The third game added for balance, from the owner's list. Agreed with the
+owner on 2026-11-16, on Claude's proposal; the owner asked for it before
+having played the other two.
+
+- Everyone walks from 0 to 15, with rest stops at 5 and 10.
+- A dart on the board is 1 step, whatever the ring. Off the board is
+  nothing.
+- Three segments hide a trap: new every round, the same for everyone in
+  that round. A trap someone fell into shows on the board until the round
+  is over.
+- Into a trap: back to your last rest stop, and the turn is over; the next
+  dart counts for the next player.
+- The bull, inner or outer, jumps to the next rest stop; from 10 or
+  further to 14, one step short of the finish.
+- First to 15 wins at once; the rest are ranked by distance. At most 10
+  rounds, fewer with more players as in Race (about 40 turns in all); then
+  the furthest wins.
+- Where it leaves the owner's list, and why. Claude simulated it with
+  assumptions of its own (a weak thrower misses the board 15% of the time
+  and lands anywhere on it, a strong one misses 3% and steers clear of
+  traps that show), so these are rough numbers, not measurements:
+  - every dart 1 step, not triple 3 and double 2: with the rings one
+    strong thrower among three weak ones wins about 75% of the games,
+    without them about 45%;
+  - hidden traps that move, not three fixed ones: fixed traps are simply
+    avoided by whoever can aim;
+  - back to the last rest stop, not to 0: with back to 0 a weak group
+    reaches the finish within 10 rounds in under half the games;
+  - 15 steps, not 20: at 20 a game takes 8 to 9 rounds and a weak group
+    finishes about 6 times in 10; at 15 it is 6 to 7 rounds and nearly
+    always finished.
+- Known: this is mostly a game of luck; aiming only helps to stay on the
+  board and off the traps that show. "Exactly 15" plays no part, as every
+  dart is one step. With 7 or 8 players and 5 rounds often nobody
+  finishes, and distance decides.
+- A step back counts as points lost in the drinking game: the victim
+  drinks 1. A trap at a rest stop costs nothing but the turn.
+- The theme is an escape from a temple in a cave (owner, 2026-11-16: the
+  first version, Race's track with a chequered flag, looked too much like
+  Race, and the finish line bothered him most; he gave an adventure film
+  as an example of the mood, not as something to copy). The rules text
+  says so: "Escape from the temple: 15 steps to daylight", a rest stop is
+  a torch ("back to the last torch you passed"), the bull "swings you to
+  the next torch", and "First one out wins!". In the code a torch is
+  still a rest stop.
+- On screen: a corridor of dark stone per player, with stepping stones
+  along the floor, a burning torch at each rest stop, the way out at the
+  end (a stone arch with vines, daylight and jungle behind it) and "7 /
+  15" under the name. Three more things the owner picked from Claude's
+  suggestions (2026-11-16): the corridor starts at a treasure chamber, a
+  niche with a golden idol that glints; a boulder rolls on the spot just
+  behind whoever is last, once someone is ahead and the last runner has
+  left the start (only for show: it changes nothing, and it fades to the
+  new last runner when that changes); and the board has a rim of old
+  stone blocks with moss (`variant="temple"`); above the corridors "Traps still hidden: 2"; a sprung trap is an open pit with spikes on a segment that glows
+  red (the board takes `pits`). A new moment, `trapped`: the lid on the
+  segment flies apart over a pit of spikes, the board shakes, the thrower
+  appears small above the hole, hangs for a beat, and falls in spinning;
+  on the track the runner drops out of sight and comes back at the rest
+  stop. Clatter, then the slip. A new round shows the traps moving: three
+  pits with a question mark hop over the board and sink away, with the
+  drum roll; where they hop is made up from the round number and says
+  nothing about the real traps. A step raises dust under the runner; on
+  the bull a vine comes down and the runner swings on it, with the jump
+  sound; the winner steps out into a flood of daylight. Nothing of Race is
+  used any more. Four entries on the Animations screen. The owner asked for the traps to be more graphic
+  after the first version, a red segment with a cross (2026-11-16).
+- Filled in while building, not put to the owner: a trap that already
+  shows is still a trap for whoever hits it; the bull does nothing at 14;
+  the sip for stepping back; these looks and the wording.
+
 Some names and themes may still change.
 
 ### Ideas, not agreed
@@ -863,7 +937,9 @@ throwers to feel they can win. Claude's reading of the eleven games, not
 measured: mostly skill are Robin Hood, Spotlight, Piggy Bank, Sniper and
 Raise the Bar; mixed are Race, Land Grab, Last One Standing, Higher or
 Lower and Time Bomb; mostly luck is only Minefield. So the set leans to
-skill. New games should therefore be of the kind where any dart on the
+skill. With Blackjack, Memory and Trap Runner built there are now two
+games of mostly luck (Minefield, Trap Runner), one of choice (Blackjack)
+and one more mixed one (Memory) against five of skill. New games should therefore be of the kind where any dart on the
 board does something and a choice or hidden information decides, not pure
 luck where the throw no longer matters. The owner brought a list of ideas
 on 2026-11-16; the ones below came out of it. Recommended order: Blackjack,
@@ -876,14 +952,7 @@ game is about to be built.
 - **Memory** (balance, second). Built: see [Memory](#memory). Claude's
   reading of "Memory Darts" on the owner's list, which only said "remember
   numbers".
-- **Trap Runner** (balance, third). Everyone walks from 0 to exactly 20.
-  Any dart on the board is a step, double 2, triple 3; too many steps do
-  not count. Three segments are traps. Adds: a race where every dart moves
-  you and the leader can fall. As the owner's list had it (a trap sends
-  you back to 0, bull jumps to 18) a weak thrower hits a trap in about
-  four turns out of ten and would never finish, so it needs tuning: a trap
-  that costs a few steps, or checkpoints. To decide: that, whether traps
-  move, the bull.
+- **Trap Runner** (balance, third). Built: see [Trap Runner](#trap-runner).
 - **Bingo**. Everyone is dealt five numbers; the first to hit them all
   wins. A random dart hits one a quarter of the time, so kinder than Race,
   but still mostly aim. Close to Race and Around the Clock.
@@ -1167,6 +1236,12 @@ number hit, with the next one under the name.
   Animations screen, tests. *Three turns played by hand on Ubuntu in one
   window (cards opening, turning back, a pair); sound not listened to; not
   on Windows; not released.*
+- [x] **13. Trap Runner**, a fourteenth game, the third for balance
+  (2026-11-16). Rules, a track with rest stops as its scene, a themed
+  animation for a trap, rules card with demo, entries on the Animations
+  screen, tests. *Three turns played by hand on Ubuntu in one window (the
+  bull jump, steps, two traps, the traps moving in round 2); sound not
+  listened to; not on Windows; not released.*
 - [ ] **Parked: recorded music.** CC0 playlists per scene in place of the
   generated loops, as decided under [Style and sound](#style-and-sound).
   Parked by the owner on 2026-11-15; pick it up only when asked. The

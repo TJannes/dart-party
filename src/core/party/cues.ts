@@ -59,6 +59,7 @@ export type LevelChange = 'harder' | 'easier'
 const ORDER: Beat['kind'][] = [
   'dug',
   'flipped',
+  'trapped',
   'measured',
   'call',
   'scored',

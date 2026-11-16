@@ -1074,6 +1074,112 @@ h1 {
   border-left: 2px dashed rgb(255 255 255 / 25%);
 }
 
+/* Trap Runner: a corridor of the temple, dark stone with courses of brick. */
+.lane--cave {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 1.05em, rgb(0 0 0 / 22%) 1.05em 1.15em),
+    linear-gradient(90deg, #2b2030, #3a2c2a 55%, #5b4a33);
+}
+
+.lane--cave.lane--active {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 1.05em, rgb(0 0 0 / 22%) 1.05em 1.15em),
+    linear-gradient(90deg, #4a3a52, #5c4840 55%, #86693f);
+}
+
+/* Stepping stones along the floor in place of the lines of a road. */
+.lane__road--cave {
+  align-items: flex-end;
+  margin-right: 1.1em;
+}
+
+.lane__road--cave i {
+  height: 0.55em;
+  margin: 0 0.12em 0.3em;
+  border: 0;
+  border-radius: 0.3em 0.3em 0.15em 0.15em;
+  background: #8b7a6b;
+  box-shadow:
+    inset 0 0.12em 0 rgb(255 255 255 / 25%),
+    0 0.12em 0 #1b0a38;
+}
+
+.cave__torch {
+  position: absolute;
+  bottom: 0.2em;
+  height: 78%;
+  aspect-ratio: 20 / 44;
+  translate: -50% 0;
+}
+
+.torch__flame {
+  transform-origin: 0 -8px;
+  animation: torch-flicker 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes torch-flicker {
+  from {
+    transform: scale(0.92, 1.05) rotate(-4deg);
+  }
+
+  to {
+    transform: scale(1.06, 0.94) rotate(4deg);
+  }
+}
+
+/* Where the runners start: the treasure chamber with its idol. */
+.cave__start {
+  align-self: stretch;
+  flex: none;
+  aspect-ratio: 40 / 60;
+  margin: 0.15em 0.5em 0.15em -0.4em;
+}
+
+.idol__glint {
+  transform-origin: 31px 18px;
+  animation: idol-glint 1.8s ease-in-out infinite;
+}
+
+@keyframes idol-glint {
+  0%,
+  60%,
+  100% {
+    transform: scale(0);
+  }
+
+  80% {
+    transform: scale(1.2) rotate(45deg);
+  }
+}
+
+/* The boulder behind whoever is last: it rolls on the spot, a little behind the runner. */
+.cave__boulder {
+  position: absolute;
+  bottom: 0.55em;
+  width: 2.3em;
+  height: 2.3em;
+  margin-left: -2.7em;
+  pointer-events: none;
+}
+
+.boulder__rock {
+  animation: boulder-roll 1.6s linear infinite;
+}
+
+@keyframes boulder-roll {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The way out, where Race has its flag. */
+.cave__exit {
+  align-self: stretch;
+  flex: none;
+  aspect-ratio: 44 / 60;
+  margin: 0.15em 0;
+}
+
 .lane__racer {
   position: absolute;
   top: 50%;

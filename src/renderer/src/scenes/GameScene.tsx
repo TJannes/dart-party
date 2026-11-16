@@ -13,6 +13,7 @@ import type { RaiseTheBarView } from '../../../core/game/raiseTheBar'
 import type { RobinHoodView } from '../../../core/game/robinHood'
 import type { SniperView } from '../../../core/game/sniper'
 import type { SpotlightView } from '../../../core/game/spotlight'
+import type { TrapRunnerView } from '../../../core/game/trapRunner'
 import type { TimeBombView } from '../../../core/game/timeBomb'
 import type { AroundTheClockView } from '../../../core/game/aroundTheClock'
 import { LAST_TARGET } from '../../../core/game/aroundTheClock'
@@ -31,6 +32,7 @@ import { useSettings } from '../hooks'
 import { Bomb, CallArrow, Card, MEMORY_PICTURES, Pig, Pot, swellOf, type PigFace } from '../theme/gameShowProps'
 import { Board } from '../components/Board'
 import { RaceScene } from './RaceScene'
+import { TrapRunnerScene } from './TrapRunnerScene'
 import { ScoreScene } from './ScoreScene'
 
 const g = strings.games
@@ -152,6 +154,9 @@ function Scene(props: SceneProps): React.JSX.Element | null {
   switch (record.gameId) {
     case 'race':
       return <RaceScene {...common} state={state as GameState<RaceView>} darts={darts} />
+
+    case 'trapRunner':
+      return <TrapRunnerScene {...common} state={state as GameState<TrapRunnerView>} darts={darts} />
 
     case 'robinHood': {
       const view = state.view as RobinHoodView

@@ -907,6 +907,231 @@ function PotWon(props: SceneProps<'scored'>): React.JSX.Element {
   )
 }
 
+// ------------------------------------------------------------ Trap Runner
+
+const FALL: Keyframe[] = [
+  { transform: 'translateY(0) rotate(0deg) scale(1)' },
+  { transform: 'translateY(-30%) rotate(-15deg) scale(1.1)' },
+  { transform: 'translateY(-30%) rotate(10deg) scale(1.1)' },
+  { transform: 'translateY(70%) rotate(60deg) scale(0.2)', opacity: 0.2 },
+  { transform: 'translateY(70%) rotate(60deg) scale(0.2)', opacity: 0 },
+  { transform: 'translateY(0) rotate(0deg) scale(1)', opacity: 1 },
+]
+
+const SWING: Keyframe[] = [
+  { transform: 'rotate(0deg) translateY(0)' },
+  { transform: 'rotate(-22deg) translateY(-30%)' },
+  { transform: 'rotate(18deg) translateY(-35%)' },
+  { transform: 'rotate(0deg) translateY(0)' },
+]
+
+/**
+ * A step: dust under the runner's feet. The jump on the bull: a vine comes
+ * down and the runner swings on it to the next torch.
+ */
+function TrapStep(props: SceneProps<'scored'>): React.JSX.Element {
+  const { step, stage } = props
+  const { player, amount } = step.scene
+  const at = stage.avatar(player)
+  const swing = amount >= 2
+  useNudge(() => avatarElement(player), SWING, step.at, step.length * 1000, !swing)
+  return (
+    <>
+      <Scored {...props} />
+      {at &&
+        [0, 1, 2].map((n) => (
+          <Pin key={n} at={{ x: at.x - at.size * 0.3, y: at.y + at.size * 0.4 }}>
+            <motion.i
+              className="fx-smoke fx-smoke--dust"
+              initial={{ x: 0, y: 0, scale: 0.2, opacity: 0 }}
+              animate={{ x: -at.size * (0.3 + n * 0.3), y: -at.size * 0.15, scale: [0.2, 0.7, 1], opacity: [0, 0.7, 0] }}
+              transition={{ duration: step.length * 0.7, delay: step.at + n * 0.07, ease: 'easeOut' }}
+            />
+          </Pin>
+        ))}
+      {at && swing && (
+        <Pin at={{ x: at.x, y: at.y - at.size * 1.6 }}>
+          <motion.svg
+            viewBox="-20 0 40 60"
+            style={{ width: at.size * 1.3, overflow: 'visible', transformOrigin: '50% 0%' }}
+            initial={{ rotate: -40, opacity: 0, scaleY: 0.2 }}
+            animate={{ rotate: [-40, -25, 30, 40], opacity: [0, 1, 1, 0], scaleY: [0.2, 1, 1, 0.6] }}
+            transition={{ duration: step.length, delay: step.at, ease: 'easeInOut' }}
+          >
+            <path d="M0 0 Q5 20 0 40 Q-3 50 0 58" fill="none" stroke="#2f9e6b" strokeWidth="4" strokeLinecap="round" />
+            <path d="M2 12 l7 -3 M-1 26 l-8 -2 M1 40 l7 2 M-1 52 l-6 3" stroke="#3bceac" strokeWidth="4" strokeLinecap="round" />
+          </motion.svg>
+        </Pin>
+      )}
+    </>
+  )
+}
+
+/** Out of the temple: daylight floods in from the exit of the winner's corridor. */
+function TrapEscaped(props: SceneProps<'won'>): React.JSX.Element {
+  const { step, stage } = props
+  const winner = step.scene.players[0]
+  const at = winner ? stage.avatar(winner) : null
+  return (
+    <>
+      {!stage.calm && <Flash delay={step.at} strength={0.7} />}
+      {at && (
+        <>
+          <Pin at={at}>
+            <motion.i
+              className="fx-ring fx-ring--gold"
+              initial={{ scale: 0.2, opacity: 0 }}
+              animate={{ scale: 9, opacity: [0, 1, 0] }}
+              transition={{ duration: 0.9, delay: step.at, ease: 'easeOut' }}
+            />
+          </Pin>
+          <Burst at={at} delay={step.at + 0.05} colours={['#ffd23f', '#fff3b0', '#3bceac', '#2f9e6b']} pieces={18} reach={20} length={1} />
+        </>
+      )}
+      <Won {...props} />
+    </>
+  )
+}
+
+/** A pit with spikes, seen a little from above. */
+function PitArt(): React.JSX.Element {
+  return (
+    <>
+      <ellipse rx="19" ry="12" fill="#8a5a33" stroke={INK} strokeWidth="1.6" />
+      <ellipse rx="15.5" ry="9" fill="#05010d" />
+      {[-9, -3, 3, 9].map((x, n) => (
+        <path
+          key={x}
+          d={`M${x - 3} 6 L${x} ${n % 2 === 0 ? -4 : -7} L${x + 3} 6 Z`}
+          fill="#e8e4f0"
+          stroke={INK}
+          strokeWidth="1"
+          strokeLinejoin="round"
+        />
+      ))}
+      <path d="M-15.5 2 A15.5 9 0 0 0 15.5 2 L19 2 A19 12 0 0 1 -19 2 Z" fill="#8a5a33" stroke={INK} strokeWidth="1.2" />
+    </>
+  )
+}
+
+/**
+ * The floor of the segment gives way: two doors drop open over a pit of
+ * spikes, the thrower hangs in the air for a beat, looks down, and falls
+ * in. On the track the runner drops out of sight and comes back at the
+ * rest stop.
+ */
+function TrapSprung({ step, stage }: SceneProps<'trapped'>): React.JSX.Element | null {
+  const { player, segment } = step.scene
+  const at = stage.segmentPoint(segment)
+  useNudge(() => avatarElement(player), FALL, step.at + 0.3, 900, stage.calm)
+  useNudge(() => stage.boardElement(), SHAKE, step.at + 0.1, 350, stage.calm)
+  if (!at) return null
+  const size = stage.boardScale() * 0.75
+  const hang = 0.42
+  const total = step.length
+  return (
+    <>
+      {!stage.calm && <Flash delay={step.at + 0.08} strength={0.22} />}
+      <Pin at={at}>
+        <motion.svg
+          viewBox="-24 -24 48 40"
+          style={{ width: size, overflow: 'visible' }}
+          initial={{ scale: 0.2, opacity: 0 }}
+          animate={{ scale: [0.2, 1.25, 1, 1, 0.9], opacity: [0, 1, 1, 1, 0] }}
+          transition={{ duration: total, delay: step.at, times: [0, 0.14, 0.24, 0.85, 1] }}
+        >
+          <PitArt />
+          {/* The two halves of the lid that covered it fly apart. */}
+          {[-1, 1].map((side) => (
+            <motion.path
+              key={side}
+              d={side === -1 ? 'M0 -9 A15.5 9 0 0 0 0 9 Z' : 'M0 -9 A15.5 9 0 0 1 0 9 Z'}
+              fill="#b0702c"
+              stroke={INK}
+              strokeWidth="1.2"
+              strokeLinejoin="round"
+              initial={{ x: 0, y: 0, rotate: 0, opacity: 1 }}
+              animate={{ x: side * 26, y: [0, -10, 8], rotate: side * 70, opacity: [1, 1, 0] }}
+              transition={{ duration: 0.45, delay: step.at + 0.12, ease: 'easeOut' }}
+            />
+          ))}
+        </motion.svg>
+      </Pin>
+      {/* The thrower, small, over the hole: a beat in the air, then down. */}
+      <Pin at={at}>
+        <motion.div
+          style={{ width: size * 0.62, height: size * 0.62 }}
+          initial={{ y: -size * 0.25, scale: 0, rotate: 0, opacity: 0 }}
+          animate={{
+            y: [-size * 0.25, -size * 0.62, -size * 0.62, -size * 0.05],
+            scale: [0, 1, 1, 0.15],
+            rotate: [0, -8, 8, 200],
+            opacity: [0, 1, 1, 0],
+          }}
+          transition={{ duration: total * 0.85, delay: step.at + 0.1, times: [0, 0.18, hang + 0.18, 1], ease: 'easeIn' }}
+        >
+          <Avatar avatar={stage.avatarOf(player)} mood="shocked" size="100%" />
+        </motion.div>
+      </Pin>
+      <Burst at={at} delay={step.at + 0.1} colours={['#8a5a33', '#c9a56b', '#5c3b1e']} pieces={12} reach={9} length={0.6} />
+      {/* A puff of dust from the bottom of the pit. */}
+      {[-1, 0, 1].map((n) => (
+        <Pin key={n} at={at}>
+          <motion.i
+            className="fx-smoke fx-smoke--dust"
+            initial={{ x: 0, y: 0, scale: 0.2, opacity: 0 }}
+            animate={{ x: n * size * 0.35, y: -size * 0.45, scale: [0.2, 1, 1.4], opacity: [0, 0.8, 0] }}
+            transition={{ duration: 0.6, delay: step.at + total * 0.8, ease: 'easeOut' }}
+          />
+        </Pin>
+      ))}
+    </>
+  )
+}
+
+/**
+ * A new round: the traps move. Three pits with a question mark hop over
+ * the board and sink away. Where they hop is made up from the round
+ * number, so it says nothing about where the traps really are.
+ */
+function TrapShuffle({ step, stage }: SceneProps<'round'>): React.JSX.Element | null {
+  if (!stage.board()) return null
+  const size = stage.boardScale() * 0.5
+  const hops = 4
+  return (
+    <>
+      {[0, 1, 2].map((pit) => {
+        const stops = Array.from({ length: hops }, (_, hop) => {
+          const segment = RING[(step.scene.round * 7 + pit * 5 + hop * (3 + pit * 4)) % RING.length]!
+          return stage.segmentPoint(segment)!
+        })
+        const from = stops[0]!
+        return (
+          <Pin key={pit} at={from}>
+            <motion.svg
+              viewBox="-24 -24 48 40"
+              style={{ width: size, overflow: 'visible' }}
+              initial={{ x: 0, y: 0, scale: 0, opacity: 0 }}
+              animate={{
+                x: [...stops.map((stop) => stop.x - from.x), stops.at(-1)!.x - from.x],
+                y: [...stops.map((stop) => stop.y - from.y), stops.at(-1)!.y - from.y],
+                scale: [0, 1, 1, 1, 0],
+                opacity: [0, 1, 1, 1, 0],
+              }}
+              transition={{ duration: step.length, delay: step.at + pit * 0.05, times: [0, 0.25, 0.5, 0.75, 1], ease: 'easeInOut' }}
+            >
+              <PitArt />
+              <text y="-12" textAnchor="middle" fontSize="18" fontWeight="900" fill="#ffd23f" stroke={INK} strokeWidth="4" paintOrder="stroke">
+                ?
+              </text>
+            </motion.svg>
+          </Pin>
+        )
+      })}
+    </>
+  )
+}
+
 // ----------------------------------------------------------------- Memory
 
 /**
@@ -1019,4 +1244,5 @@ export const gameShowGames: Record<string, Partial<AnimationSet>> = {
   raiseTheBar: { jump: BarJump, scored: PotWon },
   blackjack: { great: BlackjackTwentyOne, blank: BlackjackBust },
   memory: { flipped: MemoryFlipped },
+  trapRunner: { scored: TrapStep, won: TrapEscaped, trapped: TrapSprung, round: TrapShuffle },
 }

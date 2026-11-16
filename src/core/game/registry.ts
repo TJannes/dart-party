@@ -13,6 +13,7 @@ import { robinHood } from './robinHood'
 import { sniper } from './sniper'
 import { spotlight } from './spotlight'
 import { timeBomb } from './timeBomb'
+import { trapRunner } from './trapRunner'
 import type { GameRules } from './types'
 import { x01 } from './x01'
 
@@ -31,6 +32,7 @@ export const drawableGames: readonly GameRules<any, any>[] = [
   raiseTheBar,
   blackjack,
   memory,
+  trapRunner,
 ]
 
 /** Played on their own, outside a party. Never in the draw. */

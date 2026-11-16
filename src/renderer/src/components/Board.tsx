@@ -26,14 +26,17 @@ export interface BoardProps {
   darts?: Dart[]
   /** A short label to draw on a segment. */
   marks?: Record<number, string>
+  /** Segments with an open pit on them: a trap that was sprung. */
+  pits?: number[]
   /** A castle to draw on a segment: its walls and the hits they have taken. */
   castles?: Record<number, { colour: string; fortified: boolean; damage: number }>
   /**
    * 'target' draws the board as an archery target, by distance only.
+   * 'temple' gives the board a rim of old stone blocks with moss, for Trap Runner.
    * 'piggy' draws it as Piggy Bank counts it: a golden double ring with
    * coins on it, no triple ring, and a surround that spells trouble.
    */
-  variant?: 'board' | 'target' | 'piggy'
+  variant?: 'board' | 'target' | 'piggy' | 'temple'
   /** A cross to aim at, in board coordinates. */
   cross?: { x: number; y: number }
   /** Small coloured dots, for darts that are no longer in the board. */
@@ -106,11 +109,34 @@ function Castle({ colour, fortified, damage }: { colour: string; fortified: bool
   )
 }
 
+/** An open pit with spikes in it, about a fifth of the board's radius wide. */
+export function Pit(): React.JSX.Element {
+  return (
+    <g>
+      <ellipse rx="0.125" ry="0.1" fill="#8a5a33" stroke="#1b0a38" strokeWidth="0.014" />
+      <ellipse rx="0.1" ry="0.076" fill="#05010d" />
+      {[-0.06, -0.02, 0.02, 0.06].map((x, n) => (
+        <path
+          key={x}
+          d={`M${x - 0.02} 0.05 L${x} ${n % 2 === 0 ? -0.035 : -0.06} L${x + 0.02} 0.05 Z`}
+          fill="#e8e4f0"
+          stroke="#1b0a38"
+          strokeWidth="0.008"
+          strokeLinejoin="round"
+        />
+      ))}
+      {/* The near rim hides the feet of the spikes. */}
+      <path d="M-0.1 0.02 A0.1 0.076 0 0 0 0.1 0.02 L0.125 0.02 A0.125 0.1 0 0 1 -0.125 0.02 Z" fill="#8a5a33" stroke="#1b0a38" strokeWidth="0.01" />
+    </g>
+  )
+}
+
 export function Board({
   owners = {},
   darts = [],
   marks = {},
   castles = {},
+  pits = [],
   variant = 'board',
   cross,
   dots = [],
@@ -121,6 +147,7 @@ export function Board({
   // usual red and green rings are not mistaken for a player's colour.
   const quiet = Object.keys(owners).length > 0
   const piggy = variant === 'piggy'
+  const temple = variant === 'temple'
   const tap = (event: React.MouseEvent<SVGSVGElement>): void => {
     const box = event.currentTarget.getBoundingClientRect()
     // The drawing is square and centred inside the element.
@@ -137,7 +164,27 @@ export function Board({
       onClick={onTap ? tap : undefined}
       style={onTap ? { cursor: 'crosshair' } : undefined}
     >
-      <circle r="1.3" fill={piggy ? '#4a0f2c' : '#1b0a38'} />
+      <circle r="1.3" fill={piggy ? '#4a0f2c' : temple ? '#4b4038' : '#1b0a38'} />
+      {temple && (
+        <g>
+          <circle r="1.275" fill="none" stroke="#8b7a6b" strokeWidth="0.05" />
+          <circle r="1.03" fill="none" stroke="#2a211e" strokeWidth="0.03" />
+          {/* The joints between the blocks, one between every two numbers. */}
+          {RING.map((segment, index) => (
+            <path
+              key={segment}
+              d={`M${point(1.03, index * 18 + 9)} L${point(1.3, index * 18 + 9)}`}
+              stroke="#2a211e"
+              strokeWidth="0.022"
+              strokeLinecap="round"
+            />
+          ))}
+          {/* Moss in a few of the joints. */}
+          {[27, 99, 153, 225, 297].map((degrees, n) => (
+            <circle key={degrees} cx={point(1.27, degrees).split(' ')[0]} cy={point(1.27, degrees).split(' ')[1]} r={0.045 + (n % 2) * 0.02} fill="#2f9e6b" opacity="0.85" />
+          ))}
+        </g>
+      )}
       {piggy && <circle r={(R.doubleIn + R.doubleOut) / 2} fill="none" stroke="#ffd23f" strokeWidth="0.16" opacity="0.3" />}
       {RING.map((segment, index) => {
         const owner = owners[segment]
@@ -206,6 +253,21 @@ export function Board({
         return (
           <g key={segment} transform={`translate(${0.79 * Math.sin(angle)} ${-0.79 * Math.cos(angle)})`}>
             <Castle {...castle} />
+          </g>
+        )
+      })}
+      {pits.map((segment) => {
+        const index = RING.indexOf(segment)
+        if (index < 0) return null
+        const angle = (index * 18 * Math.PI) / 180
+        return (
+          <g key={segment}>
+            {/* The whole segment glows red, so the trap reads from across the room. */}
+            <path d={piece(index, R.outerBull, R.doubleOut)} fill="#ff2d55" opacity="0.55" />
+            <path d={piece(index, R.outerBull, R.doubleOut)} fill="none" stroke="#ff2d55" strokeWidth="0.03" />
+            <g transform={`translate(${0.76 * Math.sin(angle)} ${-0.76 * Math.cos(angle)}) scale(1.5)`}>
+              <Pit />
+            </g>
           </g>
         )
       })}
