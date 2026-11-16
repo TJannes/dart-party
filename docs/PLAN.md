@@ -753,8 +753,10 @@ Agreed with the owner on 2026-11-16, on Claude's proposal.
   playing cards, that player's avatar and the total on a chip. Every dart
   deals a card from the deck (a dart off the board lies face down, a bull
   is an A); a bust gets a red "BUST" stamp across the cards and a red
-  chip, 21 a gold chip. The hand stays on the table until the next player
-  throws, also the hand that closed a round. Themed moments: on a bust the
+  chip, 21 a gold chip. The hand stays on the table for as long as its
+  darts are in the board, also the hand that closed a round; pulling the
+  darts clears the table for the next player. It first stayed until the
+  next dart, which the owner found wrong (2026-11-16). Themed moments: on a bust the
   table shakes and the chips are swept off, with the buzzer in place of
   the cough; on 21 chips fly up from the table, with the gold-coin sound.
   One new synthesised sound, `card`, with every dart on the board. Three
@@ -874,6 +876,78 @@ having played the other two.
 - Filled in while building, not put to the owner: a trap that already
   shows is still a trap for whoever hits it; the bull does nothing at 14;
   the sip for stepping back; these looks and the wording.
+
+### A world per game
+
+Asked by the owner on 2026-11-16, after Trap Runner got its temple: the
+other games should lean on their theme as well, where they still showed the
+same rows of avatars beside a plain board. Claude proposed which and in
+what order; the owner agreed and gave the idea for Race. Looks only: no
+rule, score or text of a rules card changed. All of it was filled in while
+building.
+
+- **Race.** Every racer sits in a racing car in their colour, on asphalt
+  with red and white kerbs and a dashed centre line. Whoever is last rides
+  a kick scooter, and with three places or more whoever is second to last
+  a bicycle; while everyone is level they all drive a car. A joke of the
+  owner's that changes nothing. It was first a rusty rattletrap for the
+  last, which the owner found unclear; the bicycle and the scooter are his
+  (2026-11-16). The chequered flag stays: it belongs here.
+- **Minefield.** The board is a treasure island (`variant="island"`): sea
+  around it, surf on the beach, sand in two shades where nobody dug, a
+  palm over the bull (which does nothing in this game), and a hole with a
+  cross, a 5, a 2 or a blast where someone did. The question marks are
+  gone. The rows stand on the beach (sky, sea, sand) with a palm and a
+  deck chair in one corner and a parasol, a deck chair and a ball in the
+  other. The owner asked for a prettier palm and for deck chairs
+  (2026-11-16); the chairs stand by the rows because anything on the
+  board would cover segments. With seven or eight players the corners and
+  the sand below the rows are left out, so the rows keep their height
+  (owner, 2026-11-16).
+- **Last One Standing.** The rows stand in a boxing ring with three ropes
+  above and below and a post in each corner; lives are boxing gloves in
+  the player's colour; whoever is out lies on their side with "K.O."; the
+  board has the ropes and four corner posts round it (`variant="ring"`).
+- **Land Grab.** The board is an old map on parchment with the ticks of a
+  compass round the edge (`variant="map"`); the rows lie on parchment and
+  every player has a coat of arms in their colour. An attack now leaves
+  from a catapult that rolls up beside the attacker's coat of arms: its
+  arm lies cocked, swings over, and the stone flies to the castle, landing
+  when it always did. Asked by the owner (2026-11-16); before, the stone
+  left from the attacker's avatar.
+- **Robin Hood.** The rows stand in a forest clearing, treetops above and
+  grass below, and every archer has a quiver in their colour. The target
+  hangs on a wooden stand in front of five trees that are always there
+  (`variant="archery"`, their places in `ARCHERY_TREES`). An arrow that
+  misses flies into the nearest tree and stays there quivering, leaves
+  come down and a bird flies off. The arrow comes down over the target,
+  point first into the crown: from the left into a tree on the right and
+  the other way round. (The first version hung in the air beside the tree
+  with its point the wrong way, which the owner saw: its drawing had been
+  resized on one side only, so the point was no longer where it is
+  pinned, and the two low trees stood half behind the target.) Before, a tree popped up where the dart
+  was; the forest that is always there is the owner's idea (2026-11-16).
+- **Spotlight.** A theatre: a red curtain on either side of the rows, the
+  boards of the stage below, and blinking bulbs round the board
+  (`variant="stage"`).
+- **Sniper.** A sniper's hide-out: the rows lie under camouflage with a
+  row of sandbags below, and the board has the marks of a telescopic sight
+  round it in green (`variant="scope"`). It was a shooting gallery at the
+  fair first; the owner found a sniper fits the name better (2026-11-16).
+  Every player has a rifle in their colour beside their name, aimed at
+  the board, and it fires with every dart: the rifle kicks back, flame
+  comes from the muzzle and a line of light runs to where the dart is,
+  with a new synthesised sound, `shot`. Asked by the owner (2026-11-16);
+  the looks and the sound were filled in while building.
+- **Time Bomb.** The bomb squad's cordon: warning stripes above and below
+  the rows and round the board (`variant="hazard"`). Claude had suggested
+  the players round a table with the bomb going from hand to hand; that
+  needs another layout of the rows and was not built.
+- Left as they were: Higher or Lower (no world of its own suggests itself),
+  Raise the Bar (it has its high-jump set), Piggy Bank, Blackjack and
+  Memory (each has its own world already).
+- `ScoreScene` takes a `look` for the rows; `Board` takes more variants.
+  The sound and the animations of these games did not change.
 
 Some names and themes may still change.
 
@@ -1243,6 +1317,13 @@ number hit, with the next one under the name.
   screen, tests. *Three turns played by hand on Ubuntu in one window (the
   bull jump, steps, two traps, the traps moving in round 2); sound not
   listened to; not on Windows; released in 0.9.0.*
+- [x] **14. A world per game** (2026-11-16): Race, Minefield, Last One
+  Standing, Land Grab, Robin Hood, Spotlight, Sniper and Time Bomb each got
+  a scene of their own, as described under
+  [A world per game](#a-world-per-game), with the owner's changes of the
+  same day (bicycle and scooter, the forest, the beach, the sniper, the
+  catapult). *Each seen once on Ubuntu in a party of three, in one window; not with eight players, where the rows
+  are smallest; not on Windows; not released.*
 - [ ] **Parked: recorded music.** CC0 playlists per scene in place of the
   generated loops, as decided under [Style and sound](#style-and-sound).
   Parked by the owner on 2026-11-15; pick it up only when asked. The

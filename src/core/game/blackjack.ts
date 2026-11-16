@@ -28,11 +28,12 @@ export interface BlackjackView {
   /** The round before the one being played: every hand and what it paid. Null in the first round. */
   previous: Record<PlayerId, Hand & { points: number }> | null
   /**
-   * The hand that lies on the table: of whoever threw last, so a bust, and
-   * the hand that closed a round, stay in view until the next player
-   * throws. Null before the first dart of the game. A card is what its
-   * dart added: 11 for a bull, 0 for a dart off the board. `turn` tells
-   * one hand from the next.
+   * The hand that lies on the table: of whoever threw last, for as long as
+   * those darts are in the board. So a bust, and the hand that closed a
+   * round, stay in view until the darts are pulled, and then the table is
+   * clear for the next player. Null when no darts are in the board. A
+   * card is what its dart added: 11 for a bull, 0 for a dart off the
+   * board. `turn` tells one hand from the next.
    */
   table: (Hand & { player: PlayerId; cards: number[]; turn: number }) | null
   /** The best hand of this round that is no longer being thrown at, and who holds it. */
@@ -145,10 +146,12 @@ export const blackjack: GameRules<null, BlackjackView> = {
     const toBeat =
       best > 0 ? { total: best, players: standing.filter(([, hand]) => hand.total === best).map(([player]) => player) } : null
 
+    // Pulling the darts clears the table. (Set inside the walk above, which the compiler does not follow.)
+    const lying = table as BlackjackView['table']
     return {
       ...progress,
       ranking: rankByScore(players, (player) => scores[player]!),
-      view: { scores, hands, previous, toBeat, table },
+      view: { scores, hands, previous, toBeat, table: lying && !turns[lying.turn]!.done ? lying : null },
     }
   },
 }

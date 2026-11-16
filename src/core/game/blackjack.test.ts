@@ -67,8 +67,12 @@ describe('Blackjack', () => {
     const after = play(turn(S(17)), turn(S(20), S(5)), turn(S(20), S(1)))
     expect(after.view.scores).toEqual({ ann: 2, bob: 0, cy: 4 })
     expect(after.view.hands).toEqual({})
-    // The hand that closed the round stays on the table until the next dart.
-    expect(after.view.table).toEqual({ total: 21, bust: false, player: 'cy', cards: [20, 1], turn: 2 })
+    // Pulled: the table is clear for the next player.
+    expect(after.view.table).toBeNull()
+    // The hand that closed the round lies there for as long as its darts are in the board.
+    const lying = play(turn(S(17)), turn(S(20), S(5)), open(S(20), S(1)))
+    expect(lying.current).toMatchObject({ player: 'bob', round: 2 })
+    expect(lying.view.table).toEqual({ total: 21, bust: false, player: 'cy', cards: [20, 1], turn: 2 })
     expect(play(turn(S(17)), turn(S(20), S(5)), turn(S(20), S(1)), open(bull)).view.table).toMatchObject({
       player: 'bob',
       cards: [11],

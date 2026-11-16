@@ -308,3 +308,207 @@ export function Boulder(): React.JSX.Element {
     </svg>
   )
 }
+
+/** A racing car for Race, nose to the right; the driver's head goes over the cockpit. */
+export function RaceCar({ colour }: { colour: string }): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 88 36" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      {/* Rear wing. */}
+      <path d="M4 6 H16 V10 H12 V18 H8 V10 H4 Z" fill={INK} />
+      <path d="M2 4 H18 V8 H2 Z" fill={colour} stroke={INK} strokeWidth="1.6" strokeLinejoin="round" />
+      {/* Body: low and long, with a pointed nose. */}
+      <path d="M8 26 Q8 16 22 15 H52 Q70 16 84 24 Q86 27 82 28 H10 Q8 28 8 26 Z" fill={colour} stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+      <path d="M26 15 Q36 8 48 15 Z" fill={INK} opacity="0.55" />
+      <path d="M52 19 H70 M56 23 H76" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity="0.75" />
+      {/* Front wing. */}
+      <path d="M76 28 H88 V31 H76 Z" fill={INK} />
+      {[22, 66].map((x) => (
+        <g key={x} className="car__wheel" style={{ transformOrigin: `${x}px 28px` }}>
+          <circle cx={x} cy="28" r="7.5" fill="#1b1b22" stroke={INK} strokeWidth="1.6" />
+          <circle cx={x} cy="28" r="3" fill="#c9c6d6" />
+          <path d={`M${x} 21.5 V24 M${x} 32 V34.5`} stroke="#c9c6d6" strokeWidth="1.6" strokeLinecap="round" />
+        </g>
+      ))}
+    </svg>
+  )
+}
+
+/** What the second to last in Race rides: a bicycle. The rider's head goes over the saddle. */
+export function Bicycle({ colour }: { colour: string }): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 88 36" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      {[22, 64].map((x) => (
+        <g key={x} className="car__wheel" style={{ transformOrigin: `${x}px 26px` }}>
+          <circle cx={x} cy="26" r="8.5" fill="none" stroke={INK} strokeWidth="2.6" />
+          <path d={`M${x} 17.5 V34.5 M${x - 8.5} 26 H${x + 8.5}`} stroke="#c9c6d6" strokeWidth="1" />
+        </g>
+      ))}
+      {/* Frame, fork, saddle and handlebar. */}
+      <path d="M22 26 L36 13 L56 13 L42 26 Z M36 13 L42 26 M56 13 L64 26" fill="none" stroke={colour} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M31 12 H41" stroke={INK} strokeWidth="3.4" strokeLinecap="round" />
+      <path d="M56 13 L55 6 H62" fill="none" stroke={INK} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      {/* The rider: a back bent to the handlebar and a leg on the pedal. */}
+      <path d="M37 12 Q42 2 58 6" fill="none" stroke={colour} strokeWidth="4.5" strokeLinecap="round" />
+      <g className="bike__leg">
+        <path d="M37 13 L46 20 L42 28" fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M39 28 H46" stroke={INK} strokeWidth="2.4" strokeLinecap="round" />
+      </g>
+      <circle cx="42" cy="26" r="2.4" fill="#c9c6d6" stroke={INK} strokeWidth="1" />
+    </svg>
+  )
+}
+
+/** What the last in Race rides: a kick scooter. A joke, nothing more. */
+export function Scooter({ colour }: { colour: string }): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 88 36" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      {/* Deck, stem and handlebar. */}
+      <path d="M24 30 H58 L54 4" fill="none" stroke="#c9c6d6" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M48 4 H60" stroke={INK} strokeWidth="3.4" strokeLinecap="round" />
+      <path d="M20 30 Q22 24 28 26" fill="none" stroke="#c9c6d6" strokeWidth="2.6" strokeLinecap="round" />
+      {[22, 60].map((x) => (
+        <g key={x} className="car__wheel" style={{ transformOrigin: `${x}px 31px` }}>
+          <circle cx={x} cy="31" r="4.2" fill="#1b1b22" stroke={INK} strokeWidth="1.4" />
+          <path d={`M${x} 27.5 V34.5`} stroke="#c9c6d6" strokeWidth="1.2" />
+        </g>
+      ))}
+      {/* The rider stands on one leg, arms to the handlebar, and pushes off with the other. */}
+      <path d="M38 14 V28" stroke={INK} strokeWidth="3" strokeLinecap="round" />
+      <path className="scooter__kick" d="M38 20 L30 30" stroke={INK} strokeWidth="3" strokeLinecap="round" />
+      <path d="M38 12 V22" stroke={colour} strokeWidth="7" strokeLinecap="round" />
+      <path d="M39 13 L52 6" stroke={colour} strokeWidth="3.4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+/** A coat of arms in a player's colour, for Land Grab. */
+export function Shield({ colour }: { colour: string }): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 40 46" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      <path d="M4 4 H36 V22 Q36 36 20 43 Q4 36 4 22 Z" fill={colour} stroke={INK} strokeWidth="2.5" strokeLinejoin="round" />
+      <path d="M20 4 V43 M4 20 H36" stroke="#fff" strokeOpacity="0.55" strokeWidth="4" />
+      {/* A little tower in the middle. */}
+      <path d="M14 30 V18 H16 V21 H18.5 V18 H21.5 V21 H24 V18 H26 V30 Z" fill="#fffdf6" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+/** A quiver with three arrows, for the archers of Robin Hood. */
+export function Quiver({ colour }: { colour: string }): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 34 50" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      {[9, 16, 23].map((x, n) => (
+        <g key={x} transform={`rotate(${(n - 1) * 9} ${x} 30)`}>
+          <path d={`M${x} 22 V5`} stroke="#b98a5a" strokeWidth="2" strokeLinecap="round" />
+          <path d={`M${x} 2 l-3.5 6 h7 Z`} fill={colour} stroke={INK} strokeWidth="1.2" strokeLinejoin="round" />
+        </g>
+      ))}
+      <path d="M6 20 H27 L24 46 Q16.5 50 9 46 Z" fill="#8a5a33" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+      <path d="M6 20 H27 L26.4 26 H6.6 Z" fill={colour} stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M27 22 Q36 30 25 42" fill="none" stroke="#5c3b1e" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+/** A catapult for Land Grab, aimed to the right: its arm lies back until `fire`, then swings over. */
+export function Catapult({ colour }: { colour: string }): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 60 48" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      <path d="M8 40 H52" stroke="#8a5a33" strokeWidth="5" strokeLinecap="round" />
+      <path d="M36 40 L30 16 L22 40" fill="none" stroke="#8a5a33" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" />
+      <path d="M26 30 H34" stroke="#5c3b1e" strokeWidth="3" strokeLinecap="round" />
+      <g className="catapult__arm">
+        <path d="M30 18 L6 10" stroke="#b98a5a" strokeWidth="4" strokeLinecap="round" />
+        <path d="M2 4 Q6 14 12 8" fill="none" stroke="#5c3b1e" strokeWidth="3" strokeLinecap="round" />
+      </g>
+      <circle cx="30" cy="17" r="3.2" fill={colour} stroke={INK} strokeWidth="1.4" />
+      {[14, 46].map((x) => (
+        <g key={x}>
+          <circle cx={x} cy="42" r="5.5" fill="#5c3b1e" stroke={INK} strokeWidth="1.6" />
+          <circle cx={x} cy="42" r="1.6" fill="#b98a5a" />
+        </g>
+      ))}
+    </svg>
+  )
+}
+
+/**
+ * What stands in the sand below the rows of Minefield: a palm and a deck
+ * chair on one side, a parasol and a deck chair on the other.
+ */
+export function BeachCorner({ side }: { side: 'left' | 'right' }): React.JSX.Element {
+  const chair = (
+    <g>
+      <path d="M0 30 L26 4 M4 4 L30 30" stroke="#8a5a33" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M4 5 Q10 22 28 27" fill="none" stroke="#ee4266" strokeWidth="6" strokeLinecap="round" />
+      <path d="M4 5 Q10 22 28 27" fill="none" stroke="#fff8ee" strokeWidth="6" strokeLinecap="butt" strokeDasharray="4 4" />
+    </g>
+  )
+  return (
+    <svg viewBox="0 0 120 50" width="100%" height="100%" preserveAspectRatio={side === 'left' ? 'xMinYMax meet' : 'xMaxYMax meet'} style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      {side === 'left' ? (
+        <>
+          <g transform="translate(20 48)">
+            <Palm scale={1.35} />
+          </g>
+          <g transform="translate(52 16)">{chair}</g>
+        </>
+      ) : (
+        <>
+          <g transform="translate(20 16)">{chair}</g>
+          {/* A parasol, and a ball left in the sand. */}
+          <g transform="translate(0 -18)">
+            <path d="M84 66 L88 16" stroke="#8a5a33" strokeWidth="2.6" strokeLinecap="round" />
+            <path d="M58 26 Q88 -8 118 22 Q108 18 103 21 Q96 16 88 20 Q80 15 73 21 Q66 19 58 26 Z" fill="#ffd23f" stroke={INK} strokeWidth="1.6" strokeLinejoin="round" />
+            <path d="M73 21 Q80 4 88 3 M103 21 Q98 6 88 3" fill="none" stroke="#ee4266" strokeWidth="3" />
+            <circle cx="108" cy="60" r="6" fill="#7fd4ff" stroke={INK} strokeWidth="1.4" />
+            <path d="M102 60 Q108 54 114 60" fill="none" stroke="#fff" strokeWidth="2" />
+          </g>
+        </>
+      )}
+    </svg>
+  )
+}
+
+/** A palm, foot at the origin, about 30 units tall at scale 1. Also drawn on the island of Minefield. */
+export function Palm({ scale = 1 }: { scale?: number }): React.JSX.Element {
+  const fronds = [-168, -128, -92, -52, -14, 24]
+  return (
+    <g transform={`scale(${scale})`}>
+      <ellipse rx="9" ry="2.6" fill="#b99b6b" opacity="0.7" />
+      {/* A trunk that leans, with the rings a palm has. */}
+      <path d="M-1.6 0 Q3 -14 0.5 -27 L3.6 -27 Q6.4 -13 2.2 0 Z" fill="#a8743f" stroke={INK} strokeWidth="0.8" strokeLinejoin="round" />
+      <path d="M0.4 -5 h2.6 M1.4 -10 h2.8 M2 -15 h2.8 M2 -20 h2.6 M1.6 -24.5 h2.4" stroke="#5c3b1e" strokeWidth="0.8" strokeLinecap="round" />
+      <g transform="translate(2.2 -27.5)">
+        {fronds.map((degrees, n) => (
+          <g key={degrees} transform={`rotate(${degrees})`}>
+            <path d="M0 0 Q9 -8 19 1.5 Q9 -2.5 0 0 Z" fill={n % 2 === 0 ? '#2f9e6b' : '#3bceac'} stroke={INK} strokeWidth="0.7" strokeLinejoin="round" />
+            <path d="M1 -0.3 Q9 -4.5 17 0.6" fill="none" stroke="#14613f" strokeWidth="0.6" />
+          </g>
+        ))}
+        <circle cx="-1.6" cy="1.6" r="1.7" fill="#5c3b1e" stroke={INK} strokeWidth="0.5" />
+        <circle cx="1.4" cy="2.2" r="1.7" fill="#6b4a30" stroke={INK} strokeWidth="0.5" />
+      </g>
+    </g>
+  )
+}
+
+/** A sniper's rifle for Sniper, muzzle to the right, with a band in the player's colour. */
+export function Rifle({ colour }: { colour: string }): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 100 30" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      {/* Bipod. */}
+      <path d="M62 17 L56 29 M64 17 L70 29" stroke="#4b4560" strokeWidth="2" strokeLinecap="round" />
+      {/* Stock, body and barrel. */}
+      <path d="M2 12 H20 L24 14 H44 V20 H32 L29 27 H23 L24 20 H16 L6 23 H2 Z" fill="#6b4a30" stroke={INK} strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M40 13 H98 V17 H40 Z" fill="#3a3a44" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M90 11.5 H99 V18.5 H90 Z" fill="#1b1b22" stroke={INK} strokeWidth="1.2" />
+      {/* Telescopic sight. */}
+      <path d="M30 4 H58 V10 H30 Z" fill="#1b1b22" stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M26 3 H31 V11 H26 Z M57 3 H63 V11 H57 Z" fill="#3a3a44" stroke={INK} strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M36 10 V13 M52 10 V13" stroke={INK} strokeWidth="2" />
+      <path d="M44 13 H52 V20 H44 Z" fill={colour} stroke={INK} strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M33 20 Q35 25 39 24" fill="none" stroke={INK} strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  )
+}

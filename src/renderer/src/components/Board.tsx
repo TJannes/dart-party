@@ -1,4 +1,5 @@
 import { RING } from '../../../core/board/ring'
+import { Palm } from '../theme/gameShowProps'
 import type { Dart } from '../../../core/board/state'
 
 // A dartboard drawn to the real proportions (1.0 is the outer edge of the
@@ -31,12 +32,18 @@ export interface BoardProps {
   /** A castle to draw on a segment: its walls and the hits they have taken. */
   castles?: Record<number, { colour: string; fortified: boolean; damage: number }>
   /**
-   * 'target' draws the board as an archery target, by distance only.
+   * 'target' draws the board as an archery target, by distance only; 'archery' is that target on a
+   * stand in front of a forest, for Robin Hood.
+   * 'stage' rings it with the bulbs of a theatre, for Spotlight; 'scope' with the marks of a telescopic
+   * sight, for Sniper; 'hazard' with warning stripes, for Time Bomb.
+   * 'map' draws it as an old map on parchment, for Land Grab.
+   * 'ring' puts the ropes and corner posts of a boxing ring around it, for Last One Standing.
+   * 'island' makes it a treasure island for Minefield: sea around it, surf on the beach and a palm in the middle.
    * 'temple' gives the board a rim of old stone blocks with moss, for Trap Runner.
    * 'piggy' draws it as Piggy Bank counts it: a golden double ring with
    * coins on it, no triple ring, and a surround that spells trouble.
    */
-  variant?: 'board' | 'target' | 'piggy' | 'temple'
+  variant?: 'board' | 'target' | 'piggy' | 'temple' | 'island' | 'ring' | 'map' | 'stage' | 'scope' | 'hazard' | 'archery'
   /** A cross to aim at, in board coordinates. */
   cross?: { x: number; y: number }
   /** Small coloured dots, for darts that are no longer in the board. */
@@ -75,10 +82,53 @@ function DartMarks({ darts }: { darts: Dart[] }): React.JSX.Element {
 }
 
 /** The board as an archery target: four zones along the real wires. */
-function Target({ darts }: { darts: Dart[] }): React.JSX.Element {
+/**
+ * Where the trees of Robin Hood stand behind the target, in board units (y
+ * up): the middle of each crown. An arrow that misses the target goes into
+ * the nearest.
+ */
+export const ARCHERY_TREES = [
+  { x: -1.0, y: 0.95 },
+  { x: 0, y: 1.14 },
+  { x: 1.0, y: 0.95 },
+  { x: -1.17, y: -0.25 },
+  { x: 1.17, y: -0.25 },
+]
+
+/** One tree of the forest: a trunk down to the grass and a crown of three lumps. */
+function Tree({ x, y, tone }: { x: number; y: number; tone: number }): React.JSX.Element {
+  const green = ['#2f9e6b', '#23805a', '#3fa565'][tone % 3]
+  return (
+    <g>
+      <path d={`M${x - 0.045} ${-y} L${x - 0.06} 1.32 L${x + 0.06} 1.32 L${x + 0.045} ${-y} Z`} fill="#8a5a33" stroke="#1b0a38" strokeWidth="0.012" />
+      <g fill={green} stroke="#1b0a38" strokeWidth="0.014">
+        <circle cx={x - 0.15} cy={-y + 0.06} r="0.17" />
+        <circle cx={x + 0.15} cy={-y + 0.06} r="0.17" />
+        <circle cx={x} cy={-y - 0.08} r="0.21" />
+      </g>
+      <circle cx={x} cy={-y + 0.04} r="0.16" fill={green} />
+    </g>
+  )
+}
+
+function Target({ darts, forest = false }: { darts: Dart[]; forest?: boolean }): React.JSX.Element {
   return (
     <svg viewBox="-1.32 -1.32 2.64 2.64" className="dartboard" aria-hidden>
-      <circle r="1.3" fill="#1b0a38" />
+      {forest ? (
+        <g>
+          {/* The forest behind, the grass below, and the stand the target hangs on. */}
+          {ARCHERY_TREES.map((tree, n) => (
+            <Tree key={n} {...tree} tone={n} />
+          ))}
+          <path d="M-1.32 1.1 Q-0.6 1.02 0 1.1 Q0.6 1.18 1.32 1.08 V1.32 H-1.32 Z" fill="#2f9e6b" stroke="#1b0a38" strokeWidth="0.012" />
+          <path d="M-0.5 0.5 L-0.86 1.3 M0.5 0.5 L0.86 1.3 M0 -1 V-1.14" stroke="#8a5a33" strokeWidth="0.09" strokeLinecap="round" />
+          <path d="M-0.5 0.5 L-0.86 1.3 M0.5 0.5 L0.86 1.3" stroke="#5c3b1e" strokeWidth="0.02" strokeLinecap="round" />
+          {/* The straw the rings are painted on. */}
+          <circle r="1.05" fill="#d9b66a" stroke="#1b0a38" strokeWidth="0.02" />
+        </g>
+      ) : (
+        <circle r="1.3" fill="#1b0a38" />
+      )}
       {ZONES.map(([radius, colour]) => (
         <circle key={radius} r={radius} fill={colour} stroke="#1b0a38" strokeWidth="0.012" />
       ))}
@@ -142,12 +192,18 @@ export function Board({
   dots = [],
   onTap,
 }: BoardProps): React.JSX.Element {
-  if (variant === 'target') return <Target darts={darts} />
+  if (variant === 'target' || variant === 'archery') return <Target darts={darts} forest={variant === 'archery'} />
   // When segments belong to players, the rest of the board goes quiet so the
   // usual red and green rings are not mistaken for a player's colour.
   const quiet = Object.keys(owners).length > 0
   const piggy = variant === 'piggy'
   const temple = variant === 'temple'
+  const island = variant === 'island'
+  const boxing = variant === 'ring'
+  const map = variant === 'map'
+  const stage = variant === 'stage'
+  const scope = variant === 'scope'
+  const hazard = variant === 'hazard'
   const tap = (event: React.MouseEvent<SVGSVGElement>): void => {
     const box = event.currentTarget.getBoundingClientRect()
     // The drawing is square and centred inside the element.
@@ -164,7 +220,67 @@ export function Board({
       onClick={onTap ? tap : undefined}
       style={onTap ? { cursor: 'crosshair' } : undefined}
     >
-      <circle r="1.3" fill={piggy ? '#4a0f2c' : temple ? '#4b4038' : '#1b0a38'} />
+      <circle r="1.3" fill={piggy ? '#4a0f2c' : temple ? '#4b4038' : island ? '#1f6fa8' : '#1b0a38'} />
+      {stage && (
+        <g>
+          <circle r="1.3" fill="#5a0f24" />
+          <circle r="1.275" fill="none" stroke="#3a0916" strokeWidth="0.07" />
+          {Array.from({ length: 40 }, (_, n) => (
+            <circle key={n} className={n % 2 === 0 ? 'bulb' : 'bulb bulb--late'} cx={point(1.275, n * 9 + 4.5).split(' ')[0]} cy={point(1.275, n * 9 + 4.5).split(' ')[1]} r="0.024" fill="#ffd23f" />
+          ))}
+        </g>
+      )}
+      {scope && (
+        <g>
+          <circle r="1.3" fill="#2c3324" />
+          <circle r="1.285" fill="none" stroke="#9be564" strokeWidth="0.014" />
+          <circle r="1.03" fill="none" stroke="#9be564" strokeWidth="0.014" />
+          {/* The marks of a telescopic sight round the edge. */}
+          {Array.from({ length: 40 }, (_, n) => (
+            <path key={n} d={`M${point(1.03, n * 9 + 4.5)} L${point(n % 2 === 0 ? 1.075 : 1.055, n * 9 + 4.5)}`} stroke="#9be564" strokeWidth="0.012" />
+          ))}
+        </g>
+      )}
+      {hazard && (
+        <g>
+          <circle r="1.3" fill="#1b1b22" />
+          <circle r="1.27" fill="none" stroke="#ffd23f" strokeWidth="0.06" strokeDasharray="0.09 0.09" />
+          <circle r="1.03" fill="none" stroke="#ffd23f" strokeWidth="0.02" />
+        </g>
+      )}
+      {map && (
+        <g>
+          <circle r="1.3" fill="#e9d8a6" />
+          <circle r="1.285" fill="none" stroke="#8a5a33" strokeWidth="0.022" />
+          <circle r="1.255" fill="none" stroke="#8a5a33" strokeWidth="0.008" />
+          {/* The ticks of a compass round the edge. */}
+          {Array.from({ length: 40 }, (_, n) => (
+            <path key={n} d={`M${point(1.02, n * 9)} L${point(n % 2 === 0 ? 1.06 : 1.04, n * 9)}`} stroke="#8a5a33" strokeWidth="0.012" />
+          ))}
+        </g>
+      )}
+      {boxing && (
+        <g>
+          <circle r="1.3" fill="#243a5e" />
+          {/* Three ropes, and a padded post in each corner. */}
+          <circle r="1.285" fill="none" stroke="#ee4266" strokeWidth="0.028" />
+          <circle r="1.05" fill="none" stroke="#f3ead7" strokeWidth="0.022" />
+          <circle r="1.02" fill="none" stroke="#7fd4ff" strokeWidth="0.018" />
+          {[45, 135, 225, 315].map((degrees, n) => (
+            <g key={degrees} transform={`translate(${point(1.27, degrees)})`}>
+              <circle r="0.075" fill={n % 2 === 0 ? '#ee4266' : '#7fd4ff'} stroke="#1b0a38" strokeWidth="0.02" />
+              <circle r="0.03" fill="#f3ead7" />
+            </g>
+          ))}
+        </g>
+      )}
+      {island && (
+        <g fill="none" strokeLinecap="round">
+          <circle r="1.2" stroke="#3d93cc" strokeWidth="0.2" opacity="0.5" />
+          {/* Surf where the sea meets the sand. */}
+          <circle r="1.035" stroke="#e9f7ff" strokeWidth="0.05" strokeDasharray="0.16 0.07" />
+        </g>
+      )}
       {temple && (
         <g>
           <circle r="1.275" fill="none" stroke="#8b7a6b" strokeWidth="0.05" />
@@ -189,8 +305,9 @@ export function Board({
       {RING.map((segment, index) => {
         const owner = owners[segment]
         const even = index % 2 === 0
-        const single = owner ?? (even ? '#2a1b3d' : '#f3ead7')
-        const ring = owner ?? (quiet ? (even ? '#4a4458' : '#b9b2a6') : even ? '#ee4266' : '#3bceac')
+        // On the map free land is parchment in two shades.
+        const single = owner ?? (map ? (even ? '#d3ba82' : '#f1e4bd') : even ? '#2a1b3d' : '#f3ead7')
+        const ring = owner ?? (map ? (even ? '#b59a66' : '#d8c594') : quiet ? (even ? '#4a4458' : '#b9b2a6') : even ? '#ee4266' : '#3bceac')
         // In Piggy Bank the triple ring pays like the single around it and the double ring is gold.
         const triple = piggy ? single : ring
         const double = piggy ? (even ? '#ffd23f' : '#f5b21e') : ring
@@ -208,7 +325,7 @@ export function Board({
               textAnchor="middle"
               dominantBaseline="central"
               stroke="none"
-              fill={owner ?? '#ffffff'}
+              fill={island ? '#ffffff' : map ? '#5c3b1e' : scope ? '#d6f5b8' : (owner ?? '#ffffff')}
             >
               {segment}
             </text>
@@ -217,6 +334,12 @@ export function Board({
       })}
       <circle r={R.outerBull} fill={quiet ? '#b9b2a6' : '#3bceac'} stroke="#1b0a38" strokeWidth="0.008" />
       <circle r={R.bull} fill={quiet ? '#4a4458' : '#ee4266'} stroke="#1b0a38" strokeWidth="0.008" />
+      {island && (
+        // A palm in the middle: the bull does nothing in this game.
+        <g transform="translate(0 0.1)">
+          <Palm scale={0.0125} />
+        </g>
+      )}
       {piggy &&
         PIGGY_COINS.map((degrees) => (
           <g key={degrees} transform={`translate(${point((R.doubleIn + R.doubleOut) / 2, degrees)})`}>

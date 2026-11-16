@@ -46,6 +46,10 @@ export function ScoreScene(props: {
   held?: (player: PlayerId) => ReactNode
   /** Something big of the game's own, above the board. */
   feature?: ReactNode
+  /** A look of the game's own for the rows: the ropes of a boxing ring, a map on parchment. */
+  look?: 'ring' | 'map' | 'forest' | 'stage' | 'camo' | 'table' | 'beach'
+  /** Something drawn behind the rows, for a look that needs more than colour. */
+  backdrop?: ReactNode
   /** Two players left: the lights go down. */
   duel?: boolean
   board: ReactNode
@@ -59,7 +63,8 @@ export function ScoreScene(props: {
   return (
     <section className={props.duel ? 'race race--duel' : 'race'}>
       {/* A heading takes about the room of two rows. */}
-      <div className="race__track" style={{ '--rows': record.order.length + (props.heading ? 2 : 0) } as CSSProperties}>
+      <div className={props.look ? `race__track race__track--${props.look}` : 'race__track'} style={{ '--rows': record.order.length + (props.heading ? 2 : 0) } as CSSProperties}>
+        {props.backdrop}
         {props.heading && <p className="scene__heading">{props.heading}</p>}
         {record.order.map((id) => {
           const player = playerOf(party, id)

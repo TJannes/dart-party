@@ -750,6 +750,227 @@ h1 {
   max-width: 100%;
 }
 
+/* Last One Standing: the rows stand in a boxing ring, with ropes above and below and a post in each corner. */
+.race__track--ring {
+  position: relative;
+  padding: 2.2rem 1.4rem;
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 0.9rem 0.9rem, #ee4266 0 0.7rem, transparent 0.75rem),
+    radial-gradient(circle at calc(100% - 0.9rem) 0.9rem, #7fd4ff 0 0.7rem, transparent 0.75rem),
+    radial-gradient(circle at 0.9rem calc(100% - 0.9rem), #7fd4ff 0 0.7rem, transparent 0.75rem),
+    radial-gradient(circle at calc(100% - 0.9rem) calc(100% - 0.9rem), #ee4266 0 0.7rem, transparent 0.75rem),
+    linear-gradient(#ee4266, #ee4266) 0 0.5rem / 100% 0.14rem no-repeat,
+    linear-gradient(#f3ead7, #f3ead7) 0 0.95rem / 100% 0.14rem no-repeat,
+    linear-gradient(#7fd4ff, #7fd4ff) 0 1.4rem / 100% 0.14rem no-repeat,
+    linear-gradient(#7fd4ff, #7fd4ff) 0 calc(100% - 1.4rem) / 100% 0.14rem no-repeat,
+    linear-gradient(#f3ead7, #f3ead7) 0 calc(100% - 0.95rem) / 100% 0.14rem no-repeat,
+    linear-gradient(#ee4266, #ee4266) 0 calc(100% - 0.5rem) / 100% 0.14rem no-repeat,
+    linear-gradient(#2c4470, #1f3156);
+  box-shadow: inset 0 0 2.5rem rgb(0 0 0 / 45%);
+}
+
+/* Land Grab: the rows lie on an old map. */
+.race__track--map {
+  padding: 1.4rem;
+  border: 0.25rem solid #8a5a33;
+  border-radius: 0.6rem 1.6rem 0.8rem 1.4rem;
+  background:
+    radial-gradient(ellipse at 15% 20%, rgb(138 90 51 / 30%), transparent 45%),
+    radial-gradient(ellipse at 85% 80%, rgb(138 90 51 / 35%), transparent 50%),
+    #e9d8a6;
+  box-shadow: inset 0 0 2rem rgb(92 59 30 / 55%);
+}
+
+.race__track--map .lane {
+  background: #4a3324;
+}
+
+.race__track--map .lane--active {
+  background: #6b4a30;
+}
+
+/* Robin Hood: a clearing in the forest, treetops above and grass below. */
+.race__track--forest {
+  padding: 2.6rem 1.2rem 1.6rem;
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 8% 0, #1d6b47 0 2.4rem, transparent 2.5rem),
+    radial-gradient(circle at 24% -0.4rem, #2f9e6b 0 2.6rem, transparent 2.7rem),
+    radial-gradient(circle at 42% 0, #1d6b47 0 2.3rem, transparent 2.4rem),
+    radial-gradient(circle at 60% -0.5rem, #2f9e6b 0 2.7rem, transparent 2.8rem),
+    radial-gradient(circle at 78% 0, #1d6b47 0 2.4rem, transparent 2.5rem),
+    radial-gradient(circle at 94% -0.3rem, #2f9e6b 0 2.5rem, transparent 2.6rem),
+    linear-gradient(transparent calc(100% - 1.1rem), #2f9e6b calc(100% - 1.1rem)),
+    linear-gradient(#14402c, #1f5a3c);
+  box-shadow: inset 0 0 2rem rgb(0 0 0 / 40%);
+}
+
+.race__track--forest .lane {
+  background: rgb(10 30 20 / 70%);
+}
+
+.race__track--forest .lane--active {
+  background: rgb(60 110 70 / 85%);
+}
+
+/* Spotlight: a theatre, with a curtain on either side and the boards of the stage below. */
+.race__track--stage {
+  padding: 1.2rem 3.4rem 1.8rem;
+  border-radius: 1rem;
+  background:
+    repeating-linear-gradient(90deg, #a3122f 0 0.55rem, #7a0c22 0.55rem 1.1rem) left / 2.6rem 100% no-repeat,
+    repeating-linear-gradient(90deg, #a3122f 0 0.55rem, #7a0c22 0.55rem 1.1rem) right / 2.6rem 100% no-repeat,
+    repeating-linear-gradient(90deg, #8a5a33 0 2.2rem, #7a4d2a 2.2rem 2.3rem) bottom / 100% 1.1rem no-repeat,
+    linear-gradient(#1a0b24, #2c1338);
+  box-shadow: inset 0 0 2rem rgb(0 0 0 / 55%);
+}
+
+.bulb {
+  animation: bulb-blink 1.2s steps(1) infinite;
+}
+
+.bulb--late {
+  animation-delay: 0.6s;
+}
+
+@keyframes bulb-blink {
+  50% {
+    fill: #fff8d6;
+    opacity: 0.55;
+  }
+}
+
+/* Sniper: a hide-out under camouflage netting, with a row of sandbags to lie behind. */
+.race__track--camo {
+  padding: 1.4rem 1.2rem 2.6rem;
+  border-radius: 1rem;
+  background:
+    radial-gradient(ellipse 1.5rem 0.75rem at 1.5rem 100%, #c9b07a 0 96%, transparent 100%) 0 100% / 3rem 1.6rem repeat-x,
+    radial-gradient(ellipse 1.5rem 0.75rem at 1.5rem 100%, #b59a66 0 96%, transparent 100%) 1.5rem calc(100% - 0.7rem) / 3rem 1.6rem repeat-x,
+    radial-gradient(ellipse 22% 16% at 12% 22%, #4a5a32 0 98%, transparent 100%),
+    radial-gradient(ellipse 18% 20% at 46% 12%, #6b6a3c 0 98%, transparent 100%),
+    radial-gradient(ellipse 24% 15% at 82% 30%, #4a5a32 0 98%, transparent 100%),
+    radial-gradient(ellipse 20% 18% at 28% 62%, #2c3324 0 98%, transparent 100%),
+    radial-gradient(ellipse 22% 17% at 68% 72%, #6b6a3c 0 98%, transparent 100%),
+    radial-gradient(ellipse 16% 14% at 94% 84%, #2c3324 0 98%, transparent 100%),
+    #3b4a2c;
+  box-shadow: inset 0 0 2rem rgb(0 0 0 / 55%);
+}
+
+.race__track--camo .lane {
+  background: rgb(18 24 14 / 82%);
+}
+
+.race__track--camo .lane--active {
+  background: rgb(70 86 48 / 92%);
+}
+
+/* Minefield: the beach of the island, sky and sea above the sand. */
+.race__track--beach {
+  position: relative;
+  padding: 1.2rem 1.2rem 5.6rem;
+  border-radius: 1rem;
+  background: linear-gradient(#7fd4ff 0, #bfe9ff 30%, #1f6fa8 30%, #3d93cc 46%, #f2dca4 46%, #e8cb88 100%);
+  box-shadow: inset 0 0 2rem rgb(0 0 0 / 35%);
+}
+
+/* Without the deck chairs the sand below the rows is not needed. */
+.race__track--beach:not(:has(.beach)) {
+  padding-bottom: 1.2rem;
+}
+
+.race__track--beach .lane {
+  background: rgb(27 10 56 / 82%);
+}
+
+.race__track--beach .lane--active {
+  background: rgb(90 70 130 / 92%);
+}
+
+.race__track--beach .scene__heading {
+  color: #1b0a38;
+}
+
+.beach {
+  position: absolute;
+  bottom: 0.3rem;
+  width: 13rem;
+  height: 5.4rem;
+  pointer-events: none;
+}
+
+.beach--left {
+  left: 0.8rem;
+}
+
+.beach--right {
+  right: 0.8rem;
+}
+
+/* Land Grab: the catapult lies cocked until its moment, then the arm swings over. */
+.catapult__arm {
+  transform-origin: 30px 17px;
+  animation: catapult-fire 0.16s ease-in var(--fire, 0s) forwards;
+}
+
+@keyframes catapult-fire {
+  to {
+    transform: rotate(112deg);
+  }
+}
+
+/* Time Bomb: the bomb squad's cordon, warning stripes above and below. */
+.race__track--table {
+  padding: 1.7rem 1.2rem;
+  border-radius: 1rem;
+  background:
+    repeating-linear-gradient(-45deg, #ffd23f 0 0.8rem, #1b1b22 0.8rem 1.6rem) top / 100% 0.8rem no-repeat,
+    repeating-linear-gradient(-45deg, #ffd23f 0 0.8rem, #1b1b22 0.8rem 1.6rem) bottom / 100% 0.8rem no-repeat,
+    linear-gradient(#2b2b36, #1b1b22);
+  box-shadow: inset 0 0 2rem rgb(0 0 0 / 55%);
+}
+
+.race__track--map .scene__heading {
+  color: #5c3b1e;
+}
+
+.lane__held.lane__held--rifle {
+  width: 9.5em;
+  height: 2.85em;
+  margin-right: 0.8em;
+}
+
+/* The line a shot draws from the muzzle to the board. */
+.fx-tracer {
+  height: 0.5vmin;
+  border-radius: 0.25vmin;
+  background: linear-gradient(90deg, transparent, #fff3b0 30%, #ffd23f);
+  box-shadow: 0 0 1.2vmin #ffd23f;
+  transform-origin: 0 50%;
+}
+
+.lane__held.lane__held--shield {
+  width: 1.9em;
+  height: 2.2em;
+  margin-right: 0.8em;
+}
+
+/* Down for the count. */
+.race__track--ring .lane--out .lane__avatar {
+  rotate: 90deg;
+}
+
+.gloves {
+  display: inline-flex;
+  gap: 0.1em;
+}
+
+.gloves i {
+  width: 1.1em;
+  height: 0.95em;
+}
+
 /* Two left in a knockout: the lights go down around the scene. */
 .race--duel {
   border-radius: 1.5rem;
@@ -1187,6 +1408,81 @@ h1 {
   height: 2.6em;
   margin-top: -1.3em;
   margin-left: -0.3em;
+}
+
+/* Race: asphalt with kerbs, and every racer in a car. */
+.lane__road--race {
+  margin-right: 3em;
+  background:
+    linear-gradient(#fff, #fff) left 0 top 50% / 100% 0.12em no-repeat,
+    #3d3b48;
+  border-top: 0.3em solid transparent;
+  border-bottom: 0.3em solid transparent;
+  border-image: repeating-linear-gradient(90deg, #ee4266 0 0.9em, #fff 0.9em 1.8em) 1;
+  box-sizing: border-box;
+  margin-top: 0.35em;
+  margin-bottom: 0.35em;
+}
+
+/* The centre line is dashed by the steps drawn over it. */
+.lane__road--race i {
+  border-left: 0.35em solid #3d3b48;
+}
+
+.lane__racer--car {
+  margin-left: 0.1em;
+}
+
+.car {
+  position: absolute;
+  left: 50%;
+  bottom: -0.5em;
+  width: 5.4em;
+  height: 2.2em;
+  translate: -50% 0;
+}
+
+/* Over the cockpit, a little behind the middle of the car. */
+.car__driver {
+  position: absolute;
+  left: -0.1em;
+  top: 0.05em;
+  width: 1.9em;
+  height: 1.9em;
+}
+
+.car__wheel {
+  animation: boulder-roll 0.7s linear infinite;
+}
+
+.bike__leg {
+  transform-origin: 42px 26px;
+  animation: bike-pedal 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes bike-pedal {
+  from {
+    transform: rotate(-9deg);
+  }
+
+  to {
+    transform: rotate(9deg);
+  }
+}
+
+.scooter__kick {
+  transform-origin: 38px 20px;
+  animation: scooter-kick 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes scooter-kick {
+  from {
+    transform: rotate(-25deg);
+  }
+
+  to {
+    transform: rotate(30deg);
+  }
 }
 
 .lane__flag {

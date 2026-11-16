@@ -191,6 +191,11 @@ export const gameShow: Theme = {
       { wave: 'sine', from: 90, to: 40, at: 0.3, length: 0.3, gain: 0.6 },
       ...knock(0.3, 0.3),
     ],
+    shot: [
+      { wave: 'square', from: 1100, to: 140, at: 0, length: 0.07, gain: 0.3 },
+      { wave: 'sawtooth', from: 320, to: 70, at: 0.02, length: 0.2, gain: 0.26 },
+      { wave: 'triangle', from: 520, to: 260, at: 0.02, length: 0.12, gain: 0.2 },
+    ],
     lock: [
       { wave: 'sine', from: 1400, to: 700, at: 0, length: 0.35, gain: 0.2 },
       { wave: 'square', from: 880, at: 0.4, length: 0.05, gain: 0.2 },

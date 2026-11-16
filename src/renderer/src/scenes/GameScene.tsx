@@ -29,7 +29,7 @@ import { playerOf } from '../colours'
 import { Avatar } from '../components/Avatar'
 import { colourOf } from '../colours'
 import { useSettings } from '../hooks'
-import { Bomb, CallArrow, Card, MEMORY_PICTURES, Pig, Pot, swellOf, type PigFace } from '../theme/gameShowProps'
+import { BeachCorner, Bomb, CallArrow, Card, Glove, MEMORY_PICTURES, Pig, Pot, Quiver, Rifle, Shield, swellOf, type PigFace } from '../theme/gameShowProps'
 import { Board } from '../components/Board'
 import { RaceScene } from './RaceScene'
 import { TrapRunnerScene } from './TrapRunnerScene'
@@ -41,8 +41,9 @@ const g = strings.games
 const SPOTLIGHT = { 3: '#ffd23f', 2: '#f08a4b', 1: '#b388eb' } as Record<number, string>
 
 // Minefield: what a segment looks like before and after it is dug up.
-const MINEFIELD = { hidden: '#6d4fb3', chest: '#ffd23f', coin: '#f0c36b', bomb: '#ee4266', empty: '#8a8496' }
-const MINEFIELD_MARK = { chest: '5', coin: '2', bomb: '✹', empty: '' }
+// It is a treasure island: untouched sand in two shades by turns, and a hole where someone dug.
+const MINEFIELD = { hidden: ['#f2dca4', '#e8cb88'], chest: '#ffd23f', coin: '#f0b84a', bomb: '#4b4038', empty: '#a9895a' }
+const MINEFIELD_MARK = { chest: '5', coin: '2', bomb: '✹', empty: '✕' }
 
 // Memory: a card face down (two shades, by turns), and the hole a card that was taken leaves.
 const MEMORY = { hidden: ['#7b5cc4', '#6548ad'], gone: '#3a3350' }
@@ -160,7 +161,20 @@ function Scene(props: SceneProps): React.JSX.Element | null {
 
     case 'robinHood': {
       const view = state.view as RobinHoodView
-      return <ScoreScene {...common} score={(id) => view.scores[id]} board={<Board variant="target" darts={darts} />} />
+      return (
+        <ScoreScene
+          {...common}
+          look="forest"
+          // Every archer has a quiver in their colour.
+          held={(id) => (
+            <span className="lane__held lane__held--shield">
+              <Quiver colour={colourOf(party, id)} />
+            </span>
+          )}
+          score={(id) => view.scores[id]}
+          board={<Board variant="archery" darts={darts} />}
+        />
+      )
     }
 
     case 'spotlight': {
@@ -174,9 +188,10 @@ function Scene(props: SceneProps): React.JSX.Element | null {
       return (
         <ScoreScene
           {...common}
+          look="stage"
           heading={g.spotlight.target(view.target)}
           score={(id) => view.scores[id]}
-          board={<Board owners={owners} marks={marks} darts={darts} />}
+          board={<Board variant="stage" owners={owners} marks={marks} darts={darts} />}
         />
       )
     }
@@ -231,8 +246,15 @@ function Scene(props: SceneProps): React.JSX.Element | null {
         <ScoreScene
           {...common}
           score={(id) => view.scores[id]}
+          look="map"
+          // Every lord has a coat of arms in their colour.
+          held={(id) => (
+            <span className="lane__held lane__held--shield" data-anim-prop={`shield:${id}`}>
+              <Shield colour={colourOf(party, id)} />
+            </span>
+          )}
           detail={(id) => g.landGrab.fortified(view.fortified[id]!)}
-          board={<Board owners={owners} castles={castles} darts={darts} />}
+          board={<Board variant="map" owners={owners} castles={castles} darts={darts} />}
         />
       )
     }
@@ -251,7 +273,14 @@ function Scene(props: SceneProps): React.JSX.Element | null {
           detail={(id) =>
             view.closest[id] ? g.sniper.mm(Math.round(view.closest[id].mm)) : g.sniper.noDart
           }
-          board={<Board cross={view.target} dots={dots} darts={darts} />}
+          look="camo"
+          // Every sniper has a rifle in their colour, aimed at the board; it fires with every dart.
+          held={(id) => (
+            <span className="lane__held lane__held--rifle" data-anim-prop={`rifle:${id}`}>
+              <Rifle colour={colourOf(party, id)} />
+            </span>
+          )}
+          board={<Board variant="scope" cross={view.target} dots={dots} darts={darts} />}
         />
       )
     }
@@ -309,19 +338,33 @@ function Scene(props: SceneProps): React.JSX.Element | null {
       const view = state.view as MinefieldView
       const owners: Record<number, string> = {}
       const marks: Record<number, string> = {}
-      for (const segment of RING) {
+      for (const [index, segment] of RING.entries()) {
         const found = view.revealed[segment]
-        owners[segment] = found === undefined ? MINEFIELD.hidden : MINEFIELD[found]
-        marks[segment] = found === undefined ? '?' : MINEFIELD_MARK[found]
+        owners[segment] = found === undefined ? MINEFIELD.hidden[index % 2]! : MINEFIELD[found]
+        if (found !== undefined) marks[segment] = MINEFIELD_MARK[found]
       }
       return (
         <ScoreScene
           {...common}
+          look="beach"
+          // With seven or eight players the rows need the room the deck chairs take.
+          backdrop={
+            record.order.length < 7 && (
+              <>
+                <span className="beach beach--left" aria-hidden>
+                  <BeachCorner side="left" />
+                </span>
+                <span className="beach beach--right" aria-hidden>
+                  <BeachCorner side="right" />
+                </span>
+              </>
+            )
+          }
           heading={g.minefield.left(view.left.chest, view.left.coin, view.left.bomb)}
           // Teasing, so not when calm.
           scorched={(id) => !calm && view.scorched.includes(id)}
           score={(id) => view.scores[id]}
-          board={<Board owners={owners} marks={marks} darts={darts} />}
+          board={<Board variant="island" owners={owners} marks={marks} darts={darts} />}
         />
       )
     }
@@ -339,9 +382,23 @@ function Scene(props: SceneProps): React.JSX.Element | null {
           out={view.out}
           duel={record.order.length > 2 && record.order.length - view.out.length === 2 && !state.finished}
           nervous={lastLife(view, state)}
-          score={(id) => hearts(view, id)}
+          look="ring"
+          // A glove per life; whoever is out lies on the canvas.
+          score={(id) =>
+            view.lives[id]! > 0 ? (
+              <span className="gloves">
+                {Array.from({ length: view.lives[id]! }, (_, n) => (
+                  <i key={n}>
+                    <Glove colour={colourOf(party, id)} />
+                  </i>
+                ))}
+              </span>
+            ) : (
+              g.lastOneStanding.ko
+            )
+          }
           detail={(id) => view.segments[id]![0]}
-          board={<Board owners={owners} darts={darts} />}
+          board={<Board variant="ring" owners={owners} darts={darts} />}
         />
       )
     }
@@ -415,7 +472,8 @@ function Scene(props: SceneProps): React.JSX.Element | null {
             </>
           }
           score={(id) => hearts(view, id)}
-          board={<Board owners={owners} darts={darts} />}
+          look="table"
+          board={<Board variant="hazard" owners={owners} darts={darts} />}
         />
       )
     }

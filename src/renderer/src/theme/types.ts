@@ -76,6 +76,8 @@ export type EffectName =
   | 'crumble'
   /** Sniper: the scope locks on, the tape measure, the three rings. */
   | 'lock'
+  /** Sniper: a rifle fires. */
+  | 'shot'
   | 'measure'
   | 'medals'
   /** Minefield: the shovel, a chest, a coin, a crab. */

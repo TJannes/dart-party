@@ -416,6 +416,8 @@ export const strings = {
     },
     lastOneStanding: {
       name: 'Last One Standing',
+      /** In place of the lives of whoever is out. */
+      ko: 'K.O.',
       rules: [
         'Everyone has 3 lives and one segment.',
         'Hit someone\'s segment: they lose a life. Double 2, triple 3.',

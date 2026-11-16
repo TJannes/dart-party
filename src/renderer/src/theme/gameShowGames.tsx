@@ -23,7 +23,8 @@ import {
   useNudge,
   Won,
 } from './gameShowAnimations'
-import { CallArrow, MemoryCard } from './gameShowProps'
+import { ARCHERY_TREES } from '../components/Board'
+import { CallArrow, Catapult, MemoryCard } from './gameShowProps'
 
 // The default theme's own animations for eight more games. Like the general
 // ones: simple shapes moved with `motion`, placed over whatever the scene
@@ -219,44 +220,65 @@ function ArrowLands({ step, stage }: SceneProps<'impact'>): React.JSX.Element | 
 
 /** Off the board: the arrow thuds into a tree and a bird flies up. */
 function TreeMiss({ step, stage }: SceneProps<'bad'>): React.JSX.Element | null {
-  const at = stage.dartPoint()
-  if (!at) return null
-  const size = unit() * 24
+  // Measured once: the nearest tree of the forest behind the target.
+  const [tree] = useState(() => {
+    const dart = stage.dartPoint()
+    const spots = ARCHERY_TREES.map((spot) => stage.boardXY(spot)).filter((spot) => spot !== null)
+    if (!dart || spots.length === 0) return null
+    return spots.reduce((best, spot) =>
+      Math.hypot(spot.x - dart.x, spot.y - dart.y) < Math.hypot(best.x - dart.x, best.y - dart.y) ? spot : best,
+    )
+  })
+  if (!tree) return null
+  const size = stage.boardScale() * 0.5
+  // The arrow comes down into the crown from above, over the target: from
+  // the left into a tree on the right, and the other way round. Its point
+  // is at the origin of the drawing, where `.fx-arrow` pins it.
+  const fromLeft = tree.x > (stage.board()?.x ?? tree.x)
   return (
-    <Pin at={at}>
-      <motion.svg
-        className="fx-tree"
-        viewBox="-30 -50 60 62"
-        style={{ width: size }}
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: [0, 1.15, 1, 1, 1], opacity: [0, 1, 1, 1, 0], rotate: [0, 0, -3, 2, 0] }}
-        transition={{ duration: step.length + 0.3, delay: step.at, times: [0, 0.15, 0.3, 0.45, 1], ease: 'easeOut' }}
-      >
-        <rect x="-5" y="-12" width="10" height="24" rx="2" fill="#8a5a33" stroke={INK} strokeWidth="1.2" />
-        <path d="M-22 -14 Q-30 -30 -14 -36 Q-10 -50 6 -44 Q24 -46 22 -28 Q30 -16 14 -12 Z" fill="#3fa565" stroke={INK} strokeWidth="1.2" />
-        <g transform="translate(4 0) scale(0.55)">
-          <Arrow />
-        </g>
-      </motion.svg>
-      <motion.svg
-        className="fx-bird"
-        viewBox="-12 -8 24 16"
-        style={{ width: size * 0.4 }}
-        initial={{ x: 0, y: -size * 0.5, opacity: 0 }}
-        animate={{ x: size * 1.2, y: -size * 1.5, opacity: [0, 1, 1, 0] }}
-        transition={{ duration: step.length, delay: step.at + 0.3, ease: 'easeOut' }}
-      >
-        <motion.path
-          d="M-10 0 Q-5 -8 0 0 Q5 -8 10 0"
-          fill="none"
-          stroke="#ffffff"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          animate={{ scaleY: [1, -0.6, 1] }}
-          transition={{ duration: 0.22, repeat: Infinity }}
-        />
-      </motion.svg>
-    </Pin>
+    <>
+      {/* The arrow flies into the crown and stays there, quivering. */}
+      <Pin at={tree}>
+        <motion.svg
+          className="fx-arrow"
+          viewBox="-4 -34 38 38"
+          initial={{ x: (fromLeft ? -1 : 1) * unit() * 30, y: -unit() * 30, opacity: 0, rotate: 0 }}
+          animate={{ x: 0, y: 0, opacity: [0, 1, 1, 1, 0], rotate: [0, 0, -10, 8, -5, 3, 0] }}
+          transition={{
+            x: { duration: 0.14, delay: step.at, ease: 'easeIn' },
+            y: { duration: 0.14, delay: step.at, ease: 'easeIn' },
+            rotate: { duration: 0.6, delay: step.at + 0.14, ease: 'easeOut' },
+            opacity: { duration: step.length + 0.4, delay: step.at, times: [0, 0.08, 0.5, 0.85, 1] },
+          }}
+        >
+          <g transform={fromLeft ? 'scale(-1 1)' : undefined}>
+            <Arrow />
+          </g>
+        </motion.svg>
+      </Pin>
+      {/* Leaves come down, and a bird has had enough. */}
+      <Burst at={tree} delay={step.at + 0.14} colours={['#2f9e6b', '#3fa565', '#23805a']} pieces={10} reach={7} length={0.8} />
+      <Pin at={{ x: tree.x, y: tree.y - size * 0.3 }}>
+        <motion.svg
+          className="fx-bird"
+          viewBox="-12 -8 24 16"
+          style={{ width: size * 0.7 }}
+          initial={{ x: 0, y: 0, opacity: 0 }}
+          animate={{ x: [0, size * 0.8, size * 2.6], y: [0, -size * 1.2, -size * 2.6], opacity: [0, 1, 1, 0] }}
+          transition={{ duration: step.length, delay: step.at + 0.3, ease: 'easeOut' }}
+        >
+          <motion.path
+            d="M-10 0 Q-5 -8 0 0 Q5 -8 10 0"
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            animate={{ scaleY: [1, -0.6, 1] }}
+            transition={{ duration: 0.22, repeat: Infinity }}
+          />
+        </motion.svg>
+      </Pin>
+    </>
   )
 }
 
@@ -468,9 +490,15 @@ function LandAttacked({ step, stage }: SceneProps<'attacked'>): React.JSX.Elemen
   // Measured once. The attacker's avatar moves while it laughs, and a path
   // that changes on a later render makes Motion start the flight over.
   const [arc] = useState(() => {
-    const from = stage.avatar(step.scene.by)
+    const avatar = stage.avatar(step.scene.by)
     const to = segmentOf(stage)
-    if (!from || !to) return null
+    if (!avatar || !to) return null
+    // The catapult rolls up beside the attacker's coat of arms, clear of the
+    // name; the stone leaves from the end of its arm.
+    const size = avatar.size * 1.5
+    const shield = stage.prop(`shield:${step.scene.by}`)
+    const engine = shield ? { x: shield.x - size * 0.75, y: shield.y } : { x: avatar.x + avatar.size * 1.3, y: avatar.y }
+    const from = { x: engine.x + size * 0.3, y: engine.y - size * 0.45 }
     const dx = to.x - from.x
     const dy = to.y - from.y
     // One arc, as points along a parabola at even steps in time: level at an
@@ -480,6 +508,8 @@ function LandAttacked({ step, stage }: SceneProps<'attacked'>): React.JSX.Elemen
     return {
       from,
       to,
+      engine,
+      size,
       animate: {
         x: points.map((t) => dx * t),
         y: points.map((t) => dy * t - 4 * lift * t * (1 - t)),
@@ -489,20 +519,32 @@ function LandAttacked({ step, stage }: SceneProps<'attacked'>): React.JSX.Elemen
     }
   })
   if (!arc) return null
-  const { from, to } = arc
+  const { from, to, engine, size } = arc
+  // The arm swings first; the stone still lands when it always did.
+  const wind = Math.min(0.18, flight * 0.3)
   return (
     <>
-      <Burst at={from} delay={step.at} colours={['#e7d3ae', '#ffffff']} pieces={6} reach={3} length={0.35} />
+      <Pin at={engine}>
+        <motion.div
+          style={{ width: size, height: size * 0.8, '--fire': `${step.at + wind - 0.12}s` } as React.CSSProperties}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: [0, 1.1, 1, 1, 0.9], opacity: [0, 1, 1, 1, 0] }}
+          transition={{ duration: step.length + 0.3, delay: Math.max(0, step.at - 0.1), times: [0, 0.1, 0.18, 0.85, 1] }}
+        >
+          <Catapult colour={stage.colourOf(step.scene.by)} />
+        </motion.div>
+      </Pin>
+      <Burst at={from} delay={step.at + wind} colours={['#e7d3ae', '#ffffff']} pieces={6} reach={3} length={0.35} />
       <Pin at={from}>
         <motion.i
           className="fx-boulder"
           initial={{ x: 0, y: 0, opacity: 0, rotate: 0 }}
           animate={arc.animate}
           transition={{
-            duration: flight,
-            delay: step.at,
+            duration: flight - wind,
+            delay: step.at + wind,
             ease: 'linear',
-            opacity: { duration: flight + 0.05, delay: step.at, times: [0, 0.06, 0.95, 1] },
+            opacity: { duration: flight - wind + 0.05, delay: step.at + wind, times: [0, 0.06, 0.95, 1] },
           }}
         />
       </Pin>
@@ -560,6 +602,61 @@ function useCount(to: number, delay: number, duration: number): number {
     // Counted once, when the step appears.
   }, [])
   return value
+}
+
+const RECOIL: Keyframe[] = [
+  { transform: 'translateX(0) rotate(0deg)' },
+  { transform: 'translateX(-9%) rotate(-5deg)' },
+  { transform: 'translateX(0) rotate(0deg)' },
+]
+
+/**
+ * A dart is a shot: the thrower's rifle kicks back, flame comes from the
+ * muzzle and a line of light runs to where the dart is on the board.
+ */
+function SniperShot({ step, stage }: SceneProps<'impact'>): React.JSX.Element | null {
+  const { thrower } = step.scene.story
+  const name = `rifle:${thrower}`
+  // Measured once, before the recoil moves the rifle.
+  const [shot] = useState(() => {
+    const box = stage.propElement(name)?.getBoundingClientRect()
+    const to = stage.dartPoint()
+    if (!box || !to || box.width === 0) return null
+    const from = { x: box.right, y: box.top + box.height * 0.5 }
+    return {
+      from,
+      to,
+      length: Math.hypot(to.x - from.x, to.y - from.y),
+      angle: (Math.atan2(to.y - from.y, to.x - from.x) * 180) / Math.PI,
+    }
+  })
+  useNudge(() => stage.propElement(name), RECOIL, step.at, 220, stage.calm)
+  if (!shot) return null
+  const size = unit() * 7
+  return (
+    <>
+      <Pin at={shot.from}>
+        <motion.i
+          className="fx-tracer"
+          // Not centred like the rest: it starts at the muzzle.
+          style={{ width: shot.length, rotate: shot.angle, translate: '0 -50%' }}
+          initial={{ scaleX: 0, opacity: 0 }}
+          animate={{ scaleX: [0, 1, 1], opacity: [0, 1, 0] }}
+          transition={{ duration: 0.32, delay: step.at, times: [0, 0.25, 1], ease: 'easeOut' }}
+        />
+      </Pin>
+      <Pow at={shot.from} size={size} delay={step.at} length={0.22} />
+      <Burst at={shot.to} delay={step.at + 0.08} colours={['#fff3b0', '#ffd23f', '#c9c6d6']} pieces={8} reach={5} length={0.4} />
+      <Pin at={shot.to}>
+        <motion.i
+          className="fx-ring"
+          initial={{ scale: 0.2, opacity: 0 }}
+          animate={{ scale: 1.6, opacity: [0, 1, 0] }}
+          transition={{ duration: 0.4, delay: step.at + 0.08, ease: 'easeOut' }}
+        />
+      </Pin>
+    </>
+  )
 }
 
 /** A new round: the cross drops in like a scope locking on. */
@@ -1238,7 +1335,7 @@ export const gameShowGames: Record<string, Partial<AnimationSet>> = {
   robinHood: { impact: ArrowLands, bad: TreeMiss, spectacle: SplitArrow },
   spotlight: { round: SpotlightSweep, scored: SpotlightBow, blank: SpotlightBlank },
   landGrab: { scored: LandClaimed, fortified: LandFortified, attacked: LandAttacked, lost: LandLost },
-  sniper: { round: SniperScope, measured: SniperMeasured, roundResult: SniperMedals },
+  sniper: { round: SniperScope, impact: SniperShot, measured: SniperMeasured, roundResult: SniperMedals },
   minefield: { dug: MinefieldDug, exploded: Exploded },
   higherOrLower: { call: CallResult },
   raiseTheBar: { jump: BarJump, scored: PotWon },

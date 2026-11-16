@@ -9,6 +9,7 @@ import { colourOf, playerOf } from '../colours'
 import { Avatar, type Mood } from '../components/Avatar'
 import { Board } from '../components/Board'
 import { Glass, useDrinks } from '../components/Drinks'
+import { Bicycle, RaceCar, Scooter } from '../theme/gameShowProps'
 
 /** How a racer feels, going by the last thing that happened. */
 function moodOf(player: PlayerId, state: GameState<RaceView>): Mood {
@@ -29,6 +30,15 @@ export function RaceScene(props: {
   const { segments, positions, trackLength } = state.view
   const moods = useMoods()
   const drinks = useDrinks(party)
+  // A joke that changes nothing: whoever is last rides a kick scooter, and
+  // with three places or more whoever is second to last a bicycle. The rest
+  // drive a racing car, and so does everyone while they are all level.
+  const places = [...new Set(record.order.map((id) => positions[id]!))].sort((a, b) => a - b)
+  const vehicleOf = (id: PlayerId): 'car' | 'bike' | 'scooter' => {
+    if (places.length < 2) return 'car'
+    if (positions[id] === places[0]) return 'scooter'
+    return places.length >= 3 && positions[id] === places[1] ? 'bike' : 'car'
+  }
   const owners: Record<number, string> = {}
   for (const id of record.order) {
     for (const segment of segments[id] ?? []) owners[segment] = colourOf(party, id)
@@ -42,25 +52,37 @@ export function RaceScene(props: {
           const colour = colourOf(party, id)
           const active = state.current?.player === id
           return (
-            <div key={id} className={active ? 'lane lane--active' : 'lane'} style={{ borderColor: colour }}>
+            <div key={id} className={active ? 'lane lane--race lane--active' : 'lane lane--race'} style={{ borderColor: colour }}>
               <div className="lane__who">
                 <strong>{player.name}</strong>
                 <span style={{ color: colour }}>
                   {segments[id]!.join(' + ')} <Glass drinks={drinks} player={id} />
                 </span>
               </div>
-              <div className="lane__road">
+              <div className="lane__road lane__road--race">
                 {Array.from({ length: trackLength }, (_, step) => (
                   <i key={step} />
                 ))}
                 <motion.div
-                  className="lane__racer"
+                  className="lane__racer lane__racer--car"
                   data-anim-avatar={id}
                   data-anim-score={id}
                   animate={{ left: `${(positions[id]! / trackLength) * 100}%` }}
                   transition={{ type: 'spring', stiffness: 120, damping: 14 }}
                 >
-                  <Avatar avatar={player.avatar} mood={moods[id] ?? moodOf(id, state)} />
+                  {/* The driver first, so the car is drawn over their chin: they sit in it. */}
+                  <div className="car__driver">
+                    <Avatar avatar={player.avatar} mood={moods[id] ?? moodOf(id, state)} />
+                  </div>
+                  <div className="car">
+                    {vehicleOf(id) === 'scooter' ? (
+                      <Scooter colour={colour} />
+                    ) : vehicleOf(id) === 'bike' ? (
+                      <Bicycle colour={colour} />
+                    ) : (
+                      <RaceCar colour={colour} />
+                    )}
+                  </div>
                 </motion.div>
               </div>
               <div className="lane__flag" aria-hidden />

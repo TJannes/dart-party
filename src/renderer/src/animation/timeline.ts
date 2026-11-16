@@ -277,6 +277,7 @@ export function timelineOf(
   // Every dart on the board is a card dealt; 21 pays out.
   if (story.gameId === 'blackjack' && story.feedback !== 'bad') sounds.push({ at: 0.12, effect: 'card' })
   if (story.gameId === 'blackjack' && story.feedback === 'great') sounds.push({ at: 0.45, effect: 'goldCoin' })
+  if (story.gameId === 'sniper') sounds.push({ at: 0, effect: 'shot' })
   if (story.gameId === 'robinHood') sounds.push(story.dart.miss ? { at: 0.3, effect: 'bird' } : { at: 0, effect: 'arrow' })
 
   steps.push({ key: 'impact', at: 0, length: 0.5, scene: { kind: 'impact', story } })
