@@ -4,7 +4,8 @@ import { playKnockout, rankKnockout, type GameRules, type PlayerId } from './typ
 
 // Higher or Lower: before every dart the game calls "higher" or "lower".
 // The dart must be worth more, or less, than the dart before it, whoever
-// threw that. Get it wrong and you lose a life. A miss is always wrong.
+// threw that. Get it wrong and you lose a life and your turn is over, so a
+// turn costs one life at most. A miss is always wrong.
 
 export type Call = 'higher' | 'lower'
 
@@ -70,7 +71,8 @@ export const higherOrLower: GameRules<HigherOrLowerSetup, HigherOrLowerView> = {
           out.push(thrower)
           emit({ kind: 'knockedOut', player: thrower })
         }
-        return 'bad'
+        // A wrong dart ends the turn, so nobody loses more than one life before the others throw.
+        return { feedback: 'bad', endTurn: true }
       },
     )
 

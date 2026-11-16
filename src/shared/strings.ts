@@ -429,18 +429,18 @@ export const strings = {
       rules: [
         'Before every dart the game calls higher or lower.',
         'Your dart must be worth more, or less, than the dart before it.',
-        'Wrong, the same, or off the board: you lose a life.',
+        'Wrong, the same, or off the board: you lose a life and your turn is over.',
         '3 lives. The last one standing wins.',
       ],
       short: [
         'Before every dart the game calls higher or lower.',
-        'The same, or off the board, is wrong too.',
+        'Wrong costs a life and ends your turn. The same, or off the board, is wrong too.',
         '3 lives. The last one standing wins.',
       ],
       demo: [
         'The first dart sets the number to beat.',
         '"Higher", and it is: safe.',
-        '"Lower", and it is not: a life gone.',
+        '"Lower", and it is not: a life gone, next player.',
       ],
       higher: (bar: number) => `Higher than ${bar}!`,
       lower: (bar: number) => `Lower than ${bar}!`,

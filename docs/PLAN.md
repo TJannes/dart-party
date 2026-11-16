@@ -20,7 +20,8 @@ sound. Step 10 (rules explained by animation) is built for all eleven games
 and seen on Ubuntu in one window; released in 0.8.0 with the two changes
 to the drinking game of 2026-11-16. 0.8.1 has the new values in Piggy
 Bank (the double ring pays three times) and its own board. Not yet
-released: the target zone of Time Bomb that follows the players. No build
+released: the target zone of Time Bomb that follows the players, and a
+wrong dart ending the turn in Higher or Lower. No build
 step is open; what is
 left is under "Later" and "Parked".
 See [Build steps](#build-steps).
@@ -616,11 +617,17 @@ happens after a reveal.
 - Before every dart the game calls "higher" or "lower". The dart must be
   worth more, or less, than the dart before it, whoever threw that.
 - The first dart of the game is free: any dart on the board sets the value.
-- Wrong, equal, or off the board: lose a life. A dart on the board always
-  becomes the new value, right or wrong; a miss leaves it.
+- Wrong, equal, or off the board: lose a life, and the turn is over. A
+  dart on the board always becomes the new value, right or wrong; a miss
+  leaves it. So a turn costs one life at most and the next player inherits
+  the value of the wrong dart. Before, the turn went on, and a player
+  could lose all three lives before anyone else had thrown (owner,
+  2026-11-16).
 - The call is a coin flip, except that from 30 up it is always "lower" and
   up to 5 always "higher", so it is never (nearly) impossible.
-- 3 lives, three darts a turn, knockout as in Last One Standing, 10 rounds.
+- 3 lives, up to three darts a turn, knockout as in Last One Standing, 10
+  rounds. As after a bomb, the next dart counts for the next player, also
+  before the old darts are pulled.
 
 ### Time Bomb
 

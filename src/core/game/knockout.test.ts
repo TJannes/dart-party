@@ -86,11 +86,11 @@ describe('Higher or Lower', () => {
   const play = (...turns: Turn[]) => higherOrLower.evaluate(setup, three, turns)
 
   it('reports whether a call was met, but not for the free first dart', () => {
-    const state = play(open(S(10), S(12), S(15)))
+    const state = play(open(S(10), S(8), S(5)))
     expect(state.played.map((p) => p.moments[0])).toEqual([
       undefined,
-      { kind: 'call', player: 'ann', call: 'lower', right: false },
-      { kind: 'call', player: 'ann', call: 'higher', right: true },
+      { kind: 'call', player: 'ann', call: 'lower', right: true },
+      { kind: 'call', player: 'ann', call: 'higher', right: false },
     ])
   })
 
@@ -134,10 +134,22 @@ describe('Higher or Lower', () => {
     expect(state.view.bar).toBe(11)
   })
 
-  it('knocks a player out after three wrong darts and ends their turn', () => {
-    const state = play(open(miss, miss, miss))
+  it('ends the turn on a wrong dart, so a turn costs one life at most', () => {
+    // The darts are still in the board: the turn is over all the same.
+    const state = play(open(S(18), S(20), S(1)))
+    expect(state.played).toHaveLength(2)
+    expect(state.view).toMatchObject({ bar: 20, lives: { ann: 2 } })
+    expect(state.current).toMatchObject({ player: 'bob', turn: 1, dartsLeft: 3 })
+    // Three right darts are a full turn.
+    expect(play(open(S(10), S(8), S(9))).current).toMatchObject({ player: 'ann', dartsLeft: 0 })
+  })
+
+  it('knocks a player out on their third wrong turn', () => {
+    const wrong = turn(miss)
+    const state = play(wrong, wrong, wrong, wrong, wrong, wrong, wrong)
     expect(state.view.out).toEqual(['ann'])
-    expect(state.current).toMatchObject({ player: 'bob', turn: 1 })
+    expect(state.view.lives).toEqual({ ann: 0, bob: 1, cy: 1 })
+    expect(state.current).toMatchObject({ player: 'bob', turn: 7 })
   })
 })
 
