@@ -601,6 +601,11 @@ top: 20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5.
 - A bomb costs half your points, rounded down like the piggy bank.
 - How much is still hidden is shown, but not where.
 - 6 rounds, or until every treasure is found. Highest total wins.
+- With 6 to 8 players every treasure is often found in round 2 or 3, so
+  the last throwers of that round get fewer turns. Kept as it is (owner,
+  2026-11-16): playing the round out would only leave bombs for them, and
+  the throwing order changes every game. More treasure for more players
+  was the other option.
 
 The numbers of chests, coins and bombs, their values, the five rounds of
 Sniper and the early end of Minefield were filled in while building; the
