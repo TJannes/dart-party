@@ -3,7 +3,7 @@
 Status: steps 1 to 3 are built and released (0.2.0). Steps 4 to 8 are built
 and released, for the owner to test (0.3.0 has the games and the animations,
 0.4.0 adds free play, 0.5.0 the themed animations per game, 0.6.0 renames
-the evening to a party): eleven
+the evening to a party, 0.7.0 adds the drinking game): eleven
 mini-games are in the
 draw. Updating from 0.1.0 to
 0.1.1 inside the app works on Ubuntu; the owner still has to install on the
@@ -13,7 +13,7 @@ with a real second screen, not on Windows, and nobody has listened to the
 sound yet. The owner still has to judge step 6 (animations in every game) on the
 Surface, under Settings, "Try the animations". Step 8 (themed animations per
 game) is built for all eleven games and seen only on the Animations screen
-on Ubuntu. Step 9 (the drinking game) is built and not yet released: played
+on Ubuntu. Step 9 (the drinking game) is built and released in 0.7.0: played
 through by hand on Ubuntu in one window, without darts, a second screen or
 sound. The next thing to build is step 10 (rules explained by animation).
 See [Build steps](#build-steps).
