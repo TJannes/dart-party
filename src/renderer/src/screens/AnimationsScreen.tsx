@@ -183,6 +183,12 @@ const RAISE_THE_BAR: Demo[] = [
   demo(t.jumpFail, thrown(barAt60, S(1), S(1)), S(1)),
 ]
 
+/** Clockwise from the 20: star, heart, clover, diamond, triangle, and round again. */
+const cards = game('memory', {
+  under: Object.fromEntries(RING.map((segment, index) => [segment, ['star', 'heart', 'clover', 'diamond', 'triangle'][index % 5]])),
+})
+const MEMORY: Demo[] = [demo(t.cardTurned, cards, S(20)), demo(t.pairFound, thrown(cards, S(20)), S(6))]
+
 /** The first player holds 14 with one dart thrown. */
 const hand = thrown(game('blackjack', null, IDS.slice(0, 3)), S(14))
 const BLACKJACK: Demo[] = [
@@ -204,6 +210,7 @@ const PER_GAME: { id: keyof typeof strings.games; demos: Demo[] }[] = [
   { id: 'timeBomb', demos: TIME_BOMB },
   { id: 'raiseTheBar', demos: RAISE_THE_BAR },
   { id: 'blackjack', demos: BLACKJACK },
+  { id: 'memory', demos: MEMORY },
 ]
 
 const s = strings.animations.spectacle

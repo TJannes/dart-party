@@ -4,6 +4,7 @@ import { decider } from './decider'
 import { higherOrLower } from './higherOrLower'
 import { landGrab } from './landGrab'
 import { lastOneStanding } from './lastOneStanding'
+import { memory } from './memory'
 import { minefield } from './minefield'
 import { piggyBank } from './piggyBank'
 import { race } from './race'
@@ -29,6 +30,7 @@ export const drawableGames: readonly GameRules<any, any>[] = [
   timeBomb,
   raiseTheBar,
   blackjack,
+  memory,
 ]
 
 /** Played on their own, outside a party. Never in the draw. */

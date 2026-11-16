@@ -24,7 +24,8 @@ the target zone of Time Bomb that follows the players, and a wrong dart
 ending the turn in Higher or Lower. Step 11 (Blackjack, a twelfth game) is
 built with its own scene and animations but not released: one round was
 played by hand on Ubuntu in one window, without darts, a second screen or
-sound. What is left after it is under "Later" and "Parked".
+sound. Step 12 (Memory, a thirteenth game) is built in the same way and
+checked in the same way: three turns played by hand. What is left after it is under "Later" and "Parked".
 See [Build steps](#build-steps).
 
 ## Goal
@@ -759,6 +760,46 @@ Agreed with the owner on 2026-11-16, on Claude's proposal.
   these looks, the suits (they only tell the cards apart), and that the
   round has no opening animation of its own.
 
+### Memory
+
+The second game added for balance. Agreed with the owner on 2026-11-16, on
+Claude's proposal.
+
+- Under the 20 segments lie cards: 5 pictures, 4 of each, shuffled every
+  game.
+- A dart turns over the card of the segment it hits. The ring does not
+  matter; the bull does nothing; a card that is already open or already
+  gone does nothing.
+- Two open cards with the same picture in one turn are a pair: 1 point for
+  the thrower, and both leave the board.
+- What is still open when the turn ends turns back. Everyone has seen it,
+  so remembering pays.
+- The game ends when every card is gone, or after about 24 turns in all:
+  6 rounds up to 4 players, then 5, 4, 3 and 3 with 8. Most pairs wins.
+- A turn without a pair is the usual thing, so the drinking game asks no
+  sip for it (`emptyTurnsAreNormal`).
+- Why four of each picture and not ten different pairs: with ten pairs a
+  pair needs one particular segment, which is a game of aim. With four of
+  a kind three random darts on the board make a pair about 44% of the time
+  early on, and whoever remembers has three segments to aim at. It stays a
+  mixed game: late on, with few cards left, aim decides.
+- Known: there are only 10 pairs, so with 7 or 8 players places are often
+  shared; and like Minefield the board can be empty before the last round.
+- On screen: the board is the table. A card face down is purple (two
+  shades by turns, to tell the cards apart), an open card has the colour
+  and the sign of its picture (★ ♥ ♣ ◆ ▲), a segment whose card is gone is
+  dark. Above the players "Cards left: 14"; under each name the signs of
+  the pairs taken. A new moment, `flipped`: a card turns over above its
+  segment, and with a pair its partner comes up too and both fly to the
+  thrower's score, with stars. Sounds: the existing flip, and the chest
+  for a pair. Two entries on the Animations screen.
+- Filled in while building, not put to the owner: after a pair a third
+  card of that picture lies open on its own and can still pair with the
+  fourth; a card turned over sounds as a dart that does nothing plus the
+  flip, a pair as a big hit; the pictures, their signs and colours; cards
+  turn back without an animation, since that happens on the takeout and
+  not on a dart; the wording.
+
 Some names and themes may still change.
 
 ### Ideas, not agreed
@@ -832,14 +873,9 @@ game is about to be built.
 - **Blackjack** (balance, first). Built: see [Blackjack](#blackjack). It
   is Close Call with a fixed number and stopping, so Close Call above is
   no longer needed as a game of its own.
-- **Memory** (balance, second). Claude's reading of "Memory Darts" on the
-  owner's list, which only said "remember numbers". Ten pairs of pictures
-  lie hidden under the 20 segments. Every dart turns over the segment it
-  hits; two matching pictures in one turn are yours, the rest turn back
-  when the turn ends. Most pairs wins. Adds: memory and luck early on,
-  aim only once the places are known. Hidden things under segments, like
-  Minefield, but another mechanism. To decide: what the bull does, whether
-  a pair gives an extra dart, the round limit.
+- **Memory** (balance, second). Built: see [Memory](#memory). Claude's
+  reading of "Memory Darts" on the owner's list, which only said "remember
+  numbers".
 - **Trap Runner** (balance, third). Everyone walks from 0 to exactly 20.
   Any dart on the board is a step, double 2, triple 3; too many steps do
   not count. Three segments are traps. Adds: a race where every dart moves
@@ -1125,6 +1161,12 @@ number hit, with the next one under the name.
   round played by hand on Ubuntu in one window (three cards, a bust, a 21
   with a bull, the start moving up in round 2); the new sound not listened
   to; not on Windows; not released.*
+- [x] **12. Memory**, a thirteenth game, the second for balance
+  (2026-11-16). Rules, the board as a table of cards, a themed animation
+  for a card turning and for a pair, rules card with demo, entries on the
+  Animations screen, tests. *Three turns played by hand on Ubuntu in one
+  window (cards opening, turning back, a pair); sound not listened to; not
+  on Windows; not released.*
 - [ ] **Parked: recorded music.** CC0 playlists per scene in place of the
   generated loops, as decided under [Style and sound](#style-and-sound).
   Parked by the owner on 2026-11-15; pick it up only when asked. The

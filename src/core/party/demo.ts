@@ -42,6 +42,9 @@ const T = (n: number): Dart => manualDart(n, 3)
 const at = (kind: string, ...segments: number[]): Record<number, string> =>
   Object.fromEntries(segments.map((segment) => [segment, kind]))
 
+/** The pictures of the Memory demo, clockwise from the 20 and round again. */
+const MEMORY_DEMO = ['star', 'heart', 'clover', 'diamond', 'triangle']
+
 /** The cross of the Sniper demo, every round. */
 const CROSS = { x: 0.3, y: 0.4 }
 
@@ -135,6 +138,12 @@ const SCRIPTS: Record<string, (record: GameRecord) => Script> = {
       { before: ['pull', S(20), S(19)], dart: T(19) },
       { before: ['pull', S(1), S(2)], dart: S(3) },
     ],
+  }),
+
+  // A card, its pair, and a card that will turn back. Made up, so the demo gives nothing away.
+  memory: () => ({
+    setup: { under: Object.fromEntries(RING.map((segment, index) => [segment, MEMORY_DEMO[index % MEMORY_DEMO.length]])) },
+    moves: [{ dart: S(20) }, { dart: S(6) }, { dart: S(1) }],
   }),
 
   // A triple that counts once, a hand of exactly 21, and the next player going over.

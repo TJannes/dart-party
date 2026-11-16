@@ -196,3 +196,26 @@ export function Card({ value, suit = 0 }: { value?: number; suit?: number }): Re
     </svg>
   )
 }
+
+/** How the five pictures of Memory look: a sign and a colour each. */
+export const MEMORY_PICTURES = {
+  star: { sign: '★', colour: '#ffd23f' },
+  heart: { sign: '♥', colour: '#ee4266' },
+  clover: { sign: '♣', colour: '#3bceac' },
+  diamond: { sign: '◆', colour: '#7fd4ff' },
+  triangle: { sign: '▲', colour: '#f08a4b' },
+} as const
+
+/** A card of Memory, face up. */
+export function MemoryCard({ picture }: { picture: keyof typeof MEMORY_PICTURES }): React.JSX.Element {
+  const { sign, colour } = MEMORY_PICTURES[picture]
+  return (
+    <svg viewBox="0 0 50 60" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
+      <rect x="1.5" y="1.5" width="47" height="57" rx="7" fill={colour} stroke={INK} strokeWidth="3" />
+      <rect x="7" y="7" width="36" height="46" rx="4" fill="#fffdf6" />
+      <text x="25" y="32" textAnchor="middle" dominantBaseline="middle" fontSize="30" fontWeight="900" fill={INK}>
+        {sign}
+      </text>
+    </svg>
+  )
+}

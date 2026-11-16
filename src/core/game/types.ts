@@ -63,6 +63,17 @@ export type Moment =
   | { kind: 'roundResult'; places: { player: PlayerId; at: { x: number; y: number } }[] }
   /** `player` dug up a segment and found this under it. */
   | { kind: 'dug'; player: PlayerId; segment: number; found: 'chest' | 'coin' | 'bomb' | 'empty' }
+  /**
+   * `player` turned over the card under a segment. `match` is the segment of
+   * the open card it made a pair with, if it did.
+   */
+  | {
+      kind: 'flipped'
+      player: PlayerId
+      segment: number
+      picture: 'star' | 'heart' | 'clover' | 'diamond' | 'triangle'
+      match: number | null
+    }
   /** `player` had to throw higher or lower, and did or did not. */
   | { kind: 'call'; player: PlayerId; call: 'higher' | 'lower'; right: boolean }
   /** `player` tried to get over the bar `holder` held. */

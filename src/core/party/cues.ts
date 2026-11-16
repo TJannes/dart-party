@@ -58,6 +58,7 @@ export type LevelChange = 'harder' | 'easier'
 /** The order a chain is shown in: cause first, the biggest last. */
 const ORDER: Beat['kind'][] = [
   'dug',
+  'flipped',
   'measured',
   'call',
   'scored',

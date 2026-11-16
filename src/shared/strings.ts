@@ -114,6 +114,8 @@ export const strings = {
       callWrong: 'Call missed',
       jumpOver: 'Over the bar',
       jumpFail: 'Not over the bar',
+      cardTurned: 'A card turned',
+      pairFound: 'A pair',
       cardDealt: 'A card dealt',
       twentyOne: 'Exactly 21',
       bust: 'Bust',
@@ -529,6 +531,28 @@ export const strings = {
       last: (hand: string, points: number) => `Last round: ${hand} · +${points}`,
       /** The bull on a dart slot. */
       ace: 'A',
+    },
+    memory: {
+      name: 'Memory',
+      rules: [
+        'Under the segments lie cards: five pictures, four of each.',
+        'Every dart turns over the card it hits. The ring does not matter; the bull does nothing.',
+        'Two of the same picture in one turn: a pair, and it is yours.',
+        'The other cards turn back when you pull your darts. Remember them!',
+        'Until the cards are gone or the rounds are up. The most pairs wins.',
+      ],
+      short: [
+        'Every dart turns over a card. Two of the same picture in one turn is a pair.',
+        'The other cards turn back after your turn. Remember them!',
+        'The most pairs wins.',
+      ],
+      demo: [
+        'A dart turns over the card it hits.',
+        'The same picture again: a pair!',
+        'No pair? It turns back after your turn. Remember it!',
+      ],
+      left: (cards: number) => `Cards left: ${cards}`,
+      noPairs: 'No pairs yet',
     },
     x01: {
       name: 'X01',

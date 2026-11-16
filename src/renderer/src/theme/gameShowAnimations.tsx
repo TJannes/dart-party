@@ -983,6 +983,7 @@ export const gameShowAnimations: AnimationPack = {
     measured: Nothing,
     roundResult: Nothing,
     dug: Nothing,
+    flipped: Nothing,
     call: Nothing,
     jump: Nothing,
     round: Nothing,

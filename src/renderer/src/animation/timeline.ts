@@ -105,6 +105,7 @@ const LENGTH: Record<Beat['kind'], number> = {
   measured: 0.8,
   roundResult: 1.3,
   dug: 1.3,
+  flipped: 1,
   call: 0.7,
   jump: 1,
   spectacle: 1.4,
@@ -112,7 +113,7 @@ const LENGTH: Record<Beat['kind'], number> = {
 }
 
 /** These play while the dart lands; the rest plays one after the other. */
-const ALONGSIDE: Beat['kind'][] = ['scored', 'lost', 'fuse', 'measured', 'call', 'dug']
+const ALONGSIDE: Beat['kind'][] = ['scored', 'lost', 'fuse', 'measured', 'call', 'dug', 'flipped']
 
 /** How long the shovel digs before the segment shows what was under it. */
 export const DIG_TIME = 0.5
@@ -177,6 +178,9 @@ function soundsOf(beat: Beat, story: DartStory, step: Step): Sound[] {
       const effect = found[beat.found]
       return [...one('dig'), ...(effect ? [{ at: step.at + DIG_TIME, effect }] : [])]
     }
+    case 'flipped':
+      // A card turns; a pair is treasure.
+      return [...one('flip'), ...(beat.match === null ? [] : one('chest', 0.45))]
     case 'measured':
       return one('measure')
     case 'call':

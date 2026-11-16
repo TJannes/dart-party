@@ -5,6 +5,7 @@ import type { DeciderView } from '../../../core/game/decider'
 import type { HigherOrLowerView } from '../../../core/game/higherOrLower'
 import type { LandGrabView } from '../../../core/game/landGrab'
 import type { KnockoutView, LastOneStandingView } from '../../../core/game/lastOneStanding'
+import type { MemoryView } from '../../../core/game/memory'
 import type { MinefieldView } from '../../../core/game/minefield'
 import { PIGGY_GOLD, piggyValue, type PiggyBankView } from '../../../core/game/piggyBank'
 import type { RaceView } from '../../../core/game/race'
@@ -27,7 +28,7 @@ import { playerOf } from '../colours'
 import { Avatar } from '../components/Avatar'
 import { colourOf } from '../colours'
 import { useSettings } from '../hooks'
-import { Bomb, CallArrow, Card, Pig, Pot, swellOf, type PigFace } from '../theme/gameShowProps'
+import { Bomb, CallArrow, Card, MEMORY_PICTURES, Pig, Pot, swellOf, type PigFace } from '../theme/gameShowProps'
 import { Board } from '../components/Board'
 import { RaceScene } from './RaceScene'
 import { ScoreScene } from './ScoreScene'
@@ -40,6 +41,9 @@ const SPOTLIGHT = { 3: '#ffd23f', 2: '#f08a4b', 1: '#b388eb' } as Record<number,
 // Minefield: what a segment looks like before and after it is dug up.
 const MINEFIELD = { hidden: '#6d4fb3', chest: '#ffd23f', coin: '#f0c36b', bomb: '#ee4266', empty: '#8a8496' }
 const MINEFIELD_MARK = { chest: '5', coin: '2', bomb: '✹', empty: '' }
+
+// Memory: a card face down (two shades, by turns), and the hole a card that was taken leaves.
+const MEMORY = { hidden: ['#7b5cc4', '#6548ad'], gone: '#3a3350' }
 
 /** Lives as hearts, or the word for being out. */
 function hearts(view: KnockoutView, player: string): string {
@@ -266,6 +270,32 @@ function Scene(props: SceneProps): React.JSX.Element | null {
           }}
           feature={<CardTable party={party} table={view.table} />}
           board={<Board darts={darts} />}
+        />
+      )
+    }
+
+    case 'memory': {
+      const view = state.view as MemoryView
+      const owners: Record<number, string> = {}
+      const marks: Record<number, string> = {}
+      for (const [index, segment] of RING.entries()) {
+        const picture = view.open[segment]
+        // Two shades face down, so the cards can be told apart.
+        const hidden = MEMORY.hidden[index % 2]!
+        owners[segment] = picture ? MEMORY_PICTURES[picture].colour : view.taken[segment] ? MEMORY.gone : hidden
+        if (picture) marks[segment] = MEMORY_PICTURES[picture].sign
+      }
+      return (
+        <ScoreScene
+          {...common}
+          heading={g.memory.left(view.left)}
+          score={(id) => view.scores[id]}
+          detail={(id) =>
+            view.pairs[id]!.length === 0
+              ? g.memory.noPairs
+              : view.pairs[id]!.map((picture) => MEMORY_PICTURES[picture].sign).join(' ')
+          }
+          board={<Board owners={owners} marks={marks} darts={darts} />}
         />
       )
     }

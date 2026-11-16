@@ -83,6 +83,11 @@ describe('the demo on the rules card', () => {
           "attacked lifeLost",
           "attacked lifeLost knockedOut finalDuel",
         ],
+        "memory": [
+          "flipped",
+          "flipped scored",
+          "flipped",
+        ],
         "minefield": [
           "dug scored",
           "dug scored",

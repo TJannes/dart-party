@@ -23,7 +23,7 @@ import {
   useNudge,
   Won,
 } from './gameShowAnimations'
-import { CallArrow } from './gameShowProps'
+import { CallArrow, MemoryCard } from './gameShowProps'
 
 // The default theme's own animations for eight more games. Like the general
 // ones: simple shapes moved with `motion`, placed over whatever the scene
@@ -907,6 +907,60 @@ function PotWon(props: SceneProps<'scored'>): React.JSX.Element {
   )
 }
 
+// ----------------------------------------------------------------- Memory
+
+/**
+ * A card turns over on its segment. With a pair, its partner comes up too
+ * and both fly to the thrower's score.
+ */
+function MemoryFlipped({ step, stage }: SceneProps<'flipped'>): React.JSX.Element | null {
+  const { segment, picture, match, player } = step.scene
+  const at = stage.segmentPoint(segment)
+  const partner = match === null ? null : stage.segmentPoint(match)
+  const to = stage.score(player)
+  if (!at) return null
+  const size = stage.boardScale() * 0.36
+  const turn = 0.3
+  const cards = partner && to ? [at, partner] : [at]
+  return (
+    <>
+      {cards.map((from, n) => (
+        <Pin key={n} at={from}>
+          <motion.div
+            style={{ width: size, height: size * 1.2 }}
+            initial={{ scaleX: 0, scale: 0.6, x: 0, y: 0, opacity: 0 }}
+            animate={
+              partner && to
+                ? {
+                    scaleX: [0, 1, 1, 1],
+                    scale: [0.6, 1.5, 1.5, 0.6],
+                    x: [0, 0, 0, to.x - from.x],
+                    y: [0, -size * 0.3, -size * 0.3, to.y - from.y],
+                    opacity: [0, 1, 1, 0],
+                  }
+                : { scaleX: [0, 1, 1, 0], scale: [0.6, 1.5, 1.5, 0.6], y: [0, -size * 0.3, -size * 0.3, 0], opacity: [0, 1, 1, 0] }
+            }
+            transition={{
+              duration: step.length,
+              delay: step.at,
+              times: [0, turn, 0.6, 1],
+              ease: 'easeInOut',
+            }}
+          >
+            <MemoryCard picture={picture} />
+          </motion.div>
+        </Pin>
+      ))}
+      {partner && (
+        <>
+          <Sparkles at={{ ...at, size: size * 2 }} colour="#ffd23f" delay={step.at + 0.2} />
+          <Sparkles at={{ ...partner, size: size * 2 }} colour="#ffd23f" delay={step.at + 0.2} />
+        </>
+      )}
+    </>
+  )
+}
+
 // -------------------------------------------------------------- Blackjack
 
 /** The whole table swells a little: it is far bigger than a score. */
@@ -964,4 +1018,5 @@ export const gameShowGames: Record<string, Partial<AnimationSet>> = {
   higherOrLower: { call: CallResult },
   raiseTheBar: { jump: BarJump, scored: PotWon },
   blackjack: { great: BlackjackTwentyOne, blank: BlackjackBust },
+  memory: { flipped: MemoryFlipped },
 }
