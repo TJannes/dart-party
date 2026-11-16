@@ -4,7 +4,7 @@ Status: steps 1 to 3 are built and released (0.2.0). Steps 4 to 8 are built
 and released, for the owner to test (0.3.0 has the games and the animations,
 0.4.0 adds free play, 0.5.0 the themed animations per game, 0.6.0 renames
 the evening to a party, 0.7.0 adds the drinking game, 0.8.0 the demo on
-the rules card): eleven
+the rules card, 0.9.0 three games for balance): fourteen
 mini-games are in the
 draw. Updating from 0.1.0 to
 0.1.1 inside the app works on Ubuntu; the owner confirmed step 1 done on
@@ -22,11 +22,12 @@ to the drinking game of 2026-11-16. 0.8.1 has the new values in Piggy
 Bank (the double ring pays three times) and its own board. 0.8.2 has
 the target zone of Time Bomb that follows the players, and a wrong dart
 ending the turn in Higher or Lower. Step 11 (Blackjack, a twelfth game) is
-built with its own scene and animations but not released: one round was
+built with its own scene and animations and released in 0.9.0: one round was
 played by hand on Ubuntu in one window, without darts, a second screen or
 sound. Step 12 (Memory, a thirteenth game) is built in the same way and
 checked in the same way: three turns played by hand. Step 13 (Trap Runner,
-a fourteenth game) likewise. What is left after it is under "Later" and "Parked".
+a fourteenth game) likewise; both are in 0.9.0 too. None of the three has
+been played with real darts or on Windows. What is left after it is under "Later" and "Parked".
 See [Build steps](#build-steps).
 
 ## Goal
@@ -1229,19 +1230,19 @@ number hit, with the next one under the name.
   21, rules card with demo, entries on the Animations screen, tests. *One
   round played by hand on Ubuntu in one window (three cards, a bust, a 21
   with a bull, the start moving up in round 2); the new sound not listened
-  to; not on Windows; not released.*
+  to; not on Windows; released in 0.9.0.*
 - [x] **12. Memory**, a thirteenth game, the second for balance
   (2026-11-16). Rules, the board as a table of cards, a themed animation
   for a card turning and for a pair, rules card with demo, entries on the
   Animations screen, tests. *Three turns played by hand on Ubuntu in one
   window (cards opening, turning back, a pair); sound not listened to; not
-  on Windows; not released.*
+  on Windows; released in 0.9.0.*
 - [x] **13. Trap Runner**, a fourteenth game, the third for balance
   (2026-11-16). Rules, a track with rest stops as its scene, a themed
   animation for a trap, rules card with demo, entries on the Animations
   screen, tests. *Three turns played by hand on Ubuntu in one window (the
   bull jump, steps, two traps, the traps moving in round 2); sound not
-  listened to; not on Windows; not released.*
+  listened to; not on Windows; released in 0.9.0.*
 - [ ] **Parked: recorded music.** CC0 playlists per scene in place of the
   generated loops, as decided under [Style and sound](#style-and-sound).
   Parked by the owner on 2026-11-15; pick it up only when asked. The
