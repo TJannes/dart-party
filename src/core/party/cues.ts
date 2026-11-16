@@ -46,9 +46,14 @@ export type Cue =
       next: PlayerId | null
       /** The round that starts with that player, if one does. */
       round?: number
+      /** Set when that round is harder or easier than the one before it. */
+      level?: LevelChange
     }
   /** The turn passed to another player; `round` when that starts a new round. */
-  | { kind: 'turn'; game: string; gameId: string; player: PlayerId; round?: number }
+  | { kind: 'turn'; game: string; gameId: string; player: PlayerId; round?: number; level?: LevelChange }
+
+/** A game that adapts to its players got harder or easier with a new round. */
+export type LevelChange = 'harder' | 'easier'
 
 /** The order a chain is shown in: cause first, the biggest last. */
 const ORDER: Beat['kind'][] = [
@@ -175,7 +180,14 @@ export function cueBetween(before: Party | null | undefined, after: Party | null
   const playerAfter = currentAfter?.player ?? null
   const next = playerAfter !== null && playerAfter !== (currentBefore?.player ?? null) ? playerAfter : null
   const newRound = next !== null && currentBefore && currentAfter!.round > currentBefore.round
-  const round = newRound ? { round: currentAfter!.round } : {}
+  // A game that adapts to its players says how hard the round is as `level` in its view.
+  const levelBefore: unknown = evaluateRecord(recordBefore).view?.level
+  const levelAfter: unknown = evaluateRecord(recordAfter).view?.level
+  const level: { level?: LevelChange } =
+    typeof levelBefore === 'number' && typeof levelAfter === 'number' && levelAfter !== levelBefore
+      ? { level: levelAfter > levelBefore ? 'harder' : 'easier' }
+      : {}
+  const round = newRound ? { round: currentAfter!.round, ...level } : {}
 
   if (now.length > was.length) return { kind: 'dart', story: now.at(-1)!, next, ...round }
   if (now.length < was.length) return null

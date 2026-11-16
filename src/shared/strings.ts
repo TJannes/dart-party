@@ -78,6 +78,8 @@ export const strings = {
       fuseHot: 'Fuse burns, bomb hot',
       passed: 'Bomb passed on',
       exploded: 'Boom',
+      zoneShrinks: 'Target shrinks',
+      zoneGrows: 'Target grows',
       punch: 'Punch',
       punchOut: 'Triple punch, counted out',
       ownPunch: 'Own segment',
@@ -450,10 +452,12 @@ export const strings = {
         'The bomb has a hidden fuse. At the board, you are holding it.',
         'Hit the target zone and you are safe: your turn is over.',
         'Every other dart burns the fuse. If it goes off, you lose a life.',
+        'Too easy for you all? The target zone shrinks.',
         '3 lives. The last one standing wins.',
       ],
       short: [
         'At the board, you are holding the bomb. Its fuse is hidden.',
+        'Too easy for you all? The target zone shrinks.',
         '3 lives. The last one standing wins.',
       ],
       demo: [
@@ -462,6 +466,9 @@ export const strings = {
         'The fuse runs out: boom, a life gone.',
       ],
       target: (segments: number[]) => `Hit ${segments.join(', ')} to get rid of the bomb`,
+      /** A new round with a smaller, or a bigger, target zone. */
+      harder: 'Too easy! The target shrinks',
+      easier: 'The target grows again',
       burned: (darts: number) => `Fuse burned: ${darts}`,
     },
     raiseTheBar: {

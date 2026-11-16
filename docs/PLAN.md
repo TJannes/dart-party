@@ -19,8 +19,9 @@ through by hand on Ubuntu in one window, without darts, a second screen or
 sound. Step 10 (rules explained by animation) is built for all eleven games
 and seen on Ubuntu in one window; released in 0.8.0 with the two changes
 to the drinking game of 2026-11-16. 0.8.1 has the new values in Piggy
-Bank (the double ring pays three times) and its own board. No build step
-is open; what is
+Bank (the double ring pays three times) and its own board. Not yet
+released: the target zone of Time Bomb that follows the players. No build
+step is open; what is
 left is under "Later" and "Parked".
 See [Build steps](#build-steps).
 
@@ -632,6 +633,28 @@ happens after a reveal.
   with a new fuse starts with the next player.
 - How much fuse has burned is shown; how much is left is not.
 - 3 lives, knockout as in Last One Standing, 10 rounds.
+- The target zone follows the players (owner, 2026-11-16: the game was too
+  easy, and it must only change when the game sees that). Every game
+  starts three segments wide. After a round in which more than two thirds
+  of the turns passed the bomb on, the next round is one step harder:
+  two segments (the target and the next one clockwise), then one. After a
+  round in which fewer than a third did, it is one step easier again,
+  never wider than three. A turn counts when a dart was thrown in it.
+  The zone only changes between rounds, so everyone in a round throws at
+  the same size, and it follows from the darts alone, so a correction
+  recomputes it. Known trap: correcting a dart of an earlier round can
+  change the zone of the round being played, and its darts are then
+  judged again. A change is announced at the start of the round ("Too
+  easy! The target shrinks", "The target grows again") with a ring closing
+  in on the board and a sound of its own. The owner chose this over a
+  round without an explosion as the signal, a shorter fuse, and a zone per
+  player; Last One Standing and Race, where a group can find the targets
+  too hard, were left as they are. Filled in while building: the two
+  thirds and the third, the two-wide step and which neighbour it keeps,
+  the wording, and that the fuse length does not change.
+- A game says how hard its round is as `level` in its view; the cue for a
+  new round then carries `harder` or `easier`. Any later game that adapts
+  can use the same.
 
 ### Raise the Bar
 

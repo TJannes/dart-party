@@ -1,4 +1,4 @@
-import type { Beat, Cue, DartStory } from '../../../core/party/cues'
+import type { Beat, Cue, DartStory, LevelChange } from '../../../core/party/cues'
 import { PIGGY_GOLD } from '../../../core/game/piggyBank'
 import type { DartFeedback, PlayerId } from '../../../core/game/types'
 import type { Mood } from '../components/Avatar'
@@ -18,8 +18,8 @@ export type Scene =
   | { kind: 'bad'; player: PlayerId }
   | Beat
   | { kind: 'turn'; player: PlayerId }
-  /** A new round starts, with `player` first. */
-  | { kind: 'round'; round: number; player: PlayerId }
+  /** A new round starts, with `player` first. `level` when it is harder or easier than the last. */
+  | { kind: 'round'; round: number; player: PlayerId; level?: LevelChange }
 
 export type SceneKind = Scene['kind']
 
@@ -117,6 +117,8 @@ const ALONGSIDE: Beat['kind'][] = ['scored', 'lost', 'fuse', 'measured', 'call',
 /** How long the shovel digs before the segment shows what was under it. */
 export const DIG_TIME = 0.5
 const ROUND_LENGTH = 1.2
+/** A round that got harder or easier says so, and that takes time to read. */
+const LEVEL_LENGTH = 2.4
 
 /** When the chain starts: at once after a bang, else once the dart has landed. */
 const CHAIN_START = 0.35
@@ -214,9 +216,16 @@ function soundsOf(beat: Beat, story: DartStory, step: Step): Sound[] {
 }
 
 /** A new round, announced together with the player who starts it. */
-function roundSteps(gameId: string, round: number, player: PlayerId, at: number): { step: Step; sounds: Sound[] } {
-  const step: Step = { key: 'round', at, length: ROUND_LENGTH, scene: { kind: 'round', round, player } }
-  const effect: EffectName | null = gameId === 'spotlight' ? 'drumroll' : gameId === 'sniper' ? 'lock' : null
+function roundSteps(
+  gameId: string,
+  round: number,
+  player: PlayerId,
+  at: number,
+  level?: LevelChange,
+): { step: Step; sounds: Sound[] } {
+  const scene: Scene = { kind: 'round', round, player, ...(level ? { level } : {}) }
+  const step: Step = { key: 'round', at, length: level ? LEVEL_LENGTH : ROUND_LENGTH, scene }
+  const effect: EffectName | null = level ?? (gameId === 'spotlight' ? 'drumroll' : gameId === 'sniper' ? 'lock' : null)
   return { step, sounds: effect ? [{ at, effect }] : [] }
 }
 
@@ -233,7 +242,7 @@ export function timelineOf(
   if (cue.kind === 'turn') {
     // A drinking banner in the middle of the screen has the floor first.
     const at = Math.max(0, drinking.wait ?? 0)
-    const round = cue.round === undefined ? null : roundSteps(cue.gameId, cue.round, cue.player, at)
+    const round = cue.round === undefined ? null : roundSteps(cue.gameId, cue.round, cue.player, at, cue.level)
     return {
       gameId: cue.gameId,
       steps: [
@@ -243,7 +252,7 @@ export function timelineOf(
       sounds: [{ at, effect: 'turn' }, ...(round?.sounds ?? [])],
       moods: [],
       suspense: 0,
-      length: at + (round ? Math.max(TURN_LENGTH, ROUND_LENGTH) : TURN_LENGTH),
+      length: at + (round ? Math.max(TURN_LENGTH, round.step.length) : TURN_LENGTH),
       banner: null,
     }
   }
@@ -345,7 +354,7 @@ export function timelineOf(
     steps.push({ key: 'turn', at, length: TURN_LENGTH, scene: { kind: 'turn', player: cue.next } })
     sounds.push({ at, effect: 'turn' })
     if (cue.round !== undefined) {
-      const round = roundSteps(story.gameId, cue.round, cue.next, at)
+      const round = roundSteps(story.gameId, cue.round, cue.next, at, cue.level)
       steps.push(round.step)
       sounds.push(...round.sounds)
     }

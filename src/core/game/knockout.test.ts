@@ -3,10 +3,11 @@ import { manualDart, manualMiss } from '../board/ring'
 import type { Dart } from '../board/state'
 import { addDart, advance, dartsRemoved, nextPlayer, startParty, type Party } from '../party/party'
 import { activeState } from '../party/party'
+import { cueBetween } from '../party/cues'
 import { seededRandom } from '../random'
 import { callFor, higherOrLower } from './higherOrLower'
 import { lastOneStanding } from './lastOneStanding'
-import { targetZone, timeBomb } from './timeBomb'
+import { nextLevel, targetZone, timeBomb } from './timeBomb'
 import type { Turn } from './types'
 
 const three = ['ann', 'bob', 'cy']
@@ -190,6 +191,64 @@ describe('Time Bomb', () => {
   it('passes the bomb to the next player still in the game', () => {
     const state = timeBomb.evaluate({ fuses: [9], targets: [20] }, three, [open(S(20))])
     expect(state.played[0]!.moments).toEqual([{ kind: 'passed', from: 'ann', to: 'bob' }])
+  })
+
+  describe('a zone that follows the players', () => {
+    // A long fuse, and the target always around the 20.
+    const calm = { fuses: [99], targets: [20] }
+    const playCalm = (...turns: Turn[]) => timeBomb.evaluate(calm, three, turns)
+    const pass = turn(S(20))
+    const fail = turn(S(7), S(7), S(7))
+
+    it('is a segment smaller after a round in which more than two thirds passed the bomb on', () => {
+      expect(playCalm(pass, pass).view).toMatchObject({ level: 0, target: [5, 20, 1] })
+      expect(playCalm(pass, pass, pass).view).toMatchObject({ level: 1, target: [20, 1] })
+      // Two of three is not more than two thirds.
+      expect(playCalm(pass, pass, fail).view).toMatchObject({ level: 0, target: [5, 20, 1] })
+    })
+
+    it('shrinks to one segment and no further', () => {
+      const six = [pass, pass, pass, pass, pass, pass]
+      expect(playCalm(...six).view).toMatchObject({ level: 2, target: [20] })
+      expect(playCalm(...six, pass, pass, pass).view).toMatchObject({ level: 2, target: [20] })
+    })
+
+    it('judges a dart by the zone of its own round', () => {
+      // Round 2 is two wide: the 5 no longer passes the bomb on, the 1 still does.
+      const state = playCalm(pass, pass, pass, open(S(5), S(1)))
+      expect(state.feedback.slice(3)).toEqual(['neutral', 'great'])
+    })
+
+    it('grows again after a round in which fewer than a third passed it on', () => {
+      expect(playCalm(pass, pass, pass, fail, fail, fail).view).toMatchObject({ level: 0, target: [5, 20, 1] })
+      // One of three is not fewer than a third: it stays.
+      expect(playCalm(pass, pass, pass, pass, fail, fail).view).toMatchObject({ level: 1 })
+    })
+
+    it('never grows beyond three segments and ignores a round without darts', () => {
+      expect(playCalm(fail, fail, fail).view.level).toBe(0)
+      expect(nextLevel(1, 0, 0)).toBe(1)
+    })
+
+    it('tells the windows when a new round is harder or easier', () => {
+      const party = (...turns: Turn[]): Party => ({
+        players: three.map((id) => ({ id, name: id, avatar: 'fox' })),
+        gamesPlanned: 1,
+        enabledGames: ['timeBomb'],
+        stage: 'playing',
+        games: [{ gameId: 'timeBomb', order: three, setup: calm, turns }],
+        deciders: [],
+      })
+      expect(cueBetween(party(pass, pass), party(pass, pass, pass))).toMatchObject({ kind: 'dart', round: 2, level: 'harder' })
+      const second = [pass, pass, pass, fail, fail]
+      expect(cueBetween(party(...second, open(S(7), S(7), S(7))), party(...second, fail))).toMatchObject({
+        kind: 'turn',
+        round: 3,
+        level: 'easier',
+      })
+      // A new round of the same size says nothing about it.
+      expect(cueBetween(party(pass, pass), party(pass, pass, fail))).not.toHaveProperty('level')
+    })
   })
 
   it('lets the last player standing win', () => {

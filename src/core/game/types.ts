@@ -244,6 +244,8 @@ export function playKnockout(
     turnIndex: number,
     dartIndex: number,
     emit: Emit,
+    /** The round this turn belongs to, counted from 1. */
+    round: number,
   ) => DartFeedback | { feedback: DartFeedback; endTurn: true },
 ): Progress {
   const feedback: DartFeedback[] = []
@@ -279,7 +281,7 @@ export function playKnockout(
     let ended = false
     for (let d = 0; d < darts.length && !ended; d++) {
       const moments: Moment[] = []
-      const result = onDart(darts[d]!.dart, thrower, index, d, (moment) => moments.push(moment))
+      const result = onDart(darts[d]!.dart, thrower, index, d, (moment) => moments.push(moment), round)
       played.push({ turn: index, index: d, thrower, moments })
       feedback.push(typeof result === 'string' ? result : result.feedback)
       ended = typeof result !== 'string' || isOut(thrower) || standing() <= 1

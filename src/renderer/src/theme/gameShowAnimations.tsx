@@ -587,6 +587,44 @@ function FinalDuel({ step, stage }: SceneProps<'finalDuel'>): React.JSX.Element 
 
 // -------------------------------------------------------------- Time Bomb
 
+/**
+ * A new round with a smaller or a bigger target zone: a banner says so
+ * and a ring closes in on the board, or opens up. Nothing when the zone
+ * stays as it was.
+ */
+function ZoneChange({ step, stage }: SceneProps<'round'>): React.JSX.Element | null {
+  const { level } = step.scene
+  if (!level) return null
+  const harder = level === 'harder'
+  const board = stage.board()
+  return (
+    <>
+      {board && (
+        <Pin at={board}>
+          <motion.div
+            className="fx-zone-ring"
+            style={{ width: board.size, height: board.size, borderColor: harder ? 'var(--hot)' : 'var(--mint)' }}
+            initial={{ scale: harder ? 1.5 : 0.3, opacity: 0 }}
+            animate={{ scale: harder ? [1.5, 0.3] : [0.3, 1.5], opacity: [0, 1, 1, 0] }}
+            transition={{ duration: step.length * 0.5, delay: step.at, ease: 'easeInOut' }}
+          />
+        </Pin>
+      )}
+      <div className="fx-centre">
+        <motion.strong
+          className="fx-banner fx-banner--note"
+          style={{ color: harder ? 'var(--gold)' : 'var(--mint)' }}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: [0, 1.15, 1, 1, 0.9], opacity: [0, 1, 1, 1, 0] }}
+          transition={{ duration: step.length, delay: step.at, times: [0, 0.12, 0.2, 0.88, 1], ease: 'easeOut' }}
+        >
+          {harder ? strings.games.timeBomb.harder : strings.games.timeBomb.easier}
+        </motion.strong>
+      </div>
+    </>
+  )
+}
+
 /** Where the bomb is on screen: with its holder, else at that avatar. */
 const bombSpot = (stage: SceneProps['stage'], player: string): Spot | null => stage.prop('bomb') ?? stage.avatar(player)
 
@@ -954,7 +992,7 @@ export const gameShowAnimations: AnimationPack = {
   },
   // A game's own versions; eight more games are in gameShowGames.tsx.
   games: {
-    timeBomb: { fuse: Fuse, passed: Passed, exploded: Exploded },
+    timeBomb: { fuse: Fuse, passed: Passed, exploded: Exploded, round: ZoneChange },
     lastOneStanding: { attacked: Punch, knockedOut: CountedOut },
     piggyBank: { scored: Coins, lost: PigBroken, bad: PigTapped },
   },

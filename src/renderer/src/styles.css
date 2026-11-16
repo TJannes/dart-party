@@ -1583,6 +1583,20 @@ h1 {
   font-size: 12vmin;
 }
 
+/* A whole sentence to read, so smaller, and free to take two lines. */
+.fx-banner--note {
+  max-width: 90vw;
+  font-size: 8vmin;
+  text-align: center;
+  white-space: normal;
+  -webkit-text-stroke: 0.4vmin #1b0a38;
+}
+
+.fx-zone-ring {
+  border: 1.2vmin solid;
+  border-radius: 50%;
+}
+
 .fx-lights {
   position: absolute;
   inset: 1vmin;

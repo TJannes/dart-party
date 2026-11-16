@@ -226,6 +226,9 @@ export const gameShow: Theme = {
       { wave: 'triangle', from: 330, to: 440, at: 0.4, length: 0.16, gain: 0.3 },
     ],
     handOut: [blip(31, 0, 0.3, 0.3), blip(36, 0.02, 0.45, 0.25), blip(24, 0.25, 0.1, 0.25), blip(28, 0.35, 0.2, 0.3)],
+    // Tightening: a few quick steps up to a sharp note. Loosening: the same, falling and softer.
+    harder: [blip(12, 0, 0.09, 0.35), blip(16, 0.1, 0.09, 0.35), blip(19, 0.2, 0.09, 0.4), { wave: 'square', from: note(25), at: 0.32, length: 0.3, gain: 0.2 }],
+    easier: [blip(19, 0, 0.12, 0.3), blip(16, 0.12, 0.12, 0.3), blip(12, 0.24, 0.35, 0.35)],
     fanfare: [
       blip(7, 0, 0.18),
       blip(7, 0.2, 0.09),

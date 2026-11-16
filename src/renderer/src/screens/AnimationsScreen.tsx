@@ -62,6 +62,9 @@ const trio = game('lastOneStanding', segments([20], [1], [18]), IDS.slice(0, 3))
 /** A bomb that goes off on its third dart, with the target around the 20. */
 const bomb = game('timeBomb', { fuses: [3], targets: [20] })
 const hotBomb = game('timeBomb', { fuses: [10], targets: [20] })
+/** Two players and a fuse that never runs out, for a round that is too easy and one that is too hard. */
+const easyBomb = game('timeBomb', { fuses: [99], targets: [20] }, IDS.slice(0, 2))
+const hardRound = dartsRemoved(thrown(thrown(easyBomb, S(20), S(20)), S(7), S(7), S(7)))
 const tieBreak: Party = {
   ...game('decider', null),
   stage: 'decider',
@@ -95,6 +98,9 @@ const TIME_BOMB: Demo[] = [
   demo(t.fuseHot, thrown(dartsRemoved(thrown(hotBomb, S(7), S(7), S(7))), S(7), S(7)), S(7)),
   demo(t.passed, thrown(bomb, S(7)), S(20)),
   demo(t.exploded, thrown(bomb, S(7), S(7)), S(7)),
+  // Both passed the bomb on in round one, so round two is harder; then neither does.
+  demo(t.zoneShrinks, thrown(easyBomb, S(20)), S(20)),
+  { label: t.zoneGrows, before: thrown(hardRound, S(7), S(7), S(7)), after: dartsRemoved(thrown(hardRound, S(7), S(7), S(7))) },
 ]
 
 const LAST_ONE: Demo[] = [

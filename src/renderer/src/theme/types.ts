@@ -92,6 +92,9 @@ export type EffectName =
   /** The drinking game: someone has to drink, someone may hand out. */
   | 'drink'
   | 'handOut'
+  /** A game that adapts to its players: the new round is harder, or easier. */
+  | 'harder'
+  | 'easier'
 
 export type MusicScene = 'menu' | 'game' | 'podium'
 
