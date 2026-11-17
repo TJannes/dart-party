@@ -5,7 +5,7 @@ and released, for the owner to test (0.3.0 has the games and the animations,
 0.4.0 adds free play, 0.5.0 the themed animations per game, 0.6.0 renames
 the evening to a party, 0.7.0 adds the drinking game, 0.8.0 the demo on
 the rules card, 0.9.0 three games for balance, 0.10.0 a world of
-their own for eight games): fourteen
+their own for eight games, 0.11.0 the house in Blackjack): fourteen
 mini-games are in the
 draw. Updating from 0.1.0 to
 0.1.1 inside the app works on Ubuntu; the owner confirmed step 1 done on
@@ -775,7 +775,7 @@ Agreed with the owner on 2026-11-16, on Claude's proposal.
   plays. Three more entries on the Animations screen. Filled in while
   building: all of this, that the points wait for the house, and the
   heading "Beat the house!". Seen on Ubuntu on the Animations screen only;
-  not played with darts, not on Windows.
+  not played with darts, not on Windows. Released in 0.11.0.
 - Only the bull is an ace; segment 11 is a plain 11, for a player and for
   the house (decided by the owner on 2026-11-17). Until then segment 11
   was counted as an ace and shown as "A" by mistake.
