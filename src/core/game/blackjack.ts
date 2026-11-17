@@ -159,7 +159,7 @@ export const blackjack: GameRules<BlackjackSetup | null, BlackjackView> = {
         if (hand.total === BLACKJACK) return { feedback: 'great', endTurn: true }
         return cardValue(dart) === 0 ? 'bad' : 'good'
       },
-      throwerOf,
+      { throwerOf },
     )
 
     const scores: Record<PlayerId, number> = {}

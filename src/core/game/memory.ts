@@ -1,6 +1,6 @@
 import { RING } from '../board/ring'
 import { shuffle } from '../random'
-import { playTurns, rankByScore, roundsWithin, type GameRules, type PlayerId } from './types'
+import { playTurns, rankByScore, roundsWithin, settledForThrower, type GameRules, type PlayerId } from './types'
 
 // Memory: under the twenty segments lie cards, five pictures four times
 // each. A dart turns over the card it hits. Two open cards with the same
@@ -83,6 +83,13 @@ export const memory: GameRules<MemorySetup, MemoryView> = {
       emit({ kind: 'scored', player: thrower, amount: 1 })
       // With every card gone there is nothing left to play for.
       return left === 0 ? { feedback: 'great', finish: true } : 'great'
+    }, {
+      // Every pair takes a dart, and a card already open or turned by an earlier dart.
+      settled: (thrower, darts) => {
+        const open = opened.at(-1)?.length ?? 0
+        const pairs = Math.min(darts, Math.floor((open + darts) / 2))
+        return settledForThrower(players, scores, thrower, scores[thrower]!, scores[thrower]! + pairs)
+      },
     })
 
     // Open cards turn back when the turn is over: only the turn in progress shows any.

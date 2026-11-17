@@ -1,6 +1,6 @@
 import { BULL, neighbour, RING } from '../board/ring'
 import { shuffle } from '../random'
-import { playTurns, rankByScore, type GameRules, type PlayerId } from './types'
+import { playTurns, rankByScore, settledForThrower, type GameRules, type PlayerId } from './types'
 
 // Spotlight: each round a spotlight lands on one segment. That segment is
 // worth 3, its neighbours 2, the ones next to those 1.
@@ -56,6 +56,10 @@ export const spotlight: GameRules<SpotlightSetup, SpotlightView> = {
       if (dartIndex === spotlight.dartsPerTurn - 1 && earned[turnIndex] === 0) emit({ kind: 'blank', player: thrower })
       if (dart.miss || dart.number === null) return 'bad'
       return points === 3 ? 'great' : points > 0 ? 'good' : 'neutral'
+    }, {
+      // At most the spotlit segment a dart.
+      settled: (thrower, left) =>
+        settledForThrower(players, scores, thrower, scores[thrower]!, scores[thrower]! + 3 * left),
     })
 
     const round = (progress.current?.round ?? spotlight.maxRounds) - 1

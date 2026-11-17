@@ -1,6 +1,6 @@
 import { BULL } from '../board/ring'
 import type { Dart } from '../board/state'
-import { playTurns, rankByScore, type GameRules, type PlayerId } from './types'
+import { playTurns, rankByScore, settledForThrower, type GameRules, type PlayerId } from './types'
 
 // Robin Hood: the board is an archery target. Only the distance from the
 // centre counts; the number and the thin rings mean nothing.
@@ -44,6 +44,10 @@ export const robinHood: GameRules<null, RobinHoodView> = {
       scores[thrower]! += points
       if (points > 0) emit({ kind: 'scored', player: thrower, amount: points })
       return points === 0 ? 'bad' : points >= 5 ? 'great' : points === 4 ? 'good' : 'neutral'
+    }, {
+      // At most a bullseye a dart.
+      settled: (thrower, left) =>
+        settledForThrower(players, scores, thrower, scores[thrower]!, scores[thrower]! + 6 * left),
     })
     return {
       ...progress,

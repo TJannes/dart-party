@@ -1,6 +1,6 @@
 import { BULL, dartScore } from '../board/ring'
 import type { Dart } from '../board/state'
-import { playTurns, rankByScore, type GameRules, type PlayerId } from './types'
+import { halved, playTurns, rankByScore, settledForThrower, type GameRules, type PlayerId } from './types'
 
 // Piggy Bank: every dart adds its value to your pig. A dart off the board
 // (the surround, fully off, or a bounce-out) breaks the pig: you lose half
@@ -58,6 +58,10 @@ export const piggyBank: GameRules<null, PiggyBankView> = {
       scores[thrower]! += value
       if (value > 0) emit({ kind: 'scored', player: thrower, amount: value })
       return value >= PIGGY_GOLD ? 'great' : 'good'
+    }, {
+      // From breaking the pig with every dart to a double 20 with every dart.
+      settled: (thrower, left) =>
+        settledForThrower(players, scores, thrower, halved(scores[thrower]!, left), scores[thrower]! + 20 * PIGGY_EDGE * left),
     })
     return {
       ...progress,

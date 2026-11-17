@@ -1,6 +1,6 @@
 import { BULL, RING } from '../board/ring'
 import { shuffle } from '../random'
-import { playTurns, rankByScore, roundsWithin, type GameRules, type PlayerId } from './types'
+import { playTurns, rankByScore, roundsWithin, settledForThrower, type GameRules, type PlayerId } from './types'
 
 // Trap Runner: everyone walks from 0 to 15. Any dart on the board is one
 // step, whatever the ring. Three segments hide a trap, new every round and
@@ -84,6 +84,13 @@ export const trapRunner: GameRules<TrapRunnerSetup, TrapRunnerView> = {
         return { feedback, finish: true }
       }
       return feedback
+    }, {
+      // Back to the last rest stop at worst; a bull to the next one with every dart at best.
+      settled: (thrower, darts) => {
+        const now = positions[thrower]!
+        const high = Math.min(TRAP_TRACK_LENGTH, now + REST_EVERY * darts)
+        return settledForThrower(players, positions, thrower, restStop(now), high)
+      },
     })
 
     const round = (progress.current?.round ?? sprung.length) - 1

@@ -139,9 +139,10 @@ describe('spectacular darts', () => {
     expect(kinds(cue)).toEqual(['scored', 'spectacle', 'won'])
     if (cue?.kind === 'dart') expect(cue.story.chain[1]).toMatchObject({ what: 'lastDart', player: 'bob' })
 
-    // Already ahead before the last dart: no photo finish.
-    const ahead = throwAll(party, S(20), S(5))
-    expect(kinds(cueBetween(ahead, addDart(ahead, S(1), 'board')))).toEqual(['scored', 'won'])
+    // Already level for first before the deciding dart: no photo finish. The
+    // game ends on that dart, with a dart still in hand.
+    const level = throwAll(party, S(20))
+    expect(kinds(cueBetween(level, addDart(level, S(5), 'board')))).toEqual(['scored', 'won'])
   })
 
   it('drops a general spectacle when someone is knocked out', () => {

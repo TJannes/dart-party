@@ -1,6 +1,6 @@
 import { RING } from '../board/ring'
 import { shuffle } from '../random'
-import { playTurns, rankByScore, type GameRules, type PlayerId } from './types'
+import { halved, playTurns, rankByScore, settledForThrower, type GameRules, type PlayerId } from './types'
 
 // Minefield: under the twenty segments lie treasures and bombs. Nobody knows
 // where until a dart lands there. The first to hit a segment gets what is
@@ -76,6 +76,13 @@ export const minefield: GameRules<MinefieldSetup, MinefieldView> = {
       const feedback = hidden === 'chest' ? 'great' : 'good'
       // With every treasure found there is nothing left to play for.
       return left.chest + left.coin === 0 ? { feedback, finish: true } : feedback
+    }, {
+      // From a bomb with every dart to the best treasure still hidden with every dart.
+      settled: (thrower, darts) => {
+        const now = scores[thrower]!
+        const best = left.chest > 0 ? TREASURE_VALUE.chest : left.coin > 0 ? TREASURE_VALUE.coin : 0
+        return settledForThrower(players, scores, thrower, halved(now, Math.min(darts, left.bomb)), now + best * darts)
+      },
     })
 
     return {

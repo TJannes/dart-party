@@ -10,7 +10,7 @@ import { MAX_RAISES, openingsEach, raiseTheBar } from './raiseTheBar'
 import { archeryPoints, robinHood } from './robinHood'
 import { sniper } from './sniper'
 import { spotlight, spotlightWorth } from './spotlight'
-import { roundLimit, type Turn } from './types'
+import { rankingSettled, roundLimit, type Turn } from './types'
 
 const players = ['ann', 'bob']
 const KNOCKOUT = ['lastOneStanding', 'higherOrLower', 'timeBomb', 'raiseTheBar']
@@ -77,6 +77,43 @@ describe('every drawable game', () => {
       const setup = rules.setup(players, seededRandom(2))
       expect(JSON.parse(JSON.stringify(setup)), rules.id).toEqual(setup)
     }
+  })
+})
+
+describe('the end of the last turn', () => {
+  const open = (...darts: Dart[]): Turn => ({ ...turn(...darts), done: false })
+  /** Five rounds in which only ann scored, with this dart each turn. */
+  const fiveRounds = (dart: Dart) => Array.from({ length: 5 }, () => [turn(dart), turn(miss)]).flat()
+
+  it('sees whether anyone can still pass or catch up with anyone', () => {
+    const scores: Record<string, number> = { ann: 10, bob: 5, cy: 5 }
+    const fixed = (p: string) => [scores[p]!, scores[p]!] as const
+    expect(rankingSettled(['ann', 'bob'], (p) => scores[p]!, (p) => (p === 'bob' ? [5, 9] : fixed(p)))).toBe(true)
+    expect(rankingSettled(['ann', 'bob'], (p) => scores[p]!, (p) => (p === 'bob' ? [5, 10] : fixed(p)))).toBe(false)
+    expect(rankingSettled(['ann', 'bob'], (p) => scores[p]!, (p) => (p === 'ann' ? [5, 10] : fixed(p)))).toBe(false)
+    // A tie can be broken.
+    expect(rankingSettled(['bob', 'cy'], (p) => scores[p]!, (p) => (p === 'cy' ? [5, 6] : fixed(p)))).toBe(false)
+    expect(rankingSettled(['ann', 'bob', 'cy'], (p) => scores[p]!, fixed)).toBe(true)
+  })
+
+  it('ends the game once the last thrower cannot change the standings', () => {
+    // Ann has 30; bob can reach no more than 3 + 12 with the darts left.
+    const settled = robinHood.evaluate(null, players, [...fiveRounds(manualDart(25, 2)), turn(miss), open(S(1))])
+    expect(settled.finished).toBe(true)
+    expect(settled.current).toBeNull()
+    // Ann has 15: bob can still draw level.
+    const close = robinHood.evaluate(null, players, [...fiveRounds(S(1)), turn(miss), open(S(1))])
+    expect(close.finished).toBe(false)
+    expect(close.current).toMatchObject({ player: 'bob', dartsLeft: 2 })
+  })
+
+  it('keeps going while the last thrower could still fall behind', () => {
+    // Bob leads ann by one, but breaking his pig could drop him behind her.
+    const before = [turn(S(5)), turn(S(6))]
+    expect(piggyBank.evaluate(null, players, [...Array(5).fill(before).flat(), turn(S(5)), open(S(6))]).finished).toBe(false)
+    // By far ahead, nothing he throws can cost him the lead.
+    const far = [turn(S(1)), turn(D(20))]
+    expect(piggyBank.evaluate(null, players, [...Array(5).fill(far).flat(), turn(S(1)), open(D(20))]).finished).toBe(true)
   })
 })
 
@@ -356,6 +393,34 @@ describe('Sniper', () => {
   it('tells who took the lead', () => {
     const state = play(turn(at(0.3, 0), at(0.2, 0), at(0.4, 0)), turn(at(0.25, 0), at(0.1, 0)))
     expect(state.feedback).toEqual(['great', 'great', 'neutral', 'good', 'great'])
+  })
+
+  /** Four rounds nobody scored in, then the last round. */
+  const lastRound = (...turns: Turn[]) => play(...Array.from({ length: 12 }, () => turn(miss)), ...turns)
+  const throwing = (...darts: Dart[]): Turn => ({ ...turn(...darts), done: false })
+
+  it('ends the game as soon as the last darts can change nothing', () => {
+    const state = lastRound(turn(at(0.3, 0)), turn(at(0.2, 0)), throwing(at(0.1, 0)))
+    expect(state.finished).toBe(true)
+    expect(state.view.scores).toEqual({ ann: 1, bob: 2, cy: 3 })
+    expect(state.played.at(-1)!.moments.some((m) => m.kind === 'roundResult')).toBe(true)
+  })
+
+  it('lets the last player throw on while they can still climb', () => {
+    const open = lastRound(turn(at(0.1, 0)), turn(at(0.2, 0)), throwing(at(0.3, 0)))
+    expect(open.finished).toBe(false)
+    expect(open.current).toMatchObject({ player: 'cy', dartsLeft: 2 })
+    const climbed = lastRound(turn(at(0.1, 0)), turn(at(0.2, 0)), throwing(at(0.3, 0), at(0.05, 0)))
+    expect(climbed.finished).toBe(true)
+    expect(climbed.view.scores).toEqual({ ann: 2, bob: 1, cy: 3 })
+  })
+
+  it('also ends when climbing would not change the standings', () => {
+    // After four rounds ann has 12, bob 8, cy 4. At best cy ends on 7, behind bob's 9.
+    const rounds = Array.from({ length: 4 }, () => [turn(at(0, 0)), turn(at(0.1, 0)), turn(at(0.2, 0))]).flat()
+    const state = play(...rounds, turn(at(0, 0)), turn(at(0.1, 0)), throwing(at(0.5, 0)))
+    expect(state.finished).toBe(true)
+    expect(state.ranking).toEqual([['ann'], ['bob'], ['cy']])
   })
 
   it('uses the cross of the round the turn is in', () => {

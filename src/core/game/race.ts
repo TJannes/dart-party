@@ -1,6 +1,6 @@
 import { RING } from '../board/ring'
 import { randomInt, shuffle } from '../random'
-import { playTurns, rankByScore, roundsWithin, type GameRules, type PlayerId } from './types'
+import { playTurns, rankByScore, rankingSettled, roundsWithin, type GameRules, type PlayerId } from './types'
 
 // Race: everyone owns two adjacent segments. Hit your own to move forward,
 // hit someone else's to push them back. First across the finish wins.
@@ -87,6 +87,15 @@ export const race: GameRules<RaceSetup, RaceView> = {
         return { feedback, finish: true }
       }
       return feedback
+    }, {
+      // A triple a dart: the thrower forward, or someone else back.
+      settled: (thrower, darts) =>
+        rankingSettled(players, (player) => positions[player]!, (player) => {
+          const now = positions[player]!
+          return player === thrower
+            ? [now, Math.min(RACE_TRACK_LENGTH, now + 3 * darts)]
+            : [Math.max(0, now - 3 * darts), now]
+        }),
     })
 
     return {

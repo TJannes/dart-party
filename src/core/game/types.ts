@@ -184,7 +184,8 @@ export function rankByScore(players: readonly PlayerId[], score: (p: PlayerId) =
  * the turn while its darts are still in the board (a bust). Darts
  * beyond the allowed number in a turn, and turns beyond the last round, are
  * ignored. The game is over as soon as the last dart of the last turn is
- * thrown.
+ * thrown, or earlier when `settled` says the darts left in that last turn
+ * can no longer change the standings.
  */
 export function playTurns(
   rules: Pick<GameRules, 'dartsPerTurn' | 'maxRounds' | 'roundsFor'>,
@@ -197,9 +198,17 @@ export function playTurns(
     dartIndex: number,
     emit: Emit,
   ) => DartFeedback | { feedback: DartFeedback; finish: true } | { feedback: DartFeedback; endTurn: true },
-  /** Who throws which turn, for a game where the order is not the same every round. */
-  throwerOf: (turnIndex: number) => PlayerId = (turnIndex) => players[turnIndex % players.length]!,
+  options: {
+    /** Who throws which turn, for a game where the order is not the same every round. */
+    throwerOf?: (turnIndex: number) => PlayerId
+    /**
+     * Asked after each dart of the last turn of the game while darts are
+     * left: true when nothing those darts can do changes the standings.
+     */
+    settled?: (thrower: PlayerId, dartsLeft: number) => boolean
+  } = {},
 ): Progress {
+  const throwerOf = options.throwerOf ?? ((turnIndex: number) => players[turnIndex % players.length]!)
   const maxTurns = roundLimit(rules, players.length) * players.length
   const feedback: DartFeedback[] = []
   const throwers: PlayerId[] = []
@@ -222,6 +231,10 @@ export function playTurns(
         ended = true
       } else {
         feedback.push(result.feedback)
+        return { finished: true, current: null, feedback, throwers, played }
+      }
+      const dartsLeft = rules.dartsPerTurn - d - 1
+      if (!ended && index === maxTurns - 1 && dartsLeft > 0 && options.settled?.(thrower, dartsLeft)) {
         return { finished: true, current: null, feedback, throwers, played }
       }
     }
@@ -255,6 +268,49 @@ export function playTurns(
     throwers,
     played,
   }
+}
+
+/**
+ * Whether a ranking by score is settled: true when no player can pass or
+ * draw level with another, and no tie can be broken, while each player's
+ * score stays within `range` (lowest and highest it can still reach).
+ */
+export function rankingSettled(
+  players: readonly PlayerId[],
+  score: (player: PlayerId) => number,
+  range: (player: PlayerId) => readonly [number, number],
+): boolean {
+  for (const a of players) {
+    const [lowA, highA] = range(a)
+    for (const b of players) {
+      if (a === b) continue
+      const [, highB] = range(b)
+      if (score(a) > score(b) && lowA <= highB) return false
+      if (score(a) === score(b) && (lowA !== highA || lowA !== score(a))) return false
+    }
+  }
+  return true
+}
+
+/** `rankingSettled` for a game in which only the thrower's score can still change. */
+export function settledForThrower(
+  players: readonly PlayerId[],
+  scores: Record<PlayerId, number>,
+  thrower: PlayerId,
+  low: number,
+  high: number,
+): boolean {
+  return rankingSettled(
+    players,
+    (player) => scores[player]!,
+    (player) => (player === thrower ? [low, high] : [scores[player]!, scores[player]!]),
+  )
+}
+
+/** A score after a pig or a bomb took half of it, rounded down, this many times. */
+export function halved(score: number, times: number): number {
+  for (let i = 0; i < times; i++) score -= Math.floor(score / 2)
+  return score
 }
 
 /**

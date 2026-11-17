@@ -1,5 +1,5 @@
 import { RING } from '../board/ring'
-import { playTurns, rankByScore, type DartFeedback, type GameRules, type PlayerId } from './types'
+import { playTurns, rankByScore, rankingSettled, type DartFeedback, type GameRules, type PlayerId } from './types'
 
 // Land Grab: the twenty segments are plots of land with a castle. Hit a free
 // one to take it, hit your own to fortify it, hit someone else's to knock it
@@ -25,6 +25,9 @@ export interface LandGrabView {
   fortified: Record<PlayerId, number>
 }
 
+/** A plot outweighs any number of fortified ones in the ranking. */
+const PLOT = 100
+
 export const landGrab: GameRules<null, LandGrabView> = {
   id: 'landGrab',
   dartsPerTurn: 3,
@@ -35,6 +38,22 @@ export const landGrab: GameRules<null, LandGrabView> = {
   evaluate(_setup, players, turns) {
     const plots: Record<number, Plot> = {}
     for (const segment of RING) plots[segment] = { owner: null, fortified: false, damage: 0 }
+
+    /** Plots owned, and how many of them are fortified. */
+    const holdings = () => {
+      const scores: Record<PlayerId, number> = {}
+      const fortified: Record<PlayerId, number> = {}
+      for (const player of players) {
+        scores[player] = 0
+        fortified[player] = 0
+      }
+      for (const plot of Object.values(plots)) {
+        if (plot.owner === null) continue
+        scores[plot.owner]! += 1
+        if (plot.fortified) fortified[plot.owner]! += 1
+      }
+      return { scores, fortified }
+    }
 
     const progress = playTurns(landGrab, players, turns, (dart, thrower, _turn, _index, emit) => {
       if (dart.miss || dart.number === null) return 'bad'
@@ -75,24 +94,24 @@ export const landGrab: GameRules<null, LandGrabView> = {
       }
       for (const [victim, amount] of hits) emit({ kind: 'attacked', by: thrower, victim, amount })
       return feedback
+    }, {
+      // A dart takes at most one plot, and fortifies it: the thrower gains
+      // that much at most, anyone else loses that much at most.
+      settled: (thrower, darts) => {
+        const { scores, fortified } = holdings()
+        const now = (player: PlayerId) => scores[player]! * PLOT + fortified[player]!
+        const most = (PLOT + 1) * darts
+        return rankingSettled(players, now, (player) =>
+          player === thrower ? [now(player), now(player) + most] : [now(player) - most, now(player)],
+        )
+      },
     })
 
-    const scores: Record<PlayerId, number> = {}
-    const fortified: Record<PlayerId, number> = {}
-    for (const player of players) {
-      scores[player] = 0
-      fortified[player] = 0
-    }
-    for (const plot of Object.values(plots)) {
-      if (plot.owner === null) continue
-      scores[plot.owner]! += 1
-      if (plot.fortified) fortified[plot.owner]! += 1
-    }
-
+    const { scores, fortified } = holdings()
     return {
       ...progress,
       // Most plots wins; level on plots, most fortified ones.
-      ranking: rankByScore(players, (player) => scores[player]! * 100 + fortified[player]!),
+      ranking: rankByScore(players, (player) => scores[player]! * PLOT + fortified[player]!),
       view: { plots, scores, fortified },
     }
   },

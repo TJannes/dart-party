@@ -1,5 +1,5 @@
 import { dartScore } from '../board/ring'
-import { playTurns, rankByScore, type GameRules, type PlayerId } from './types'
+import { playTurns, rankByScore, settledForThrower, type GameRules, type PlayerId } from './types'
 
 // The deciding round for a tie at the top of the final standings: three
 // darts each, highest ordinary score wins. It is never in the draw.
@@ -24,6 +24,10 @@ export const decider: GameRules<null, DeciderView> = {
       scores[thrower]! += score
       if (score > 0) emit({ kind: 'scored', player: thrower, amount: score })
       return score === 0 ? 'bad' : score >= 40 ? 'great' : 'good'
+    }, {
+      // At most a triple 20 a dart.
+      settled: (thrower, left) =>
+        settledForThrower(players, scores, thrower, scores[thrower]!, scores[thrower]! + 60 * left),
     })
     return {
       ...progress,

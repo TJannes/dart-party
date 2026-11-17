@@ -201,6 +201,27 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   continues, so the deciding dart can still be corrected.
 - A game with a round limit ends on the last dart of the last turn; it does
   not wait for those darts to be pulled.
+- It ends earlier, in the middle of that last turn, as soon as the darts
+  left can no longer change the final standings: not the winner, and no
+  other place either, since every place earns party points. Asked by the
+  owner on 2026-11-18 after a game of Sniper with two players in which the
+  last thrower had already won with the first dart. Done in Race, Robin
+  Hood, Spotlight, Piggy Bank, Land Grab, Sniper, Minefield, Memory, Trap
+  Runner and the decider. Each game gives the lowest and highest score
+  every player can still reach (`settled` in `playTurns`); the bounds may
+  be generous, so the game sometimes plays on when it need not, but it
+  never stops while something can still change. Sniper works out the
+  places of the last round exactly, since a closer dart also pushes others
+  down. Left as they were: Blackjack (stopping is the player's own choice
+  and the house still plays), Raise the Bar, and the knockout games, which
+  rarely reach their round limit. The dart that settles a game counts as
+  the last dart, so taking the lead with it is a photo finish. Filled in
+  while building: the bounds per game and which games are left out.
+- The last thrower always throws at least one dart, also when nothing
+  they throw can matter; the game is only settled after a dart (owner,
+  2026-11-18, on Claude's proposal). Why: being skipped at the board feels
+  like being left out, an ending without a dart of one's own feels like
+  the app forgot a turn, and a Sniper round result belongs to a dart.
 - The control panel always offers: correct a dart, add a miss, move on by hand,
   reset the board.
 - Every mini-game has a maximum number of rounds.
