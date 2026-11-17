@@ -154,7 +154,7 @@ const SCRIPTS: Record<string, (record: GameRecord) => Script> = {
 
   // A triple that counts once, a hand of exactly 21, and the next player going over.
   blackjack: () => ({
-    setup: null,
+    setup: { house: [[10, 8, 3]] },
     moves: [{ dart: T(7) }, { dart: S(14) }, { before: [S(20)], dart: S(18) }],
   }),
 }

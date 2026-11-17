@@ -1,12 +1,15 @@
 import { BULL } from '../board/ring'
 import type { Dart } from '../board/state'
+import { randomInt } from '../random'
 import { playTurns, rankByScore, type GameRules, type PlayerId } from './types'
 
 // Blackjack: get as close to 21 as you can without going over. Only the
 // number of the segment counts, the ring does not. The bull is the ace: 11,
 // or 1 when 11 would take the hand over 21. Pulling your darts is standing.
-// Per round the closest hand gets 3 points, the second 2, the third 1, and
-// exactly 21 pays 1 on top.
+// The house plays last, with cards from the deck: only a hand that equals or
+// beats it counts, and every hand that is not bust counts when the house is.
+// Per round the closest hand that counts gets 3 points, the second 2, the
+// third 1, and exactly 21 pays 1 on top.
 
 export const BLACKJACK = 21
 
@@ -16,10 +19,22 @@ const PLACE_POINTS = [3, 2, 1]
 /** On top of the place, for a hand of exactly 21. */
 const BLACKJACK_BONUS = 1
 
+/** The house draws until it holds this much, and never more cards than a player has darts. */
+export const HOUSE_STANDS = 15
+const HOUSE_CARDS = 3
+
 export interface Hand {
   total: number
   bust: boolean
 }
+
+/** The cards the house may draw, per round: numbers 1 to 20, as a dart on the board would give. */
+export interface BlackjackSetup {
+  house: number[][]
+}
+
+/** The hand the house played, and the cards it took for it. */
+export type HouseHand = Hand & { cards: number[] }
 
 export interface BlackjackView {
   scores: Record<PlayerId, number>
@@ -32,38 +47,67 @@ export interface BlackjackView {
    * those darts are in the board. So a bust, and the hand that closed a
    * round, stay in view until the darts are pulled, and then the table is
    * clear for the next player. Null when no darts are in the board. A
-   * card is what its dart added: 11 for a bull, 0 for a dart off the
+   * card is what its dart dealt: `ACE` for a bull, 0 for a dart off the
    * board. `turn` tells one hand from the next.
    */
   table: (Hand & { player: PlayerId; cards: number[]; turn: number }) | null
   /** The best hand of this round that is no longer being thrown at, and who holds it. */
   toBeat: { total: number; players: PlayerId[] } | null
+  /**
+   * The house. 'waiting' while a round is being thrown: its card lies face
+   * down. Its hand once the round is over, with what that round (counted
+   * from 0) paid, until the first dart of the next round. Null in a game
+   * without a house (one saved before the house existed).
+   */
+  house: (HouseHand & { round: number; paid: Record<PlayerId, number> }) | 'waiting' | null
 }
 
-/** What a dart is worth in a hand: its segment, 11 for the bull, 0 off the board. */
+/**
+ * The ace as a card. Only the bull is one: it counts 11, or 1 when 11
+ * would bust. Segment 11 is a plain 11.
+ */
+export const ACE = BULL
+
+/** The card a dart deals: its segment, the ace for the bull, 0 off the board. */
 export function cardValue(dart: Dart): number {
   if (dart.miss || dart.number === null) return 0
-  return dart.number === BULL ? 11 : dart.number
+  return dart.number
 }
 
-/** The best total of these darts: every ace counts 11 until that would bust. */
-export function handOf(darts: readonly Dart[]): Hand {
+/** The best total of these cards: every ace counts 11 until that would bust. */
+function handOfCards(cards: readonly number[]): Hand {
   let total = 0
   let aces = 0
-  for (const dart of darts) {
-    total += cardValue(dart)
-    if (cardValue(dart) === 11) aces++
+  for (const card of cards) {
+    total += card === ACE ? 11 : card
+    if (card === ACE) aces++
   }
   for (; total > BLACKJACK && aces > 0; aces--) total -= 10
   return { total, bust: total > BLACKJACK }
 }
 
+/** The best total of these darts. */
+export function handOf(darts: readonly Dart[]): Hand {
+  return handOfCards(darts.map(cardValue))
+}
+
+/** How the house plays the cards dealt to it: it draws until it holds 15 or more, three cards at most. */
+export function houseHand(dealt: readonly number[]): HouseHand {
+  const cards: number[] = []
+  while (cards.length < Math.min(HOUSE_CARDS, dealt.length) && handOfCards(cards).total < HOUSE_STANDS) {
+    cards.push(dealt[cards.length]!)
+  }
+  return { ...handOfCards(cards), cards }
+}
+
 /** A hand counts in its round when it is not bust and has a dart on the board. */
 const counts = (hand: Hand): boolean => !hand.bust && hand.total > 0
 
-/** What the hands of one finished round pay. */
-export function roundPoints(hands: ReadonlyMap<PlayerId, Hand>): Record<PlayerId, number> {
-  const valid = [...hands].filter(([, hand]) => counts(hand)).map(([player]) => player)
+/** What the hands of one finished round pay, against the house if there is one. */
+export function roundPoints(hands: ReadonlyMap<PlayerId, Hand>, house: Hand | null = null): Record<PlayerId, number> {
+  // Equal to the house is enough; a house that is bust beats nobody.
+  const beatsHouse = (hand: Hand): boolean => !house || house.bust || hand.total >= house.total
+  const valid = [...hands].filter(([, hand]) => counts(hand) && beatsHouse(hand)).map(([player]) => player)
   const points: Record<PlayerId, number> = {}
   let place = 0
   // Equal hands share a place, as in the standings.
@@ -77,14 +121,18 @@ export function roundPoints(hands: ReadonlyMap<PlayerId, Hand>): Record<PlayerId
   return points
 }
 
-export const blackjack: GameRules<null, BlackjackView> = {
+export const blackjack: GameRules<BlackjackSetup | null, BlackjackView> = {
   id: 'blackjack',
   dartsPerTurn: 3,
   maxRounds: 5,
 
-  setup: () => null,
+  setup: (_players, random) => ({
+    house: Array.from({ length: blackjack.maxRounds }, () =>
+      Array.from({ length: HOUSE_CARDS }, () => 1 + randomInt(random, 20)),
+    ),
+  }),
 
-  evaluate(_setup, players, turns) {
+  evaluate(setup, players, turns) {
     const count = players.length
     // The last thrower knows what to beat, so the start moves up one seat every round.
     const throwerOf = (turnIndex: number): PlayerId =>
@@ -124,9 +172,13 @@ export const blackjack: GameRules<null, BlackjackView> = {
       for (const player of players) if (!hands.has(player)) hands.set(player, { total: 0, bust: false })
       return hands
     }
+    const houseOf = (round: number): HouseHand | null => {
+      const dealt = setup?.house[round]
+      return dealt ? houseHand(dealt) : null
+    }
     const paid: Record<PlayerId, number>[] = []
     for (let round = 0; round < finishedRounds; round++) {
-      paid[round] = roundPoints(handsOf(round))
+      paid[round] = roundPoints(handsOf(round), houseOf(round))
       for (const [player, points] of Object.entries(paid[round]!)) scores[player]! += points
     }
 
@@ -146,12 +198,21 @@ export const blackjack: GameRules<null, BlackjackView> = {
     const toBeat =
       best > 0 ? { total: best, players: standing.filter(([, hand]) => hand.total === best).map(([player]) => player) } : null
 
+    // The house shows its hand when a round is over, and takes it back at the first dart of the next.
+    const closed = houseOf(finishedRounds - 1)
+    const untouched = progress.finished || !rounds[round]?.size
+    const house: BlackjackView['house'] = !setup
+      ? null
+      : closed && untouched
+        ? { ...closed, round: finishedRounds - 1, paid: paid[finishedRounds - 1]! }
+        : 'waiting'
+
     // Pulling the darts clears the table. (Set inside the walk above, which the compiler does not follow.)
     const lying = table as BlackjackView['table']
     return {
       ...progress,
       ranking: rankByScore(players, (player) => scores[player]!),
-      view: { scores, hands, previous, toBeat, table: lying && !turns[lying.turn]!.done ? lying : null },
+      view: { scores, hands, previous, toBeat, house, table: lying && !turns[lying.turn]!.done ? lying : null },
     }
   },
 }

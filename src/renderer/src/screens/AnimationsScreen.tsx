@@ -200,11 +200,18 @@ const cards = game('memory', {
 const MEMORY: Demo[] = [demo(t.cardTurned, cards, S(20)), demo(t.pairFound, thrown(cards, S(20)), S(6))]
 
 /** The first player holds 14 with one dart thrown. */
-const hand = thrown(game('blackjack', null, IDS.slice(0, 3)), S(14))
+const table = (house: number[]): Party => game('blackjack', { house: [house] }, IDS.slice(0, 3))
+const hand = thrown(table([10, 8, 3]), S(14))
+/** Two hands stand and the third player holds 19: pulling those darts ends the round. */
+const lastHand = (house: number[]): Party =>
+  thrown(nextPlayer(thrown(nextPlayer(thrown(table(house), S(17))), S(20))), S(19))
 const BLACKJACK: Demo[] = [
-  demo(t.cardDealt, game('blackjack', null, IDS.slice(0, 3)), S(14)),
+  demo(t.cardDealt, table([10, 8, 3]), S(14)),
   demo(t.twentyOne, hand, T(7)),
   demo(t.bust, hand, S(9)),
+  { label: t.housePlays, before: lastHand([10, 8, 3]), after: nextPlayer(lastHand([10, 8, 3])) },
+  { label: t.houseBust, before: lastHand([9, 5, 12]), after: nextPlayer(lastHand([9, 5, 12])) },
+  demo(t.bustThenHouse, lastHand([10, 8, 3]), S(9)),
 ]
 
 const PER_GAME: { id: keyof typeof strings.games; demos: Demo[] }[] = [

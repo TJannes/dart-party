@@ -727,6 +727,17 @@ Agreed with the owner on 2026-11-16, on Claude's proposal.
 - Per round the closest hand gets 3 points, the second 2, the third 1.
   Equal hands share the place, as in Sniper. A bust scores nothing, also
   when nearly everyone is bust.
+- The house plays last, after every player (agreed with the owner on
+  2026-11-17, on the owner's idea). Testing with two players showed the
+  hole: once the first was bust the second only had to hit the board. The
+  house draws cards from the deck, numbers 1 to 20 as a dart on the board
+  would give, until it holds 15 or more, three cards at most. Only a hand
+  that equals or beats the house gets a place; equal wins. When the house
+  is bust every hand that is not bust counts. 15 and not 17 as in the
+  card game: with numbers spread evenly over 1 to 20 a house that stands
+  on 17 is bust nearly half the time, on 15 about one round in three, and
+  it then stands on 17 on average. Some rounds nobody scores. The cards
+  of the house are drawn in `setup`, so a recount gives the same hand.
 - Exactly 21 pays 1 point on top of the place.
 - 5 rounds, highest total wins.
 - The start moves up one player every round: whoever throws last knows
@@ -749,6 +760,26 @@ Agreed with the owner on 2026-11-16, on Claude's proposal.
   as a big hit; the round is paid out without an animation, since it often
   ends on a takeout and not on a dart; the wording on screen ("18 · pull
   to stop" under the name of whoever is throwing).
+- The house on screen: a row of its own along the far side of the card
+  table. During a round one card lies there face down. When the round is
+  over that card turns and the house draws from the deck, card by card
+  with the card sound, then its total on a chip (red and "Bust", with the
+  buzzer, when it is over 21). The rows only show what the round paid once
+  the house has played. After a bust or a 21 of the last thrower the house
+  waits a moment, so that hand has its moment first. With no hand of a
+  thrower on the table the house has the whole table. Its hand stays until
+  the first dart of the next round, and after the last round. Played by the
+  scene itself when the hand turns up, not through a cue, since a round
+  often ends on a takeout and the last one on no cue at all; so on the
+  dart that ends the game the winner is announced while the house still
+  plays. Three more entries on the Animations screen. Filled in while
+  building: all of this, that the points wait for the house, and the
+  heading "Beat the house!". Seen on Ubuntu on the Animations screen only;
+  not played with darts, not on Windows.
+- Only the bull is an ace; segment 11 is a plain 11, for a player and for
+  the house (decided by the owner on 2026-11-17). Until then segment 11
+  was counted as an ace and shown as "A" by mistake.
+- A game saved before the house existed has no house and is paid as before.
 - Its own scene and animations, asked by the owner on 2026-11-16: a card
   table above the board with the deck, the hand of whoever threw last as
   playing cards, that player's avatar and the total on a chip. Every dart

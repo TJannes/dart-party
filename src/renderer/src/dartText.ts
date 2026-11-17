@@ -1,6 +1,6 @@
 import type { Dart } from '../../core/board/state'
 import type { GameRecord } from '../../core/party/party'
-import { cardValue } from '../../core/game/blackjack'
+import { ACE, cardValue } from '../../core/game/blackjack'
 import { archeryPoints } from '../../core/game/robinHood'
 import { distanceMm, type SniperSetup } from '../../core/game/sniper'
 import { dartLabel } from '../../shared/board'
@@ -21,7 +21,7 @@ export function dartText(record: GameRecord, dart: Dart, turnIndex: number): str
   }
   if (record.gameId === 'blackjack') {
     const value = cardValue(dart)
-    return value === 0 ? strings.board.miss : value === 11 ? strings.games.blackjack.ace : String(value)
+    return value === 0 ? strings.board.miss : value === ACE ? strings.games.blackjack.ace : String(value)
   }
   return dartLabel(dart)
 }

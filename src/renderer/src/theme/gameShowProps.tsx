@@ -169,7 +169,8 @@ const SUITS = ['♠', '♥', '♣', '♦']
 export function Card({ value, suit = 0 }: { value?: number; suit?: number }): React.JSX.Element {
   const red = suit % 2 === 1
   const ink = red ? '#d7263d' : INK
-  const text = value === 11 ? 'A' : String(value)
+  // 25 is the bull, the ace of Blackjack.
+  const text = value === 25 ? 'A' : String(value)
   return (
     <svg viewBox="0 0 50 70" width="100%" height="100%" style={{ overflow: 'visible', display: 'block' }} aria-hidden>
       {value === undefined || value === 0 ? (

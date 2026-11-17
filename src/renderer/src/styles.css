@@ -1110,8 +1110,10 @@ h1 {
   position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
+  /* The house above, the hand of the thrower below. */
+  grid-template-rows: auto minmax(0, 1fr);
   align-items: center;
-  gap: 3%;
+  gap: 0 3%;
   width: 100%;
   max-width: 30rem;
   max-height: 100%;
@@ -1129,10 +1131,108 @@ h1 {
 
 .felt__deck,
 .felt__card {
-  /* The deck, three cards and the total must fit side by side. */
-  height: min(72cqh, 25cqw);
+  /* The deck, three cards and the total must fit side by side, under the house. */
+  height: min(50cqh, 20cqw);
   aspect-ratio: 5 / 7;
   filter: drop-shadow(0 0.2rem 0.2rem rgb(0 0 0 / 40%));
+}
+
+/* The house: its name, its cards and what they add up to, small along the far side of the table. */
+.felt__house {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2cqw;
+  padding-bottom: 2cqh;
+  border-bottom: 0.1rem dashed rgb(255 255 255 / 35%);
+  font-size: min(13cqh, 5cqw);
+  perspective: 40rem;
+}
+
+.felt__dealer {
+  color: #ffd23f;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.felt__house-cards {
+  display: flex;
+  /* Room for three, so the row does not jump when the house draws. */
+  min-width: calc(min(26cqh, 10cqw) * 5 / 7 * 3);
+}
+
+.felt__card.felt__card--house {
+  height: min(26cqh, 10cqw);
+  margin: 0;
+}
+
+.felt__house-cards {
+  position: relative;
+}
+
+.felt__card--back {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.felt__total.felt__total--house {
+  font-size: 1em;
+}
+
+/* Once the house has played its hand is what the table is about: it grows, and a hand still lying there shrinks. */
+.felt--played .felt__house {
+  font-size: min(17cqh, 6.5cqw);
+}
+
+.felt--played .felt__card.felt__card--house {
+  height: min(40cqh, 15cqw);
+}
+
+.felt--played .felt__house-cards {
+  min-width: 0;
+}
+
+.felt--played .felt__cards .felt__card {
+  height: min(34cqh, 14cqw);
+}
+
+/* With no hand of a thrower lying there the house has the whole table. */
+.felt--house-only .felt__house {
+  grid-row: 1 / 3;
+  padding-bottom: 0;
+  border-bottom: 0;
+  /* Its name above its cards, so three cards and the total fit beside the deck. */
+  flex-wrap: wrap;
+  align-content: center;
+  grid-column: 2 / 4;
+  font-size: min(20cqh, 7cqw);
+}
+
+.felt--house-only .felt__dealer {
+  flex-basis: 100%;
+  text-align: center;
+}
+
+.felt--house-only .felt__card.felt__card--house {
+  height: min(50cqh, 20cqw);
+}
+
+.felt--house-only .felt__cards {
+  display: none;
+}
+
+.felt__deck,
+.felt__who {
+  grid-row: 1 / 3;
+}
+
+.felt__cards {
+  grid-column: 2;
+  grid-row: 2;
 }
 
 /* A few cards under the top one. */

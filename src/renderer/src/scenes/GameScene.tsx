@@ -23,6 +23,8 @@ import { RING } from '../../../core/board/ring'
 import { dartLabel } from '../../../shared/board'
 import { strings } from '../../../shared/strings'
 import { motion } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
+import { sound } from '../sound'
 import { activeRecord, evaluateRecord } from '../../../core/party/party'
 import { useCalm, useSuspense } from '../animation/Stage'
 import { playerOf } from '../colours'
@@ -73,14 +75,77 @@ const jumpHeight = (value: number): string => `${8 + (Math.min(180, value) / 180
  * The card table of Blackjack: the deck, the hand of whoever threw last as
  * cards, and what it adds up to. Every dart deals a card from the deck.
  */
-function CardTable(props: { party: Party; table: BlackjackView['table'] }): React.JSX.Element {
-  const { party, table } = props
+function CardTable(props: {
+  party: Party
+  table: BlackjackView['table']
+  house: BlackjackView['house']
+  /** When the house starts to play, in seconds from now; null when its hand simply lies there. */
+  houseStarts: number | null
+}): React.JSX.Element {
+  const { party, table, house, houseStarts } = props
   const state = !table ? 'empty' : table.bust ? 'bust' : table.total === BLACKJACK ? 'twentyOne' : 'open'
+  const played = house && house !== 'waiting' ? house : null
+  /** When the nth card of the house turns up, and when the last one has. */
+  const cardAt = (n: number): number => (houseStarts === null ? 0 : houseStarts + n * HOUSE_CARD_TIME)
   return (
-    <div className="felt" data-anim-prop="hand" style={table ? { borderColor: colourOf(party, table.player) } : undefined}>
+    <div className={!played ? 'felt' : table ? 'felt felt--played' : 'felt felt--played felt--house-only'} data-anim-prop="hand" style={table ? { borderColor: colourOf(party, table.player) } : undefined}>
       <div className="felt__deck">
         <Card />
       </div>
+      {house && (
+        <div className="felt__house">
+          <span className="felt__dealer">{g.blackjack.house}</span>
+          <div className="felt__house-cards">
+            {/* Its first card lies face down for the whole round. */}
+            {!played && (
+              <div className="felt__card felt__card--house">
+                <Card />
+              </div>
+            )}
+            {/* It stays there, under the card that will turn over, until that card does. */}
+            {played && houseStarts !== null && (
+              <motion.div
+                key={`${played.round}:back`}
+                className="felt__card felt__card--house felt__card--back"
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 0 }}
+                transition={{ duration: 0.15, delay: cardAt(0) }}
+              >
+                <Card />
+              </motion.div>
+            )}
+            {played?.cards.map((value, n) => (
+              <motion.div
+                key={`${played.round}:${n}`}
+                className="felt__card felt__card--house"
+                // The first card turns over where it lay; the others come from the deck.
+                initial={
+                  houseStarts === null
+                    ? false
+                    : n === 0
+                      ? { rotateY: 180, opacity: 0 }
+                      : { x: '-320%', rotate: -40, rotateY: 180, opacity: 0 }
+                }
+                animate={{ x: 0, rotate: 0, rotateY: 0, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 220, damping: 20, delay: cardAt(n) }}
+              >
+                <Card value={value} suit={n + played.round + 2} />
+              </motion.div>
+            ))}
+          </div>
+          {played && (
+            <motion.b
+              key={played.round}
+              className={`felt__total felt__total--house ${played.bust ? 'felt__total--bust' : ''}`}
+              initial={houseStarts === null ? false : { scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 14, delay: cardAt(played.cards.length - 1) + 0.35 }}
+            >
+              {played.bust ? g.blackjack.bust : played.total}
+            </motion.b>
+          )}
+        </div>
+      )}
       <div className="felt__cards">
         {table?.cards.map((value, n) => (
           <motion.div
@@ -121,6 +186,72 @@ function CardTable(props: { party: Party; table: BlackjackView['table'] }): Reac
         </div>
       )}
     </div>
+  )
+}
+
+/** The house turns a card this many seconds after the one before. */
+const HOUSE_CARD_TIME = 0.7
+/** It waits this long for a round that ended quietly, and longer for a bust or a 21 to have its moment. */
+const HOUSE_WAIT = 0.4
+const HOUSE_WAIT_LOUD = 1.5
+
+/**
+ * Blackjack. When a round ends the house plays its hand card by card, and
+ * only then do the rows show what the round paid.
+ */
+function BlackjackScene(props: SceneProps & { darts: Dart[] }): React.JSX.Element {
+  const { party, state } = props
+  const view = state.view as BlackjackView
+  const t = g.blackjack
+  const played = view.house && view.house !== 'waiting' ? view.house : null
+  // Only a hand that turns up while we watch is played out: not one found lying there on a resume.
+  const seen = useRef(played?.round ?? null)
+  const [playing, setPlaying] = useState<{ round: number; starts: number } | null>(null)
+  const round = played?.round ?? null
+  const cards = played?.cards.length ?? 0
+  const bust = played?.bust ?? false
+  const loud = view.table !== null && (view.table.bust || view.table.total === BLACKJACK)
+  useEffect(() => {
+    const fresh = round !== null && round !== seen.current
+    seen.current = round
+    if (!fresh) return setPlaying(null)
+    const starts = loud ? HOUSE_WAIT_LOUD : HOUSE_WAIT
+    setPlaying({ round, starts })
+    const timers = Array.from({ length: cards }, (_, n) =>
+      setTimeout(() => sound.play('card'), (starts + n * HOUSE_CARD_TIME) * 1000),
+    )
+    const end = starts + (cards - 1) * HOUSE_CARD_TIME + 0.35
+    if (bust) timers.push(setTimeout(() => sound.play('buzzer'), end * 1000))
+    timers.push(setTimeout(() => setPlaying(null), (end + 0.5) * 1000))
+    return () => timers.forEach(clearTimeout)
+    // `loud` is read as it stands when the hand turns up.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [round, cards, bust])
+  // The effect runs after the first frame with the hand in it: that frame must not give it away either.
+  const hidden = played !== null && (played.round !== seen.current || playing?.round === played.round)
+  const starts = !hidden ? null : (playing?.starts ?? (loud ? HOUSE_WAIT_LOUD : HOUSE_WAIT))
+
+  const handText = (hand: Hand): string =>
+    hand.bust ? t.bust : hand.total === BLACKJACK ? t.twentyOne : String(hand.total)
+  return (
+    <ScoreScene
+      party={party}
+      record={props.record}
+      state={state}
+      heading={view.toBeat ? t.toBeat(view.toBeat.total) : t.aim}
+      // What the round paid stays out of sight until the house has played.
+      score={(id) => view.scores[id]! - (hidden ? (played!.paid[id] ?? 0) : 0)}
+      detail={(id) => {
+        const hand = view.hands[id]
+        if (hand && id === state.current?.player) return t.throwing(hand.total)
+        if (hand) return hand.bust || hand.total === BLACKJACK ? handText(hand) : t.hand(hand.total)
+        const last = view.previous?.[id]
+        if (!last) return ''
+        return hidden ? (last.bust || last.total === BLACKJACK ? handText(last) : t.hand(last.total)) : t.last(handText(last), last.points)
+      }}
+      feature={<CardTable party={party} table={view.table} house={view.house} houseStarts={starts} />}
+      board={<Board darts={props.darts} />}
+    />
   )
 }
 
@@ -285,28 +416,8 @@ function Scene(props: SceneProps): React.JSX.Element | null {
       )
     }
 
-    case 'blackjack': {
-      const view = state.view as BlackjackView
-      const t = g.blackjack
-      const handText = (hand: Hand): string =>
-        hand.bust ? t.bust : hand.total === BLACKJACK ? t.twentyOne : String(hand.total)
-      return (
-        <ScoreScene
-          {...common}
-          heading={view.toBeat ? t.toBeat(view.toBeat.total) : t.aim}
-          score={(id) => view.scores[id]}
-          detail={(id) => {
-            const hand = view.hands[id]
-            if (hand && id === state.current?.player) return t.throwing(hand.total)
-            if (hand) return hand.bust || hand.total === BLACKJACK ? handText(hand) : t.hand(hand.total)
-            const last = view.previous?.[id]
-            return last ? t.last(handText(last), last.points) : ''
-          }}
-          feature={<CardTable party={party} table={view.table} />}
-          board={<Board darts={darts} />}
-        />
-      )
-    }
+    case 'blackjack':
+      return <BlackjackScene {...props} {...common} darts={darts} />
 
     case 'memory': {
       const view = state.view as MemoryView

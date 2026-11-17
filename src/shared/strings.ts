@@ -121,6 +121,9 @@ export const strings = {
       cardTurned: 'A card turned',
       pairFound: 'A pair',
       cardDealt: 'A card dealt',
+      housePlays: 'The house plays',
+      houseBust: 'The house goes bust',
+      bustThenHouse: 'Bust, then the house',
       twentyOne: 'Exactly 21',
       bust: 'Bust',
       between: 'Between games',
@@ -513,12 +516,14 @@ export const strings = {
         'Get as close to 21 as you can. Over 21 is bust: nothing this round.',
         'Only the number of the segment counts, not the ring. The bull is 11, or 1 if 11 would bust you.',
         'Enough? Pull your darts to stop.',
+        'The house plays last, with cards from the deck. Only a hand that equals or beats the house scores. If the house is bust, every hand that is not scores.',
         'Closest to 21: 3 points. Second: 2. Third: 1. Exactly 21: 1 extra.',
         'Five rounds. The highest total wins.',
       ],
       short: [
         'Get as close to 21 as you can. Over 21 is bust.',
         'Enough? Pull your darts to stop.',
+        'The house plays last: equal or beat it to score.',
         'Five rounds. The highest total wins.',
       ],
       demo: [
@@ -528,7 +533,9 @@ export const strings = {
       ],
       /** Above the players: the best hand of the round so far, or what the round is about. */
       toBeat: (total: number) => `To beat: ${total}`,
-      aim: 'Closest to 21 wins the round',
+      aim: 'Beat the house!',
+      /** The name of the dealer on the card table. */
+      house: 'House',
       hand: (total: number) => `Hand: ${total}`,
       /** The hand of whoever is at the board. */
       throwing: (total: number) => `${total} · pull to stop`,
