@@ -1,7 +1,8 @@
 import { activeRecord, canAdvance, evaluateRecord, standings, type Party } from '../../../core/party/party'
 import { placesOf, pointsForRanking } from '../../../core/party/points'
 import { rulesFor } from '../../../core/game/registry'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useStageBusy } from '../animation/Stage'
 import { activeGameKey } from '../../../core/party/cues'
 import { roundLimit, type GameState, type WithOpenings } from '../../../core/game/types'
 import { strings } from '../../../shared/strings'
@@ -96,6 +97,30 @@ function Result({ party, animate }: { party: Party; animate: boolean }): React.J
   )
 }
 
+/**
+ * True once `on` holds and the animation of the dart that made it so has
+ * played out, so the result card does not cover the winning dart. With
+ * `wait` false (a game that was already over, after a restart) at once.
+ */
+function useAfterStage(on: boolean, wait: boolean): boolean {
+  const busy = useStageBusy()
+  // Give the stage a moment to start the animation of the last dart.
+  const [armed, setArmed] = useState(false)
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    setArmed(false)
+    setShown(false)
+    if (!on) return
+    const timer = setTimeout(() => setArmed(true), 300)
+    return () => clearTimeout(timer)
+  }, [on])
+  // Once up, the card stays up.
+  useEffect(() => {
+    if (on && armed && !busy) setShown(true)
+  }, [on, armed, busy])
+  return on && (!wait || shown)
+}
+
 /** A game or deciding round in progress: who throws, the scene, the controls. */
 export function Play({ party }: { party: Party }): React.JSX.Element {
   const record = activeRecord(party)!
@@ -113,6 +138,8 @@ export function Play({ party }: { party: Party }): React.JSX.Element {
   const game = activeGameKey(party)
   const live = useRef<string | null>(null)
   if (!state.finished) live.current = game
+  const animate = live.current === game
+  const showResult = useAfterStage(canAdvance(party), animate)
 
   return (
     <PartyFrame
@@ -144,7 +171,7 @@ export function Play({ party }: { party: Party }): React.JSX.Element {
       <GameScene party={party} record={record} state={state} darts={darts} />
 
       <Controls party={party} canThrow={current !== null && current.dartsLeft > 0} />
-      {canAdvance(party) && <Result party={party} animate={live.current === game} />}
+      {showResult && <Result party={party} animate={animate} />}
     </PartyFrame>
   )
 }

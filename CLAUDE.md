@@ -32,6 +32,10 @@ Unofficial. Not affiliated with Autodarts.
   The `run-app` skill (`.claude/skills/run-app/`) starts the app and
   clicks through it. This machine is a test environment: players,
   settings and parties may be changed as a test needs.
+- After a fix or improvement in one game, always check the other games for
+  the same problem or a similar improvement. Only report what was found,
+  with a proposal per game, and ask the owner what to do; do not change
+  the other games unasked.
 - Commit or push only when the owner asks.
 - Windows cannot be tested from the development machine (Linux). The owner
   installs each test release on a Surface Pro 9 and reports back. Say plainly

@@ -199,6 +199,11 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   turn does not pass it.
 - After the last dart of a game the result stays on screen until someone
   continues, so the deciding dart can still be corrected.
+- The result card waits until the animation of that last dart has played
+  (the measurement, the round result, the win), about three seconds, so
+  it no longer covers the deciding moment. After a restart into a game
+  that was already over it shows at once. Asked by the owner on
+  2026-11-18 after seeing the card cover the end of a Sniper game.
 - A game with a round limit ends on the last dart of the last turn; it does
   not wait for those darts to be pulled.
 - It ends earlier, in the middle of that last turn, as soon as the darts
