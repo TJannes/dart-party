@@ -165,7 +165,14 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   picture the owner gave: potato, poo, pizza, burger, fries, beer, donut,
   watermelon, avocado, ghost, ninja, pirate, alien. Each has its own
   drawing but wears the shared face, so every mood works on every avatar.
-  The picker shows seven per row.
+- 2026-11-18: ten more, asked for as famous TV and game characters. Those
+  are not drawn (someone else's characters); original stand-ins were
+  agreed instead: star, whisky, orc, ogre, devil, towel, butter, pickle,
+  professor (an ice knight was tried and dropped).
+- 2026-11-18: then a kraken, a banana, and eight Claude proposed: dart,
+  traffic cone, rubber duck, disco ball, frikandel, toilet roll, shot and
+  sock. Then a robot and a trophy: 54 in all, which fills the picker's
+  nine per row (in a wider card) to six full rows.
 - Player profiles are saved on the machine.
 - Players are fixed once a party starts. A party can always be aborted.
 

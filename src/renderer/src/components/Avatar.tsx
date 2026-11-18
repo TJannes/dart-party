@@ -358,6 +358,8 @@ interface Character {
   darkEyes?: boolean
   /** The mouth sits on something dark. */
   darkMouth?: boolean
+  /** Has a beak instead, like the birds among the animals. */
+  noMouth?: boolean
 }
 
 const RIM = 'rgb(0 0 0 / 14%)'
@@ -591,6 +593,448 @@ const CHARACTERS: Record<Exclude<AvatarId, AnimalId>, Character> = {
     face: { x: 50, y: 52, scale: 0.85, gap: 20 },
     darkEyes: true,
   },
+  star: {
+    body: () => (
+      <path
+        d="M50 8 L61.8 37.8 L93.7 39.8 L69 60.2 L77 91.2 L50 74 L23 91.2 L31 60.2 L6.3 39.8 L38.2 37.8 Z"
+        fill="#ffd23f"
+        stroke="#e0a21a"
+        strokeWidth="5"
+        strokeLinejoin="round"
+      />
+    ),
+    face: { x: 50, y: 52, scale: 0.8 },
+  },
+  whisky: {
+    body: () => (
+      <g>
+        <rect x="41" y="10" width="18" height="24" rx="3" fill="#b8692a" />
+        <rect x="39" y="3" width="22" height="11" rx="3" fill="#8c1c3a" />
+        <path d="M41 30 L59 30 Q78 34 78 50 L78 90 Q78 96 72 96 L28 96 Q22 96 22 90 L22 50 Q22 34 41 30 Z" fill="#c8742a" stroke={RIM} strokeWidth="1.5" />
+        <path d="M27 50 Q27 40 36 37" fill="none" stroke="#e8a35c" strokeWidth="3" strokeLinecap="round" />
+        <rect x="27" y="50" width="46" height="34" rx="4" fill="#f3e2b8" />
+        <rect x="27" y="50" width="46" height="5" fill="#8c1c3a" />
+      </g>
+    ),
+    face: { x: 50, y: 63, scale: 0.75 },
+  },
+  orc: {
+    body: () => (
+      <g>
+        <path d="M22 46 L0 34 L22 62 Z" fill="#5f8a3c" />
+        <path d="M78 46 L100 34 L78 62 Z" fill="#5f8a3c" />
+        <path d="M42 22 Q50 2 58 22 Z" fill="#24202c" />
+        <ellipse cx="50" cy="56" rx="32" ry="34" fill="#6f9a4a" stroke={RIM} strokeWidth="1.5" />
+        <path d="M26 42 Q50 34 74 42 L74 45 Q50 38 26 45 Z" fill="#4f7a32" />
+        <ellipse cx="50" cy="63" rx="5" ry="3.4" fill="#4f7a32" />
+      </g>
+    ),
+    front: () => (
+      <g fill="#fff6e0" stroke="#c9bfa4" strokeWidth="1">
+        <path d="M37 82 L35 68 L42 80 Z" />
+        <path d="M63 82 L65 68 L58 80 Z" />
+      </g>
+    ),
+    face: { x: 50, y: 50 },
+  },
+  ogre: {
+    body: () => (
+      <g>
+        <circle cx="13" cy="56" r="8" fill="#a8975a" />
+        <circle cx="87" cy="56" r="8" fill="#a8975a" />
+        <path d="M50 14 C80 14 90 36 88 58 C86 84 70 94 50 94 C30 94 14 84 12 58 C10 36 20 14 50 14 Z" fill="#b8a86a" stroke={RIM} strokeWidth="1.5" />
+        <g fill="none" stroke="#5e4a2a" strokeWidth="2" strokeLinecap="round">
+          <path d="M44 16 Q42 8 38 6" />
+          <path d="M50 14 Q51 6 50 2" />
+          <path d="M56 16 Q59 9 63 7" />
+        </g>
+        <g fill="#8c7a42">
+          <circle cx="28" cy="34" r="3" />
+          <circle cx="74" cy="76" r="2.5" />
+          <circle cx="72" cy="30" r="2" />
+        </g>
+      </g>
+    ),
+    front: () => <ellipse cx="50" cy="62" rx="8" ry="5.5" fill="#8c7a42" />,
+    face: { x: 50, y: 48 },
+  },
+  devil: {
+    body: () => (
+      <g>
+        <path d="M80 80 Q98 86 92 64" fill="none" stroke="#b81d2c" strokeWidth="3" strokeLinecap="round" />
+        <path d="M92 60 L86 68 L96 68 Z" fill="#b81d2c" />
+        <path d="M28 32 Q18 16 24 4 Q30 20 42 26 Z" fill="#fff1d6" stroke="#d9c39a" strokeWidth="1.5" />
+        <path d="M72 32 Q82 16 76 4 Q70 20 58 26 Z" fill="#fff1d6" stroke="#d9c39a" strokeWidth="1.5" />
+        <circle cx="50" cy="54" r="35" fill="#e63946" stroke={RIM} strokeWidth="1.5" />
+        <path d="M42 86 Q50 100 58 86 Z" fill="#8c1c3a" />
+      </g>
+    ),
+    face: { x: 50, y: 50 },
+  },
+  towel: {
+    body: () => (
+      <g>
+        <rect x="18" y="8" width="64" height="82" rx="8" fill="#7fc8f8" stroke={RIM} strokeWidth="1.5" />
+        <rect x="18" y="18" width="64" height="5" fill="#ffffff" />
+        <rect x="18" y="74" width="64" height="5" fill="#ffffff" />
+        <g stroke="#7fc8f8" strokeWidth="2.5" strokeLinecap="round">
+          {[24, 31, 38, 45, 52, 59, 66, 73].map((x) => (
+            <path key={x} d={`M${x + 2} 88 L${x + 2} 96`} />
+          ))}
+        </g>
+      </g>
+    ),
+    face: { x: 50, y: 44, scale: 0.9 },
+  },
+  butter: {
+    body: () => (
+      <g strokeLinejoin="round">
+        <ellipse cx="50" cy="84" rx="47" ry="12" fill="#e8f1fb" stroke="#9fb8d6" strokeWidth="2" />
+        <path d="M74 44 L90 32 L90 74 L74 86 Z" fill="#f2c94c" stroke={RIM} strokeWidth="1.5" />
+        <path d="M8 44 L24 32 L90 32 L74 44 Z" fill="#fff3b0" stroke={RIM} strokeWidth="1.5" />
+        <rect x="8" y="44" width="66" height="42" fill="#ffe27a" stroke={RIM} strokeWidth="1.5" />
+        <path d="M50 44 L66 32 L90 32 L90 74 L74 86 L50 86 Z" fill="#ffffff" opacity="0.92" />
+        <path d="M50 44 L74 44 L74 86 L50 86" fill="none" stroke="#d6dce6" strokeWidth="1.5" />
+        <rect x="50" y="56" width="24" height="5" fill="#3b82c4" />
+        <rect x="50" y="64" width="24" height="2.5" fill="#3b82c4" />
+        <path d="M74 56 L90 44 L90 49 L74 61 Z" fill="#2f6aa3" />
+        <path d="M28 30 Q30 18 42 20 Q50 22 46 30 Q42 34 38 28" fill="#fff3b0" stroke="#e0b93a" strokeWidth="2" strokeLinecap="round" />
+        <path d="M13 50 L13 62" stroke="#fff6cf" strokeWidth="3" strokeLinecap="round" />
+        {/* A butter knife stuck in the top. */}
+        <path d="M50 38 L60 38" stroke="#c9a227" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M51 38 L59 38 L70 16 Q66 12 62 15 Z" fill="#dfe5ee" stroke="#8d98aa" strokeWidth="1.5" />
+        <path d="M69 17 L80 -4" stroke="#6b3a24" strokeWidth="7" strokeLinecap="round" />
+      </g>
+    ),
+    face: { x: 31, y: 60, scale: 0.7 },
+  },
+  pickle: {
+    body: () => {
+      const outline = 'M36 10 C50 6 60 16 64 32 C69 52 74 70 68 86 C62 98 42 98 36 84 C30 66 26 46 24 30 C22 18 28 12 36 10 Z'
+      const warts: [number, number][] = [
+        [24, 30], [26, 46], [29, 62], [33, 76], [62, 26], [66, 42], [70, 58], [71, 74], [46, 7], [54, 94],
+      ]
+      return (
+        <g>
+          <path d="M40 10 Q38 2 44 0" fill="none" stroke="#3d6e22" strokeWidth="4" strokeLinecap="round" />
+          <g fill="#5f9e3a" stroke="#3d6e22" strokeWidth="2">
+            {warts.map(([x, y]) => (
+              <circle key={`${x}-${y}`} cx={x} cy={y} r="4" />
+            ))}
+          </g>
+          <path d={outline} fill="#5f9e3a" stroke="#3d6e22" strokeWidth="2.5" />
+          <path d="M34 22 Q36 52 44 84" fill="none" stroke="#86c06a" strokeWidth="4" strokeLinecap="round" />
+          <g fill="#a8d88a">
+            <circle cx="56" cy="22" r="2" />
+            <circle cx="62" cy="64" r="2" />
+            <circle cx="40" cy="70" r="1.8" />
+            <circle cx="60" cy="82" r="1.8" />
+            <circle cx="30" cy="40" r="1.6" />
+          </g>
+        </g>
+      )
+    },
+    face: { x: 49, y: 46, scale: 0.8 },
+  },
+  professor: {
+    body: () => (
+      <g>
+        <g fill="#f4f4f8" stroke="#cfcbd8" strokeWidth="1">
+          <path d="M14 66 L2 58 L12 52 L0 40 L14 38 L8 24 L22 28 L24 14 L34 22 L40 8 L46 20 L56 6 L60 20 L70 10 L72 24 L86 18 L82 32 L98 36 L86 44 L100 54 L86 58 L96 68 L84 68 Z" />
+        </g>
+        <circle cx="50" cy="56" r="33" fill="#f2c49b" stroke={RIM} strokeWidth="1.5" />
+        <path d="M18 32 L82 32" stroke="#6b3a24" strokeWidth="4" />
+        <g fill="#9fdcff" stroke="#6b3a24" strokeWidth="3.5">
+          <circle cx="40" cy="30" r="7" />
+          <circle cx="60" cy="30" r="7" />
+        </g>
+        <g stroke="#f4f4f8" strokeWidth="4" strokeLinecap="round">
+          <path d="M30 42 L44 40" />
+          <path d="M70 42 L56 40" />
+        </g>
+      </g>
+    ),
+    face: { x: 50, y: 52, scale: 0.9 },
+  },
+  kraken: {
+    body: () => {
+      const arms = [
+        'M28 56 Q6 52 6 30 Q6 14 20 14 Q28 16 24 24',
+        'M72 56 Q94 52 94 30 Q94 14 80 14 Q72 16 76 24',
+        'M30 62 Q10 70 8 84 Q8 96 20 94',
+        'M70 62 Q90 70 92 84 Q92 96 80 94',
+        'M42 64 Q34 80 42 94',
+        'M58 64 Q66 80 58 94',
+      ]
+      const suckers: [number, number][] = [
+        [7, 40], [7, 30], [10, 21], [17, 16], [93, 40], [93, 30], [90, 21], [83, 16],
+        [13, 76], [10, 86], [87, 76], [90, 86], [38, 80], [62, 80], [41, 91], [59, 91],
+      ]
+      return (
+        <g>
+          <g fill="none" stroke="#1d3e4e" strokeWidth="13" strokeLinecap="round">
+            {arms.map((d) => (
+              <path key={d} d={d} />
+            ))}
+          </g>
+          <g fill="none" stroke="#3d7f9a" strokeWidth="10" strokeLinecap="round">
+            {arms.map((d) => (
+              <path key={d} d={d} />
+            ))}
+          </g>
+          <g fill="#f3c19a" stroke="#b5562a" strokeWidth="1.2">
+            {suckers.map(([x, y]) => (
+              <circle key={`${x}-${y}`} cx={x} cy={y} r="2.6" />
+            ))}
+          </g>
+          <path d="M50 0 C75 0 85 18 83 38 C81 52 72 60 64 62 Q50 74 36 62 C28 60 19 52 17 38 C15 18 25 0 50 0 Z" fill="#3d7f9a" stroke="#1d3e4e" strokeWidth="2" />
+          <path d="M30 10 Q40 4 50 4" fill="none" stroke="#6fb0c4" strokeWidth="3" strokeLinecap="round" />
+          <g fill="#2a5a70">
+            <circle cx="66" cy="14" r="2.5" />
+            <circle cx="72" cy="24" r="1.8" />
+            <circle cx="28" cy="26" r="2" />
+            <circle cx="46" cy="56" r="1.2" />
+            <circle cx="54" cy="56" r="1.2" />
+            <circle cx="50" cy="52" r="1.2" />
+          </g>
+          <g fill="#ff8a3d">
+            <circle cx="37" cy="44" r="10" opacity="0.3" />
+            <circle cx="63" cy="44" r="10" opacity="0.3" />
+            <circle cx="37" cy="44" r="6.5" />
+            <circle cx="63" cy="44" r="6.5" />
+          </g>
+          <g fill="none" stroke="#1d3e4e" strokeWidth="4.5" strokeLinecap="round">
+            <path d="M25 34 Q35 29 46 37" />
+            <path d="M75 34 Q65 29 54 37" />
+          </g>
+        </g>
+      )
+    },
+    face: { x: 50, y: 44, scale: 0.8, gap: 16 },
+    darkEyes: true,
+    darkMouth: true,
+  },
+  banana: {
+    body: () => (
+      <g transform="translate(-11 0)">
+        <path d="M34 14 L32 4 Q36 0 41 3 L43 12 Z" fill="#7a5a2a" />
+        <path
+          d="M34 12 Q36 6 44 8 Q92 22 88 58 Q84 88 44 96 Q35 98 37 90 Q54 80 54 54 Q54 30 34 12 Z"
+          fill="#ffd93d"
+          stroke="#c9a227"
+          strokeWidth="2"
+          strokeLinejoin="round"
+        />
+        <path d="M44 14 Q78 30 76 58 Q74 80 50 90" fill="none" stroke="#ffeb8a" strokeWidth="3" strokeLinecap="round" />
+        <path d="M40 92 Q36 97 37 90 Z" fill="#5e4a2a" stroke="#5e4a2a" strokeWidth="3" strokeLinejoin="round" />
+        <g fill="#b8862a">
+          <circle cx="80" cy="36" r="1.4" />
+          <circle cx="62" cy="84" r="1.2" />
+          <circle cx="58" cy="22" r="1.2" />
+        </g>
+      </g>
+    ),
+    face: { x: 59, y: 50, scale: 0.65 },
+  },
+  dart: {
+    body: () => (
+      <g strokeLinejoin="round" transform="rotate(35 50 50)">
+        <path d="M44 78 L56 78 L50 100 Z" fill="#cfd6e0" stroke="#8d98aa" strokeWidth="1.5" />
+        <rect x="46" y="16" width="8" height="26" fill="#3a3340" />
+        <path d="M50 26 L28 2 L30 26 L50 34 Z" fill="#e63946" stroke="#9c1f2b" strokeWidth="1.5" />
+        <path d="M50 26 L72 2 L70 26 L50 34 Z" fill="#e63946" stroke="#9c1f2b" strokeWidth="1.5" />
+        <path d="M50 30 L50 4" stroke="#ffd23f" strokeWidth="4" strokeLinecap="round" />
+        <rect x="32" y="38" width="36" height="42" rx="14" fill="#b8c2d0" stroke="#6b7689" strokeWidth="1.5" />
+        <g stroke="#8d98aa" strokeWidth="1.5">
+          <path d="M34 72 L66 72" />
+          <path d="M35 76 L65 76" />
+        </g>
+        <path d="M37 44 L37 66" stroke="#e8edf4" strokeWidth="3" strokeLinecap="round" />
+      </g>
+    ),
+    face: { x: 45, y: 52, scale: 0.6 },
+  },
+  cone: {
+    body: () => (
+      <g strokeLinejoin="round">
+        <rect x="8" y="82" width="84" height="12" rx="3" fill="#d9531e" stroke={RIM} strokeWidth="1.5" />
+        <path d="M43 4 L57 4 L80 84 L20 84 Z" fill="#ff7a2f" stroke={RIM} strokeWidth="1.5" />
+        <path d="M40 16 L60 16 L62.6 26 L37.4 26 Z" fill="#ffffff" />
+        <path d="M30.3 66 L69.7 66 L72.6 76 L27.4 76 Z" fill="#ffffff" />
+      </g>
+    ),
+    face: { x: 50, y: 42, scale: 0.6 },
+  },
+  duck: {
+    body: () => (
+      <g>
+        <ellipse cx="54" cy="74" rx="40" ry="22" fill="#ffd93d" stroke="#d9a90f" strokeWidth="1.5" />
+        <path d="M86 66 Q98 58 94 72 Z" fill="#ffd93d" stroke="#d9a90f" strokeWidth="1.5" />
+        <path d="M54 72 Q70 66 78 78 Q64 84 54 72 Z" fill="#f2c21f" />
+        <circle cx="46" cy="40" r="27" fill="#ffd93d" stroke="#d9a90f" strokeWidth="1.5" />
+        <path d="M44 14 Q46 4 54 6 Q48 8 50 14" fill="#ffd93d" stroke="#d9a90f" strokeWidth="1.5" />
+      </g>
+    ),
+    front: () => (
+      <g>
+        <ellipse cx="46" cy="54" rx="13" ry="5.5" fill="#ff8c1a" stroke="#d96a00" strokeWidth="1.2" />
+        <path d="M34 54 Q46 57 58 54" fill="none" stroke="#d96a00" strokeWidth="1.2" />
+      </g>
+    ),
+    face: { x: 46, y: 40, scale: 0.85 },
+    noMouth: true,
+  },
+  disco: {
+    body: () => {
+      const r = 38
+      const steps = [-28.5, -19, -9.5, 0, 9.5, 19, 28.5]
+      return (
+        <g>
+          <path d="M50 0 L50 14" stroke="#cfcbd8" strokeWidth="2" />
+          <circle cx="50" cy="52" r={r} fill="#aab4c4" stroke="#6b7689" strokeWidth="1.5" />
+          <g stroke="#7f8a9c" strokeWidth="1.2">
+            {steps.map((d) => {
+              const h = Math.sqrt(r * r - d * d)
+              return (
+                <g key={d}>
+                  <path d={`M${50 - h} ${52 + d} L${50 + h} ${52 + d}`} />
+                  <path d={`M${50 + d} ${52 - h} L${50 + d} ${52 + h}`} />
+                </g>
+              )
+            })}
+          </g>
+          <g fill="#eef2f8">
+            <rect x="31" y="24" width="9.5" height="9.5" />
+            <rect x="59.5" y="33.5" width="9.5" height="9.5" />
+            <rect x="21.5" y="61.5" width="9.5" height="9.5" />
+            <rect x="69" y="71" width="9.5" height="9.5" />
+          </g>
+          <g fill="#c9b8ff">
+            <rect x="40.5" y="24" width="9.5" height="9.5" />
+            <rect x="69" y="52" width="9.5" height="9.5" />
+          </g>
+          <g fill="#ffffff">
+            <path d="M14 22 L16 28 L22 30 L16 32 L14 38 L12 32 L6 30 L12 28 Z" />
+            <path d="M86 14 L87.5 18.5 L92 20 L87.5 21.5 L86 26 L84.5 21.5 L80 20 L84.5 18.5 Z" />
+          </g>
+        </g>
+      )
+    },
+    face: { x: 50, y: 50, scale: 0.85 },
+  },
+  frikandel: {
+    body: () => (
+      <g strokeLinejoin="round">
+        <path d="M14 62 L86 62 L80 96 L20 96 Z" fill="#ffffff" stroke="#cfcbd8" strokeWidth="1.5" />
+        <g transform="rotate(-14 50 52)">
+          <rect x="-2" y="37" width="104" height="35" rx="17.5" fill="#a8643a" stroke="#5e341b" strokeWidth="1.5" />
+          <g stroke="#8a4c28" strokeWidth="1.5" strokeLinecap="round">
+            <path d="M6 54 L8 60" />
+            <path d="M92 52 L94 58" />
+          </g>
+          <path d="M2 42 Q8 33 16 40 Q24 33 32 40 Q40 33 48 40 Q56 33 64 40 Q72 33 80 40 Q88 33 98 42 Q90 46 50 45 Q10 46 2 42 Z" fill="#fff6e0" />
+          <path d="M8 44 Q16 38 24 44 Q32 38 40 44 Q48 38 56 44 Q64 38 72 44 Q80 38 92 44 Q80 48 50 47 Q20 48 8 44 Z" fill="#e85a2a" />
+          <g fill="#f4f0ff">
+            <rect x="12" y="38" width="3.5" height="3.5" rx="0.8" />
+            <rect x="34" y="36" width="3.5" height="3.5" rx="0.8" />
+            <rect x="60" y="38" width="3.5" height="3.5" rx="0.8" />
+            <rect x="82" y="36" width="3.5" height="3.5" rx="0.8" />
+          </g>
+        </g>
+        <path d="M16 76 L84 76 L80 96 L20 96 Z" fill="#ffffff" stroke="#cfcbd8" strokeWidth="1.5" />
+        <g fill="#e63946">
+          <path d="M24 76 L32 76 L32 96 L25 96 Z" />
+          <path d="M42 76 L50 76 L50 96 L42 96 Z" />
+          <path d="M60 76 L68 76 L68 96 L60 96 Z" />
+          <path d="M78 76 L84 76 L80 96 L78 96 Z" />
+        </g>
+      </g>
+    ),
+    face: { x: 50, y: 57, scale: 0.5 },
+    darkMouth: true,
+  },
+  toiletroll: {
+    body: () => (
+      <g>
+        <path d="M80 30 L80 76 Q86 84 82 96 L70 96 Q74 86 72 80" fill="#ffffff" stroke="#cfcbd8" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M18 24 L18 82 Q18 92 50 92 Q82 92 82 82 L82 24 Z" fill="#f7f5fb" stroke="#cfcbd8" strokeWidth="1.5" />
+        <ellipse cx="50" cy="24" rx="32" ry="10" fill="#ffffff" stroke="#cfcbd8" strokeWidth="1.5" />
+        <ellipse cx="50" cy="24" rx="11" ry="4" fill="#c9a77a" stroke="#9c7a4a" strokeWidth="1.5" />
+        <g stroke="#e4e0ec" strokeWidth="1.5" strokeDasharray="2 3">
+          <path d="M22 44 Q50 50 78 44" fill="none" />
+          <path d="M22 80 Q50 86 78 80" fill="none" />
+        </g>
+      </g>
+    ),
+    face: { x: 49, y: 54, scale: 0.75 },
+  },
+  shot: {
+    body: () => (
+      <g strokeLinejoin="round">
+        <path d="M14 22 L86 22 L80 94 L20 94 Z" fill="#e6f4fb" stroke="#9fc4d8" strokeWidth="2" />
+        <path d="M18 34 L82 34 L78.6 76 L21.4 76 Z" fill="#f2a93b" />
+        <ellipse cx="50" cy="34" rx="32" ry="3" fill="#f7c46a" />
+        <path d="M21.4 76 L78.6 76 L80 94 L20 94 Z" fill="#c4e2f2" />
+        <path d="M20 28 L25 72" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+        <path d="M60 22 L92 4 A22 22 0 0 1 74 34 Z" fill="#8bd346" stroke="#4f9a2f" strokeWidth="2" />
+        <path d="M64 22 L88 9 A17 17 0 0 1 74 29 Z" fill="#d6f5a8" />
+      </g>
+    ),
+    face: { x: 50, y: 50, scale: 0.75 },
+  },
+  sock: {
+    body: () => (
+      <g strokeLinejoin="round">
+        <path
+          d="M28 6 L68 6 L68 54 Q68 62 76 66 L88 72 Q100 82 92 92 Q86 98 74 96 L38 88 Q24 84 26 68 Z"
+          fill="#f7f5fb"
+          stroke="#cfcbd8"
+          strokeWidth="1.5"
+        />
+        <rect x="28" y="6" width="40" height="8" fill="#e63946" />
+        <rect x="28" y="17" width="40" height="4" fill="#3b82c4" />
+        <path d="M76 66 L88 72 Q100 82 92 92 Q86 98 78 96 Q86 82 76 66 Z" fill="#e63946" />
+        <path d="M26 72 Q28 86 40 88 L48 90 Q36 82 36 70 Z" fill="#e63946" />
+      </g>
+    ),
+    face: { x: 48, y: 40, scale: 0.75 },
+  },
+  robot: {
+    body: () => (
+      <g>
+        <path d="M50 22 L50 8" stroke="#6b7689" strokeWidth="3" />
+        <circle cx="50" cy="7" r="5" fill="#e63946" />
+        <rect x="6" y="44" width="10" height="20" rx="3" fill="#6b7689" />
+        <rect x="84" y="44" width="10" height="20" rx="3" fill="#6b7689" />
+        <rect x="14" y="20" width="72" height="70" rx="12" fill="#9aa8bd" stroke="#5a6578" strokeWidth="2" />
+        <rect x="22" y="34" width="56" height="46" rx="8" fill="#24324a" />
+        <g fill="#5a6578">
+          <circle cx="21" cy="27" r="2" />
+          <circle cx="79" cy="27" r="2" />
+          <circle cx="21" cy="85" r="2" />
+          <circle cx="79" cy="85" r="2" />
+        </g>
+      </g>
+    ),
+    face: { x: 50, y: 50, scale: 0.85 },
+    darkEyes: true,
+    darkMouth: true,
+  },
+  trophy: {
+    body: () => (
+      <g strokeLinejoin="round">
+        <path d="M24 18 Q4 18 8 34 Q12 46 28 48" fill="none" stroke="#e0a21a" strokeWidth="5" />
+        <path d="M76 18 Q96 18 92 34 Q88 46 72 48" fill="none" stroke="#e0a21a" strokeWidth="5" />
+        <rect x="44" y="60" width="12" height="16" fill="#e0a21a" />
+        <rect x="22" y="80" width="56" height="16" rx="3" fill="#6b3a24" />
+        <rect x="34" y="84" width="32" height="8" rx="1.5" fill="#ffd23f" />
+        <path d="M32 76 L68 76 L72 82 L28 82 Z" fill="#e0a21a" />
+        <path d="M20 8 L80 8 Q80 56 50 64 Q20 56 20 8 Z" fill="#ffd23f" stroke="#c98a0e" strokeWidth="2" />
+        <path d="M28 14 Q28 40 40 52" fill="none" stroke="#fff3b0" strokeWidth="3.5" strokeLinecap="round" />
+      </g>
+    ),
+    face: { x: 50, y: 28, scale: 0.7 },
+  },
 }
 
 export function Avatar(props: {
@@ -632,7 +1076,7 @@ function CharacterParts({ character, mood, scorched }: { character: Character; m
       <g style={scorched ? { filter: 'brightness(0.24) saturate(0.35)' } : undefined}>{character.body()}</g>
       <g transform={`translate(${x} ${y}) scale(${scale}) translate(-50 -50)`}>
         <Eyes mood={mood} frog={false} onDark={scorched || character.darkEyes === true} gap={gap} />
-        <Mouth mood={mood} y={72} ink={lightMouth ? '#ffffff' : undefined} />
+        {!character.noMouth && <Mouth mood={mood} y={72} ink={lightMouth ? '#ffffff' : undefined} />}
       </g>
       {character.front && (
         <g style={scorched ? { filter: 'brightness(0.24) saturate(0.35)' } : undefined}>{character.front()}</g>

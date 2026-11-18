@@ -419,7 +419,7 @@ h1 {
 
 .avatar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(9, 1fr);
   gap: 0.5rem;
 }
 
@@ -488,6 +488,10 @@ h1 {
 
 .modal__card:has(.picker__board) {
   max-width: none;
+}
+
+.modal__card:has(.avatar-grid) {
+  max-width: min(50rem, 100%);
 }
 
 .correct-list {
