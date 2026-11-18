@@ -7,7 +7,7 @@ the evening to a party, 0.7.0 adds the drinking game, 0.8.0 the demo on
 the rules card, 0.9.0 three games for balance, 0.10.0 a world of
 their own for eight games, 0.11.0 the house in Blackjack, 0.12.0 the
 early end of a settled last turn and the result card after the last
-animation): fourteen
+animation, 0.12.1 the Sniper demo fitting the rules card): fourteen
 mini-games are in the
 draw. Updating from 0.1.0 to
 0.1.1 inside the app works on Ubuntu; the owner confirmed step 1 done on
@@ -1365,7 +1365,7 @@ number hit, with the next one under the name.
   demo only, never by changing the game's own scene. Sniper's rows (a
   rifle each) overflowed the narrower scene on the card; there they now
   also shrink with the width (`.demo .race__track--camo`). The owner
-  checks the other demos.*
+  checks the other demos. Released in 0.12.1.*
 - [x] **11. Blackjack**, a twelfth game, added for balance (2026-11-16).
   Rules, a card table as its scene, themed animations for a bust and for
   21, rules card with demo, entries on the Animations screen, tests. *One
