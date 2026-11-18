@@ -25,6 +25,13 @@ Unofficial. Not affiliated with Autodarts.
 - Rules for mini-games not yet specified (see the plan) are put to the owner
   when that game is about to be built, not invented silently.
 - Keep `docs/PLAN.md` current: tick steps when done, add decisions when made.
+- After any change that shows on screen or changes how a game plays, start
+  the app, walk through what changed and take screenshots. Fix whatever
+  does not look or work right, and check again. When reporting back, say
+  what was seen in the running app and what was only covered by tests.
+  The `run-app` skill (`.claude/skills/run-app/`) starts the app and
+  clicks through it. This machine is a test environment: players,
+  settings and parties may be changed as a test needs.
 - Commit or push only when the owner asks.
 - Windows cannot be tested from the development machine (Linux). The owner
   installs each test release on a Surface Pro 9 and reports back. Say plainly
