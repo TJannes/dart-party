@@ -4,7 +4,7 @@ import type { EffectName, Music, MusicScene, Tone } from './theme/types'
 // Plays the theme's effects and music with the Web Audio API. Only one
 // window makes sound: the show window when there is one, else the main one.
 
-class Sound {
+export class Sound {
   private context: AudioContext | null = null
   private effectsGain: GainNode | null = null
   private musicGain: GainNode | null = null
@@ -18,13 +18,13 @@ class Sound {
   setAudible(audible: boolean): void {
     this.audible = audible
     this.applyVolumes()
-    if (!audible) this.stopMusic()
-    else if (this.scene) this.startMusic(this.scene)
+    this.updateMusic()
   }
 
   setVolumes(effects: number, music: number): void {
     this.volumes = { effects, music }
     this.applyVolumes()
+    this.updateMusic()
   }
 
   play(name: EffectName): void {
@@ -38,7 +38,17 @@ class Sound {
     if (scene === this.scene) return
     this.scene = scene
     this.stopMusic()
-    if (scene && this.audible) this.startMusic(scene)
+    this.updateMusic()
+  }
+
+  /**
+   * Music plays only when it can be heard: with the music slider at zero it
+   * is stopped, not just silenced, so it costs no processor time.
+   */
+  private updateMusic(): void {
+    const wanted = this.audible && this.scene !== null && this.volumes.music > 0
+    if (!wanted) this.stopMusic()
+    else if (!this.musicPlaying()) this.startMusic(this.scene!)
   }
 
   private ready(): AudioContext {
@@ -95,6 +105,10 @@ class Sound {
     this.effectsGain = null
     this.musicGain = null
     this.audible = false
+  }
+
+  private musicPlaying(): boolean {
+    return this.musicTimer !== null
   }
 
   private stopMusic(): void {
