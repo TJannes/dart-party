@@ -862,6 +862,12 @@ h1 {
   background: rgb(18 24 14 / 82%);
 }
 
+/* On the rules card the scene is narrower than in the game, and a row with a
+   rifle needs about 27em: the rows also shrink with the width there. */
+.demo .race__track--camo {
+  --lane-font: min(1.5rem, calc((100cqh / var(--rows, 4) - 0.5rem) / 2.9), calc(100cqw / 27));
+}
+
 .race__track--camo .lane--active {
   background: rgb(70 86 48 / 92%);
 }

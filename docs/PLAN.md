@@ -1361,6 +1361,11 @@ number hit, with the next one under the name.
   players appear at once before the last dart, and the round is paid out
   by pulling the darts straight after it; the captions and the shortened
   texts.*
+  *2026-11-18, owner: a demo that does not fit the card is fixed in the
+  demo only, never by changing the game's own scene. Sniper's rows (a
+  rifle each) overflowed the narrower scene on the card; there they now
+  also shrink with the width (`.demo .race__track--camo`). The owner
+  checks the other demos.*
 - [x] **11. Blackjack**, a twelfth game, added for balance (2026-11-16).
   Rules, a card table as its scene, themed animations for a bust and for
   21, rules card with demo, entries on the Animations screen, tests. *One
