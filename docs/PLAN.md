@@ -8,7 +8,8 @@ the rules card, 0.9.0 three games for balance, 0.10.0 a world of
 their own for eight games, 0.11.0 the house in Blackjack, 0.12.0 the
 early end of a settled last turn and the result card after the last
 animation, 0.12.1 the Sniper demo fitting the rules card, 0.13.0 34
-new avatars, 54 in all): fourteen
+new avatars, 54 in all, 0.13.1 the music stopping for real when its
+slider is at zero): fourteen
 mini-games are in the
 draw. Updating from 0.1.0 to
 0.1.1 inside the app works on Ubuntu; the owner confirmed step 1 done on
