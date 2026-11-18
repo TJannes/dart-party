@@ -78,6 +78,44 @@ const commands = {
     await page.mouse.click(px, py)
     return `tapped board ${x},${y} at ${px.toFixed(0)},${py.toFixed(0)}`
   },
+  /**
+   * Enter one dart by hand through "Add dart": S20, D5, T19, 25 (outer
+   * bull), B (bull) or M (miss). Not for Sniper (use tap-board) or Robin
+   * Hood (click the zone).
+   */
+  async dart(spec) {
+    await clickable('Add dart').click({ timeout: 5000 })
+    const modal = page.locator('.modal__card')
+    await modal.waitFor({ timeout: 5000 })
+    const key = String(spec).toUpperCase()
+    if (key === 'M') await modal.locator('.key--miss').click()
+    else if (key === 'B') await modal.locator('.key--wide', { hasText: 'Bull' }).click()
+    else if (key === '25') await modal.locator('.key--wide', { hasText: /^25$/ }).click()
+    else {
+      const ring = { S: 'Single', D: 'Double', T: 'Triple' }[key[0]]
+      const number = Number(key.slice(1))
+      if (!ring || !(number >= 1 && number <= 20)) throw new Error(`bad dart ${spec}`)
+      await modal.locator('.chip', { hasText: ring }).click()
+      await modal.locator('.picker__numbers .key').nth(number - 1).click()
+    }
+    await modal.waitFor({ state: 'detached', timeout: 5000 })
+    return `dart ${key}`
+  },
+  /** On the Settings screen: leave only this game in the draw (by its name on the chip). */
+  async 'only-game'(...words) {
+    const name = words.join(' ')
+    const chips = page.locator('.settings .chip').filter({ hasText: /./ })
+    const target = chips.filter({ hasText: new RegExp(`^${name}$`) }).first()
+    if (!(await target.evaluate((el) => el.classList.contains('chip--on')))) await target.click()
+    // Then switch off every other game chip of the first block that is on.
+    const games = page.locator('.settings .row').first().locator('.chip')
+    for (let i = 0; i < (await games.count()); i++) {
+      const chip = games.nth(i)
+      if ((await chip.innerText()).trim() === name) continue
+      if (await chip.evaluate((el) => el.classList.contains('chip--on'))) await chip.click()
+    }
+    return `only ${name}`
+  },
   /** Fill an input: by placeholder, label or CSS selector. */
   async fill(target, ...words) {
     const value = words.join(' ')

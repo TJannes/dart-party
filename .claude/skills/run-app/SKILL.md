@@ -39,6 +39,8 @@ d() { node .claude/skills/run-app/drive.mjs "$@"; }
 | `d click-at <x> <y>` | click at window coordinates (CSS px, window is 1280x768) |
 | `d click-in <selector> <fx> <fy>` | click a spot inside an element, as fractions of its box |
 | `d tap-board <x> <y> [selector]` | tap the on-screen board at board coordinates (bull 0,0; double ring edge radius 1; y up). Default: the board in the "Add dart" picker |
+| `d dart <S20/D5/T19/25/B/M>` | enter one dart through "Add dart" and the picker (single, double, triple, outer bull, bull, miss). Not for Sniper or Robin Hood |
+| `d only-game <name>` | on the Settings screen: leave only that game in the draw |
 | `d fill <label/placeholder/selector> <text>` | fill an input |
 | `d type <text>` / `d press <key>` | keyboard |
 | `d buttons` | visible buttons, `(off)` when disabled: the quickest way to see what can be clicked |
@@ -52,8 +54,7 @@ d() { node .claude/skills/run-app/drive.mjs "$@"; }
 
 ## Recipes
 
-- **One game only**: Home → `Settings` → click game chips until only that
-  game is on (yellow) → `Back` → `New party` → click two players → `−` until
+- **One game only**: Home → `Settings` → `only-game <name>` → `Back` → `New party` → click two players → `−` until
   Games is 1 → `Start the party` → `Continue` (after the draw stops) →
   `Let's play`.
 - **A dart by hand**: `Add dart`, then `tap-board x y` (Sniper and any game
