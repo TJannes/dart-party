@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { AVATARS, cleanName, cleanProfiles, MAX_PROFILES } from './players'
 
 describe('profiles', () => {
-  it('has twenty different avatars', () => {
-    expect(new Set(AVATARS).size).toBe(20)
+  it('has thirty-three different avatars', () => {
+    expect(new Set(AVATARS).size).toBe(33)
   })
 
   it('tidies a name', () => {

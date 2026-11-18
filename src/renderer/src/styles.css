@@ -419,7 +419,7 @@ h1 {
 
 .avatar-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap: 0.5rem;
 }
 
@@ -432,8 +432,8 @@ h1 {
 }
 
 .avatar-pick svg {
-  width: 4.2rem;
-  height: 4.2rem;
+  width: 3.6rem;
+  height: 3.6rem;
 }
 
 .avatar-pick--on {

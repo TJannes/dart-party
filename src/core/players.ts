@@ -22,6 +22,19 @@ export const AVATARS = [
   'unicorn',
   'elephant',
   'wolf',
+  'potato',
+  'poo',
+  'pizza',
+  'burger',
+  'fries',
+  'beer',
+  'donut',
+  'watermelon',
+  'avocado',
+  'ghost',
+  'ninja',
+  'pirate',
+  'alien',
 ] as const
 
 export type AvatarId = (typeof AVATARS)[number]

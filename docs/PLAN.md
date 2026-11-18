@@ -158,9 +158,14 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   eight the names get small, smallest in Time Bomb with its heading.
   Whether to lower the maximum to six is an open question of the owner's
   (2026-11-16).
-- Each player has a name and picks an avatar from a fixed set of about twenty
-  drawn characters. No photo upload. Avatars are vector art so they can move
+- Each player has a name and picks an avatar from a fixed set of drawn
+  characters. No photo upload. Avatars are vector art so they can move
   and react (cheer, sulk) inside any scene.
+- 2026-11-18: thirteen characters added to the twenty animals, from a
+  picture the owner gave: potato, poo, pizza, burger, fries, beer, donut,
+  watermelon, avocado, ghost, ninja, pirate, alien. Each has its own
+  drawing but wears the shared face, so every mood works on every avatar.
+  The picker shows seven per row.
 - Player profiles are saved on the machine.
 - Players are fixed once a party starts. A party can always be aborted.
 
