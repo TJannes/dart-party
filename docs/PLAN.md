@@ -5,7 +5,9 @@ and released, for the owner to test (0.3.0 has the games and the animations,
 0.4.0 adds free play, 0.5.0 the themed animations per game, 0.6.0 renames
 the evening to a party, 0.7.0 adds the drinking game, 0.8.0 the demo on
 the rules card, 0.9.0 three games for balance, 0.10.0 a world of
-their own for eight games, 0.11.0 the house in Blackjack): fourteen
+their own for eight games, 0.11.0 the house in Blackjack, 0.12.0 the
+early end of a settled last turn and the result card after the last
+animation): fourteen
 mini-games are in the
 draw. Updating from 0.1.0 to
 0.1.1 inside the app works on Ubuntu; the owner confirmed step 1 done on
@@ -204,6 +206,7 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   it no longer covers the deciding moment. After a restart into a game
   that was already over it shows at once. Asked by the owner on
   2026-11-18 after seeing the card cover the end of a Sniper game.
+  Released in 0.12.0.
 - A game with a round limit ends on the last dart of the last turn; it does
   not wait for those darts to be pulled.
 - It ends earlier, in the middle of that last turn, as soon as the darts
@@ -227,6 +230,7 @@ All of these were agreed with the owner. Do not reopen them unprompted.
   2026-11-18, on Claude's proposal). Why: being skipped at the board feels
   like being left out, an ending without a dart of one's own feels like
   the app forgot a turn, and a Sniper round result belongs to a dart.
+  Released in 0.12.0.
 - The control panel always offers: correct a dart, add a miss, move on by hand,
   reset the board.
 - Every mini-game has a maximum number of rounds.
